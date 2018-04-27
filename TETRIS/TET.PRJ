@@ -1,0 +1,28 @@
+82569
+D:\game\tet.prj
+tet.OPN
+novcs
+tet.DEF
+6
+871063138
+0 0 0 0 0 "..\SOURCE\DAY_03\GRAPH3.C"
+0 0 0 0 0 "..\source\DAY_04\GRAPH4.C"
+0 0 0 0 0 "tet.DEF"
+0 0 0 0 0 "..\SOURCE\DAY_07\GRAPH7K.C"
+0 0 0 0 0 "tet.cpp"
+0 -1 -1 0 0 "..\source\day_03\graph3.h"
+0 -1 0 0 0 "..\source\day_04\graph4.h"
+0 -1 0 0 0 "..\source\day_07\graph7k.h"
+0 -1 0 0 0 "..\SC\INCLUDE\stdio.h"
+0 -1 0 0 0 "..\SC\INCLUDE\stdlib.h"
+0 -1 0 0 0 "..\SC\INCLUDE\time.h"
+0 -1 0 0 0 "..\SC\INCLUDE\string.h"
+0 -1 0 0 0 "..\SC\INCLUDE\io.h"
+0 -1 0 0 0 "..\SC\INCLUDE\conio.h"
+0 -1 0 0 0 "..\SC\INCLUDE\dos.h"
+0 -1 0 0 0 "..\SC\INCLUDE\bios.h"
+0 -1 0 0 0 "..\SC\INCLUDE\memory.h"
+0 -1 0 0 0 "..\SC\INCLUDE\malloc.h"
+0 -1 0 0 0 "..\SC\INCLUDE\math.h"
+0 -1 0 0 0 "..\SC\INCLUDE\fcntl.h"
+0 -1 0 0 0 "..\source\DAY_04\graph3.h"

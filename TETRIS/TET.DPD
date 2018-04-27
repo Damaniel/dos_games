@@ -1,0 +1,10 @@
+# Symantec SC++ generated .dpd file. V: 7200
+..\source\day_03\graph3.OBJ: \
+	..\source\day_03\graph3.c \
+	..\SOURCE\DAY_03\graph3.h 
+..\source\day_04\graph4.OBJ: \
+	..\source\day_04\graph4.c 
+..\source\day_07\graph7k.OBJ: \
+	..\source\day_07\graph7k.c 
+tet.OBJ: \
+	tet.cpp 

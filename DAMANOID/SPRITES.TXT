@@ -1,0 +1,165 @@
+  Hex   |  Index  |                      Sprite
+----------------------------------------------------------------------------
+   0    |   0     |   Blue block, left half
+   1    | 	1     |   Blue block, right half
+   2    | 	2     |   Red block, left half
+   3    | 	3     |   Red block, right half
+   4    | 	4     |   Green block, left half
+   5    | 	5     |   Green block, right half
+   6    | 	6     |   Pink block, left half
+   7    | 	7     |   Pink block, right half
+   8    | 	8     |   Gold block, left half
+   9    | 	9     |   Gold block, right half
+   A    |   10    |   Light blue block, left half
+   B    |   11    |   Light blue block, right half
+   C    |   12	  |   Blue shiny block, left half
+   D    |   13    |   Blue shiny block, right half
+   E    |   14 	  |   Red shiny block, left half
+   F    |   15 	  |   Red shiny block, right half
+   10   |   16 	  |   Green shiny block, left half
+   11   |   17 	  |   Green shiny block, right half
+   12   |   18 	  |   Pink shiny block, left half
+   13   |   19 	  |   Pink shiny block, right half
+   14   |   20 	  |   Gold shiny block, left half
+   15   |   21 	  |   Gold shiny block, right half
+   16   |   22 	  |   Light blue shiny block, left half
+   17   |   23 	  |   Light blue shiny block, right half
+   18   |   24    |   Blue dithered block, left half
+   19   |   25    |   Blue dithered block, right half
+   1A   |   26    |   Red dithered block, left half
+   1B   |   27    |   Red dithered block, right half
+   1C   |   28    |   Green dithered block, left half
+   1D   |   29    |   Green dithered block, right half
+   1E   |   30    |   Pink dithered block, left half
+   1F   |   31    |   Pink dithered block, right half
+   20   |   32    |   Gold dithered block, left half
+   21   |   33    |   Gold dithered block, right half
+   22   |   34    |   Light blue dithered block, left half
+   23   |   35	  |   Light blue dithered block, right half
+   24   |   36	  |   Gray (unbreakable) block, left half
+   25   |   37	  |   Gray (unbreakable) block, right half
+   26   |   38    |   Border wall, top corner
+   27   |   39    |   Border wall, vertical section
+   28   |   40    |   Border wall, horizontal section
+   29   |   41    |   Level 1 background 1
+   2A   |   42    |   Level 1 background 2
+   2B   |   43    |   Level 1 background 3
+   2C   |   44    |   Level 1 background 1 (shaded top)
+   2D   |   45    |   Level 1 background 2 (shaded top) 
+   2E   |   46    |   Level 1 background 3 (shaded top)
+   2F   |   47    |   Level 1 background 1 (shaded left)
+   30   |   48    |   Level 1 background 2 (shaded left)
+   31   |   49    |   Level 1 background 3 (shaded left)
+   32   |   50    |   Level 1 background 1 (shaded top and left)
+   33   |   51    |   Level 1 background 2 (shaded top and left)
+   34   |   52    |   Level 1 background 3 (shaded top and left)
+   35   |   53    |   Player paddle (left end)
+   36   |   54    |   Player paddle (center portion)
+   37   |   55    |   Player paddle (right end)
+   38   |   56    |   Ball
+   39   |   57    |   Logo, sprite 1
+   3A   |   58    |   Logo, sprite 2 
+   3B   |   59    |   Logo, sprite 3
+   3C   |   60    |   Logo, sprite 4 
+   3D   |   61    |   Logo, sprite 5
+   3E   |   62    |   Logo, sprite 6
+   3F   |   63    |   Logo, sprite 7
+   40   |   64    |   Logo, sprite 8
+   41   |   65    |   Logo, sprite 9
+   42   |   66    |   Logo, sprite 10
+   43   |   67    |   Logo, sprite 11
+   44   |   68    |   Logo, sprite 12 
+   45   |   69    |   Logo, sprite 13 
+   46   |   70    |   Logo, sprite 14 
+   47   |   71    |   Logo, sprite 15 
+   48   |   72    |   Logo, sprite 16
+   49   |   73    |   Logo, sprite 17
+   4A   |   74    |   Logo, sprite 18
+   4B   |   75    |   Logo, sprite 19
+   4C   |   76    |   Logo, sprite 20
+   4D   |   77    |   Logo, sprite 21
+   4E   |   78    |   Logo, sprite 22
+   4F   |   79    |   Logo, sprite 23
+   50   |   80    |   Logo, sprite 24
+   51   |   81    |   Logo, sprite 25
+   52   |   82    |   Logo, sprite 26
+   53   |   83    |   Logo, sprite 27
+   54   |   84    |   Logo, sprite 28
+   55   |   85    |   Logo, sprite 29
+   56   |   86    |   Logo, sprite 30
+   57   |   87    |   Logo, sprite 31
+   58   |   88    |   Logo, sprite 32
+   59   |   89    |   Logo, sprite 33
+   5A   |   90    |   Logo, sprite 34
+   5B   |   91    |   Logo, sprite 35
+   5C   |   92    |   Logo, sprite 36
+   5D   |   93    |   Logo, sprite 37
+   5E   |   94    |   Logo, sprite 38
+   5F   |   95    |   Logo, sprite 39
+   60   |   96    |   Logo, sprite 40
+   61   |   97    |   Level 2 background 1
+   62   |   98    |   Level 2 background 2
+   63   |   99    |   Level 2 background 3
+   64   |   100   |   Level 2 background 4
+   65   |   101   |   Level 2 background 5
+   66   |   102   |   Level 2 background 6
+   67   |   103   |   Level 2 background 7
+   68   |   104   |   Level 2 background 8
+   69   |   105   |   Level 2 background 9
+   6A   |   106   |   Level 2 background 1 (top left shaded)
+   6B   |   107   |   Level 2 background 1 (top shaded)
+   6C   |   108   |   Level 2 background 2 (top shaded)
+   6D   |   109   |   Level 2 background 3 (top shaded)
+   6E   |   110   |   Level 2 background 1 (left shaded)
+   6F   |   111   |   Level 2 background 4 (left shaded)
+   70   |   112   |   Level 2 background 7 (left shaded)
+   71   |   113   |   Level 3 background 1
+   72   |   114   |   Level 3 background 2
+   73   |   115   |   Level 3 background 1 (top left shaded)
+   74   |   116   |   Level 3 background 2 (top left shaded)
+   75   |   117   |   Level 3 background 1 (top shaded)
+   76   |   118   |   Level 3 background 2 (top shaded)
+   77   |   119   |   Level 3 background 1 (left shaded)
+   78   |   120   |   Level 3 background 2 (left shaded)
+   79   |   121   |   Level 4 background 1
+   7A   |   122   |   Level 4 background 1 (top left shaded)
+   7B   |   123   |   Level 4 background 1 (top shaded)
+   7C   |   124   |   Level 4 background 1 (left shaded)
+   7D   |   125   |   Level 5 background 1
+   7E   |   126   |   Level 5 background 2
+   7F   |   127   |   Level 5 background 3
+   80   |   128   |   Level 5 background 4
+   81   |   129   |   Level 5 background 1 (top left shaded)
+   82   |   130   |   Level 5 background 1 (top shaded)
+   83   |   131   |   Level 5 background 2 (top shaded)
+   84   |   132   |   Level 5 background 1 (left shaded)
+   85   |   133   |   Level 5 background 3 (left shaded)
+   
+Damanoid logo arrangement:
+57 58 59 60 61 58 59 60 61 62
+63 64 65 66 67 68 69 70 71 72
+73 74 75 76 77 75 78 79 80 81
+82 83 84 85 86 84 87 88 89 90
+91 92 93 94 95 92 93 94 95 96
+ 
+ID |        Block type      |  Hits  |  Score
+------------------------------------------------------
+1  | Blue                  |   1    |   100
+2  | Red                   |   1    |   150
+3  | Green                 |   1    |   200
+4  | Pink                  |   1    |   250
+5  | Gold                  |   1    |   300
+6  | Light Blue            |   1    |   350
+7  | Blue Shiny            |   2    |   500
+8  | Red Shiny             |   2    |   550
+9  | Green Shiny           |   2    |   600
+10 | Pink Shiny            |   2    |   650
+11 | Gold Shiny            |   2    |   700
+12 | Light Blue Shiny      |   2    |   750
+13 | Blue Dithered         |   3    |   1000
+14 | Red Dithered          |   3    |   1100
+15 | Green Dithered        |   3    |   1200
+16 | Pink Dithered         |   3    |   1300
+17 | Gold Dithered         |   3    |   1400
+X  | Gray (unbreakable)    |  n/a   |   n/a
+18 | Light Blue Dithered   |   3    |   1500

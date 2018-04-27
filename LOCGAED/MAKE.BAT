@@ -1,0 +1,7 @@
+@ECHO OFF
+ECHO Making...
+CD SRC
+TPC LOCGAED.PAS /B 
+MOVE /Y LOCGAED.EXE ..
+CD ..
+

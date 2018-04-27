@@ -1,0 +1,58 @@
+The sprite format used (for 5x5 sprites; presumably, 3x3 are the same) is a set of byte
+pairs. 
+
+The first byte of the pair contains the color of a pair of pixels.  The pixels
+are arranged from top left to bottom right, arranged by row, with even number pixel 
+offsets in the low order nibble, and odd pixel offsets in the high order nibble.  
+
+The second byte of the pair contains a transparency mask.  If the nibble is set to F,
+the original byte in the framebuffer is preserved.  If the nibble is set to 0, the
+byte in the sprite is used instead.  This allows any arbitrary pixels to be set
+transparent (though in the example sprite, transparent pixels are always set to 
+black (0x0)).
+
+                              11    11    11    11    11    22    22    22    22    22
+10    32    54    76    98    10    32    54    76    98    10    32    54    76    98
+00 FF 44 00 04 F0 40 0F 47 00 47 00 40 0F 4F 00 4F 00 40 0F 44 00 44 00 40 0F 40 0F 40 0F
+
+   ^
+   Transparency (F = preserve original byte in framebuffer, 0 = use byte stored in sprite
+
+Since attribute colors for two pixels are stored in a single byte, offset matters!  
+Rather than try to do some weird math to account for sprites being placed in even
+column offsets versus odd ones, each sprite has two forms: the 'odd' version (for odd
+x positions) and the 'even' version (for even x positions).  As such, each 5x5 sprite takes
+60 bytes to store:
+
+- Odd sprite (offset 0)
+   - a 6x5 sprite.  The first column of the sprite is transparent.  15 attribute bytes,
+     15 transparency bytes.
+- Even sprite (offset 30)
+   - a 6x5 sprite.  The last column of the sprite is transparent.  15 attribute bytes,
+     15 transparency bytes.
+
+
+Relevant functions and structures:
+
+tDynamicData - used to hold tile data.  The init function loads a specified file and
+               creates a pointer to the file data itself.
+
+tileSource - a global that holds the current tile data.  Before calling any tile
+             drawing function, ensure that this is set to the correct tile data
+             (stored in the dataStart field of whichever tDynamicData structure you're
+              using to hold your tiles.)
+
+tg_init	- sets the CGA 160x100 graphics mode.  No arguments.
+tg_clear(color) - sets the screen to the specified color.  Note that 'drawing' to
+                  the screen won't work properly unless you call this before you
+                  start to draw (the code that 'draws' pixels only modifies attribute
+                  bytes, not text bytes).
+tg_putPixel(x, y, color) - draws a pixel of the specified color at the specified
+                           location.
+tg_getPixel(x, y) - returns the pixel color stored at the given (x,y) position.
+tg_bar(sx, sy, ex, ey, color) - draws a filled rectangle from (sx,sy) to (ex, ey) in the
+                                specified color.
+tg_rectangle(sx, sy, ex, ey, color) - draws a rectangle outline from (sx, sy) to (ex, ey)
+                                      in the specified color. 
+
+tg_term - turns off the 160x100 mode and restores 'regular' text mode.

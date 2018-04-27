@@ -1,0 +1,6 @@
+*.spr
+*.exe
+*.o
+*.bak
+*.dat
+sprites/*

@@ -1,0 +1,38 @@
+------------------------------------------------------
+LOCGAED - Lo-Res CGA (160x100 text mode) sprite editor
+------------------------------------------------------
+
+Controls:
+
+Arrow keys - move the draw cursor within the edit window for the current  (up = 0, 72, down = 0, 80, left = 0, 75, right = 0, 77)
+             sprite.  The cursor will wrap around as needed.
+Space bar  - sets the currently highlighted pixel to the active color.
+X          - clears the currently highlighted pixel (sets it to black with
+             transparency).
+[ / ]      - cycle through colors in the color palette in forward/
+             reverse order.  The selected color will be use for draw 
+             operations.
+N          - create new image at the end of the sprite sheet.  Clears
+             the sprite to blank and transparent.
+\		   - remove the currently selected sprite from the sprite sheet.
+             only works if there's at least 2 sprites in the sheet (all
+			 sprite sheets must contain at least one sprite).
+, / .      - cycle through sprites in the sheet, making the selected    
+             one the current sprite to be edited.
+G          - enable / disable grid in edit window
+H          - enable / disable display of transparency mask dots in 
+             the edit window.
+~          - Cycle through valid sprite sizes.  If you adjust the 
+             sprite size, any existing sprites will be deleted!
+C          - Clear the current sprite in the edit window.
+E          - Copy the current sprite in the edit window.
+R          - Paste any copied sprite into the current edit window.
+
+F1         - Help screen.
+F2         - Save image.  Name is provided on command line.
+F4         - Load/Reload image
+F8         - About program.
+F10        - Quit.
+
+
+			 
