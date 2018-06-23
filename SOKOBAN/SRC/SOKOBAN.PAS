@@ -19,7 +19,8 @@ uses
   Dos,                  { for GetIntVec, SetIntVec }
   jfunc,
   timer,
-  txtgraph;
+  txtgraph,
+  undo;
 
 const
   { Arrow key flags - held in the extended key array }
@@ -80,13 +81,6 @@ const
   SMALL_TILE_SIZE = 3;  {Currently unused.  May be used for larger stages.}
   LARGE_TILE_SIZE = 5;
 
-  { Used as part of the circular undo buffer - determines the maximum number of saved steps.}
-  UNDO_BUFFER_SIZE = 10;
-
-  { A move state that didn't involve a box being moved has it's 'moved box ID' value set
-    to this. }
-  UNDO_NO_BOX = -1;
-
 type
   { Grid offset in the play area. }
   location = record
@@ -98,19 +92,6 @@ type
   dirty = record
     x, y: Integer;
     item: Integer;
-  end;
-  
-  { A single state snapshot suitable for undoing a single move.  Contains the old
-    player and box (if applicable) position so they can be redrawn in the correct places,
-    and the current player and box positions so they can be erased from the correct
-    places. }
-  undoitem = record
-    px, py: Integer;
-    boxId: Integer;
-    bx, by: Integer;
-    npx, npy: Integer;
-    nbx, nby: Integer;    
-    valid: Boolean;
   end;
 
 var
@@ -160,7 +141,7 @@ var
   g_numDirtyBlocks: Integer;
 
   { The undo buffer.  Currently one move.  Eventually multiple moves. }
-  g_undoBuffer: undoitem;
+  g_undoBuffer: UndoBuf;
 
 { Forward declarations. }
 procedure addDirtyBlock(x: Integer; y: Integer; item: Integer); forward;  
@@ -206,17 +187,19 @@ end;
 
 { Add a state (old/new positions) to the undo buffer. }
 procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer);
+var
+  u: undoitem;
 begin
-  g_undoBuffer.px := px;
-  g_undoBuffer.py := py;
-  g_undoBuffer.boxId := bId;
-  g_undoBuffer.bx := bx;
-  g_undoBuffer.by := by;
-  g_undoBuffer.valid := True;
-  g_undoBuffer.npx := npx;
-  g_undoBuffer.npy := npy;
-  g_undoBuffer.nbx := nbx;
-  g_undoBuffer.nby := nby
+  u.px := px;
+  u.py := py;
+  u.boxId := bId;
+  u.bx := bx;
+  u.by := by;
+  u.npx := npx;
+  u.npy := npy;
+  u.nbx := nbx;
+  u.nby := nby; 
+  g_undoBuffer.addItem(u);
 end;
 
 { Restores a state from the undo buffer. }
@@ -224,46 +207,51 @@ procedure restoreUndoBuffer;
 var
   isPlayerOnTarget: Boolean;
   isBoxOnTarget: Boolean;
+  u: undoitem;
+  isEmpty: Boolean;
 begin
-  if (g_undoBuffer.valid = True) then
+
+  g_undoBuffer.checkEmpty(isEmpty);
+  if (isEmpty = False) then
   begin
+    g_undoBuffer.getEnd(u);
+
     { Set the player position to the previous position in the undo buffer }
-    g_playerX := g_undoBuffer.px;
-    g_playerY := g_undoBuffer.py;
+    g_playerX := u.px;
+    g_playerY := u.py;
     addDirtyBlock(g_playerX, g_playerY, ID_PLAYER);
 
     { Add the pre-undo player position to the dirty block list }
-    isOnTarget(g_undoBuffer.npx, g_undoBuffer.npy, isPlayerOnTarget);
+    isOnTarget(u.npx, u.npy, isPlayerOnTarget);
     if (isPlayerOnTarget = True) then
     begin
-      addDirtyBlock(g_undoBuffer.npx, g_undoBuffer.npy, ID_TARGET);
+      addDirtyBlock(u.npx, u.npy, ID_TARGET);
     end 
     else begin
-      addDirtyBlock(g_undoBuffer.npx, g_undoBuffer.npy, ID_FLOOR);
+      addDirtyBlock(u.npx, u.npy, ID_FLOOR);
     end;
 
     { If a box was moved, set the box position to the previous position in the undo buffer. }
-    if (g_undoBuffer.boxId <> UNDO_NO_BOX) then
+    if (u.boxId <> UNDO_NO_BOX) then
     begin
-      g_boxLocations[g_undoBuffer.boxId].x := g_undoBuffer.bx;
-      g_boxLocations[g_undoBuffer.boxId].y := g_undoBuffer.by;
-      addDirtyBlock(g_boxLocations[g_undoBuffer.boxId].x, g_boxLocations[g_undoBuffer.boxId].y, ID_BOX);
+      g_boxLocations[u.boxId].x := u.bx;
+      g_boxLocations[u.boxId].y := u.by;
+      addDirtyBlock(g_boxLocations[u.boxId].x, g_boxLocations[u.boxId].y, ID_BOX);
 
       { Add the pre-undo box position to the dirty block list }
-      isOnTarget(g_undoBuffer.nbx, g_undoBuffer.nby, isBoxOnTarget);
+      isOnTarget(u.nbx, u.nby, isBoxOnTarget);
       if (isBoxOnTarget = True) then
       begin
-        addDirtyBlock(g_undoBuffer.nbx, g_undoBuffer.nby, ID_TARGET);
+        addDirtyBlock(u.nbx, u.nby, ID_TARGET);
       end
       else begin
-        addDirtyBlock(g_undoBuffer.nbx, g_undoBuffer.nby, ID_FLOOR);
+        addDirtyBlock(u.nbx, u.nby, ID_FLOOR);
       end;      
     end;
-
     { Redraw everything that was changed as part of the restore. }
-    g_redrawDirtyLevelArea := True;
-    g_undoBuffer.valid := False;
+    g_redrawDirtyLevelArea := True;    
   end;
+
 end;
 
 { Processes potential player movement (and possible box movement).  This consists of:
@@ -745,24 +733,21 @@ end;
 
 { MAIN }
 begin
-  { Replace the default DOS keyboard handler with a custom one. }
-  { GetIntVec($09, g_DefKBInt);}
-  {getIntVec($09, @KBInt);}
 
-  { Replace the default DOS timer handler with a custom one too. }
+  { Replace the default DOS timer handler with a custom one. }
   startTimer;
   g_TimerInterval := getUserClockInterval(60);
 
   g_GameTiles.init('SOKOBAN');
   tileSource := g_GameTiles.dataStart;
   
-  processStageFile('LEVELS.DAT', 9, g_status);
+  processStageFile('LEVELS.DAT', 1, g_status);
      
   g_ExitProgram := False;
   g_redrawAll := True;
   g_redrawDirtyLevelArea := False;
   g_numDirtyBlocks := 0;
-
+  
   { These two lines need to be re-initialized every time a new stage is loaded }  
   g_levelStartX := Trunc(CENTER_OF_PLAY_AREA_X - (LARGE_TILE_SIZE * g_levelWidth / 2));
   g_levelstartY := Trunc(CENTER_OF_PLAY_AREA_Y - (LARGE_TILE_SIZE * g_levelHeight / 2)); 
@@ -770,6 +755,9 @@ begin
   tg_init;
   tg_clear(0);
  
+  { Clear the undo buffer }
+  g_undoBuffer.init;
+
   drawUi;
   drawLevel;
   
@@ -796,7 +784,6 @@ begin
   tg_clear(0);
   tg_term;
   
-  { Replace the original interrupt handlers. }
+  { Replace the original interrupt handler. }
   killTimer;
-  {SetIntVec($09, g_DefKBInt);}
 end.
