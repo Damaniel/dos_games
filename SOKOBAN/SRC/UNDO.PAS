@@ -1,3 +1,9 @@
+{ undo - a unit implementing multi-step undo by using a circular buffer of
+         game states.  
+
+         This code (along with all other source files in the project)
+         are in the public domain.
+}
 unit undo;
 
 interface
@@ -11,7 +17,7 @@ const
   UNDO_NO_BOX = -1;
 type
 
-  { A single state snapshot suitable for undoing a single move.  Contains the old
+  { A state snapshot suitable for undoing a single move.  Contains the old
     player and box (if applicable) position so they can be redrawn in the correct places,
     and the current player and box positions so they can be erased from the correct
     places. }
@@ -23,6 +29,8 @@ type
     nbx, nby: Integer;    
   end;
 
+  { A circular buffer of undo states.  Keeps the last MAX_BUF_SIZE states, deleting
+    the oldest states as new ones come in. }
   UndoBuf = object
     { Fields }
     buf: array[0..MAX_BUF_SIZE] of undoitem;
@@ -38,11 +46,11 @@ type
     procedure checkEmpty(var empty: boolean);
     { Gets the last item in the buffer }
     procedure getEnd(var item: undoitem);
-    procedure writeBuffer;
   end;
 
 implementation
 
+{ Initializes the buffer. }
 procedure UndoBuf.init;
 var 
   i: Integer;
@@ -51,6 +59,7 @@ begin
   count := 0;
 end;
 
+{ Returns whether the buffer has items in it. }
 procedure UndoBuf.checkEmpty(var empty: boolean);
 begin
   if (count = 0) then 
@@ -62,6 +71,7 @@ begin
   end;
 end;
 
+{ Adds a undo state to the end of the buffer. }
 procedure UndoBuf.addItem(item: undoitem);
 begin
     buf[(startIdx + count) mod MAX_BUF_SIZE] := item;
@@ -75,6 +85,7 @@ begin
 
 end;
 
+{ Grabs the undo state at the end of the buffer, if any are available. }
 procedure UndoBuf.getEnd(var item: undoitem);
 begin
     if (count > 0) then
@@ -82,14 +93,6 @@ begin
       item := buf[(startIdx + count - 1) mod MAX_BUF_SIZE];
       count := count - 1;
     end;
-end;
-
-procedure UndoBuf.writeBuffer;
-var
-  i: Integer;
-begin
-  writeln('Number of entries in the list: ', count);
-  writeln('Start index in the array: ', startIdx);
 end;
 
 end.
