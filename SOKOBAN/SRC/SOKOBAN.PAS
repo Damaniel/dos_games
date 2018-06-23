@@ -1,3 +1,19 @@
+{ SOKOBAN - an implementation of the generic 'move boxes onto targets' puzzle game
+            that uses the 160x100, 16 color CGA graphics mode.  
+
+            Created by Shaun Brandt / Holy Meatgoat Software.
+
+            Uses Jason Knight's CGA (and later!) 160x100 'graphics' mode
+            library. It must have taken a lot of work, and since he released
+            it into the public domain, why reinvent the wheel?  Go to his
+            website and check out Paku Paku, the game that made him write
+            this library in the first place!
+
+                    (http://www.deathshadow.com/pakuPaku)
+
+            As such, my code falls under the same (ultra-broad) public
+            domain license - use it for any purpose whatsoever.          
+}
 program Sokoban;
 uses
   Dos,                  { for GetIntVec, SetIntVec }
@@ -15,24 +31,33 @@ const
   { Keyboard scan codes for non-extended keys }
   KEY_ESC = 1;
 
+  { Values used by the keyboard handler }
   KEY_CLEAR = 0;
   KEY_DOWN = 1;
   KEY_PRESSED = 2;
   
+  { Values that represent the current item positioned on a single square of the
+    level.  This could be empty (no stage content), walls, floors, the player, 
+    boxes, and so on.  This is distinct from the ID_* series of values, which
+    contain the current item positioned on a grid square as to be rendered by the
+    graphical engine.}
   LEVEL_EMPTY  = 0;
   LEVEL_WALL   = 1;
   LEVEL_FLOOR  = 2;
   LEVEL_TARGET = 3;
   LEVEL_BOX    = 4;
   LEVEL_PLAYER = 5;
-  LEVEL_BOX_ON_TARGET = 6;
   
+  { Values that represent the current item positioned on a single square of the level,
+   from a rendering perspective.  Determines the specific tile to be placed at a 
+   location. These actually represent offsets into the tile array. }
   ID_WALL = 0;
   ID_FLOOR = 1;
   ID_TARGET = 2;
   ID_BOX = 3;
   ID_PLAYER = 4;
   
+  { Values representing repeating background tiles.  Not currently used. }
   ID_BACKGROUND1 = 5;
   ID_BACKGROUND2 = 6;
   ID_BACKGROUND3 = 7;
@@ -42,34 +67,50 @@ const
   MAX_WIDTH = 64;
   MAX_HEIGHT = 64;
   
+  { This is the largest number of boxes that can be contained in a single stage.  Most
+    stages have far fewer boxes than this. }
   MAX_BOXES = 512;
   
+  { The x and y position of the center of the play area (not the screen).  Used to
+    center the stage on the screen. }
   CENTER_OF_PLAY_AREA_X = 50;
   CENTER_OF_PLAY_AREA_Y = 50;
   
-  SMALL_TILE_SIZE = 3;
+  { The size of the tiles that make up the play area. }
+  SMALL_TILE_SIZE = 3;  {Currently unused.  May be used for larger stages.}
   LARGE_TILE_SIZE = 5;
 
+  { Used as part of the circular undo buffer - determines the maximum number of saved steps.}
   UNDO_BUFFER_SIZE = 10;
+
+  { A move state that didn't involve a box being moved has it's 'moved box ID' value set
+    to this. }
   UNDO_NO_BOX = -1;
 
 type
+  { Grid offset in the play area. }
   location = record
     x, y: Integer;
   end;
     
+  { A 'dirty' tile - contains a location on the grid and what *should* be drawn on it.
+    A list of these is used to redraw only parts of the screen that have changed. }
   dirty = record
     x, y: Integer;
     item: Integer;
   end;
   
+  { A single state snapshot suitable for undoing a single move.  Contains the old
+    player and box (if applicable) position so they can be redrawn in the correct places,
+    and the current player and box positions so they can be erased from the correct
+    places. }
   undoitem = record
     px, py: Integer;
     boxId: Integer;
     bx, by: Integer;
-    valid: Boolean;
     npx, npy: Integer;
-    nbx, nby: Integer;
+    nbx, nby: Integer;    
+    valid: Boolean;
   end;
 
 var
@@ -95,28 +136,49 @@ var
   g_levelStartX: Integer;
   g_levelStartY: Integer;
   
+  { A generic global status variable. }
   g_status: Integer;
   
+  { The position of the boxes and targets on the stage grid. }
   g_boxLocations: array[0..MAX_BOXES] of location;
   g_targetLocations: array[0..MAX_BOXES] of location;
   
+  { Box and target count.  These should almost always be the same. }
   g_numBoxes: Integer;
   g_numTargets: Integer;
   
+  { The player position in the stage grid. }
   g_playerX: Integer;
   g_playerY: Integer;
   
+  { Flags used to decide what will get redrawn, if anything, on the next frame. }
   g_redrawAll: Boolean;
   g_redrawDirtyLevelArea: Boolean;
   
+  { A list of all 'dirty' blocks that need to be redrawn on the next frame. }
   g_dirtyBlocks: array[0..399] of dirty;
   g_numDirtyBlocks: Integer;
 
+  { The undo buffer.  Currently one move.  Eventually multiple moves. }
   g_undoBuffer: undoitem;
-  
+
+{ Forward declarations. }
+procedure addDirtyBlock(x: Integer; y: Integer; item: Integer); forward;  
+procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer); forward;
+procedure drawLevel; forward;
+procedure drawUi; forward;
 procedure getStageItem(x: Integer; y: Integer; var item: Integer); forward;
+procedure getStageOffset(x: Integer; y: Integer; var offset: Integer); forward;
+procedure isOnTarget(x: Integer; y: Integer; var result: Boolean); forward;
+procedure processInput; forward;
+procedure processMovement(dir: Integer; var moved: Boolean); forward;
+procedure processStageFile(fileName: string; stage: Integer; var status: Integer); forward;
+procedure redrawDirtyLevelArea; forward;
+procedure restoreUndoBuffer; forward;
+procedure Wait(ticks: Integer); forward;
 procedure writeLevel; forward;
 
+{ Add an item (position, item ID) to the dirty block list. }
 procedure addDirtyBlock(x: Integer; y: Integer; item: Integer);
 begin
   g_dirtyBlocks[g_numDirtyBlocks].x := x;
@@ -125,6 +187,8 @@ begin
   g_numDirtyBlocks := g_numDirtyBlocks + 1;
 end;
 
+{ Checks to see if the specified (x,y) position in the stage grid is
+  a target square (as opposed to a standard floor). }
 procedure isOnTarget(x: Integer; y: Integer; var result: Boolean);
 var
   i: Integer;
@@ -140,6 +204,7 @@ begin
   end;
 end;
 
+{ Add a state (old/new positions) to the undo buffer. }
 procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer);
 begin
   g_undoBuffer.px := px;
@@ -154,6 +219,7 @@ begin
   g_undoBuffer.nby := nby
 end;
 
+{ Restores a state from the undo buffer. }
 procedure restoreUndoBuffer;
 var
   isPlayerOnTarget: Boolean;
@@ -161,9 +227,11 @@ var
 begin
   if (g_undoBuffer.valid = True) then
   begin
+    { Set the player position to the previous position in the undo buffer }
     g_playerX := g_undoBuffer.px;
     g_playerY := g_undoBuffer.py;
     addDirtyBlock(g_playerX, g_playerY, ID_PLAYER);
+
     { Add the pre-undo player position to the dirty block list }
     isOnTarget(g_undoBuffer.npx, g_undoBuffer.npy, isPlayerOnTarget);
     if (isPlayerOnTarget = True) then
@@ -174,11 +242,13 @@ begin
       addDirtyBlock(g_undoBuffer.npx, g_undoBuffer.npy, ID_FLOOR);
     end;
 
+    { If a box was moved, set the box position to the previous position in the undo buffer. }
     if (g_undoBuffer.boxId <> UNDO_NO_BOX) then
     begin
       g_boxLocations[g_undoBuffer.boxId].x := g_undoBuffer.bx;
       g_boxLocations[g_undoBuffer.boxId].y := g_undoBuffer.by;
       addDirtyBlock(g_boxLocations[g_undoBuffer.boxId].x, g_boxLocations[g_undoBuffer.boxId].y, ID_BOX);
+
       { Add the pre-undo box position to the dirty block list }
       isOnTarget(g_undoBuffer.nbx, g_undoBuffer.nby, isBoxOnTarget);
       if (isBoxOnTarget = True) then
@@ -189,6 +259,8 @@ begin
         addDirtyBlock(g_undoBuffer.nbx, g_undoBuffer.nby, ID_FLOOR);
       end;      
     end;
+
+    { Redraw everything that was changed as part of the restore. }
     g_redrawDirtyLevelArea := True;
     g_undoBuffer.valid := False;
   end;
@@ -305,6 +377,7 @@ begin
   end 
   else if (isBoxByPlayer = True) and (isBoxByBox = False) then
   begin
+    { The target space is a box, and no box is adjacent, so the box will move. }
     getStageItem(adjX, adjY, item);
     if(item = LEVEL_FLOOR) then
     begin
@@ -338,6 +411,7 @@ begin
     end;
   end;
 
+  { If a move was made, then add it to the undo buffer. }
   if (moved = True) then
   begin
     { Update the undo buffer list }
@@ -346,6 +420,7 @@ begin
   
 end;
 
+{ Get and handle keypresses. }
 procedure processInput;
 var
   keyRead: Char;
@@ -359,31 +434,38 @@ begin
     keyRead := readkey;
     extended := False;
     
+    { Detect extended keypress. }
     if (keyRead = #0) then begin
       extended := True;
       keyRead := readkey;
     end;
 
+    { ESC - exit program }
     if (keyRead = #27) then begin
       g_ExitProgram := True;
     end;
     
+    { Up arrow }
     if (keyRead = #72) and (extended = True) then begin
       processMovement(DIR_UP, isSuccess);
     end;
 
+    { Down arrow }
     if (keyRead = #80) and (extended = True) then begin
       processMovement(DIR_DOWN, isSuccess);
     end;
 
+    { Left arrow }
     if (keyRead = #75) and (extended = True) then begin
       processMovement(DIR_LEFT, isSuccess)
     end;
 
+    { Right arrow }
     if (keyRead = #77) and (extended = True) then begin
       processMovement(DIR_RIGHT, isSuccess);
     end;
 
+    { u - undo }
     if (keyRead = 'u') and (extended = False) then begin
       restoreUndoBuffer;
     end;
@@ -391,6 +473,8 @@ begin
   end;
 end;
          
+{ Wait function.  ticks = the number of frames worth of delay.  For example,
+  with a 60 FPS render rate, a value of 60 for ticks will delay one second. }
 procedure Wait(ticks: Integer);
 begin
   repeat
@@ -406,6 +490,7 @@ begin
   offset := (y * g_levelWidth) + x;
 end;
 
+{ Gets the item (wall, floor, etc) at the given x and y position in the level. }
 procedure getStageItem(x: Integer; y: Integer; var item: Integer);
 var
   offset: Integer;
@@ -414,6 +499,7 @@ begin
   item := g_levelData[offset];
 end;
 
+{ Sets an item at the given x and y position in the level. }
 procedure setStageItem(x: Integer; y: Integer; item: Integer);
 var
   offset: Integer;
@@ -473,6 +559,14 @@ begin
       readln(stageFile, g_levelWidth, g_levelHeight);
       writeln('Size of level is ', g_levelWidth, 'x', g_levelHeight);
       
+      { Square types:
+          'X' - empty space (no level data)
+          '#' - wall
+          ' ' - floor
+          '.' - target location
+          '$' - box sitting on the floor
+          '@' - player sitting on the floor
+          '*' - box sitting on a target location }
       for i := 0 to g_levelHeight - 1 do
       begin
         for j := 0 to g_levelWidth - 1 do
@@ -513,19 +607,7 @@ begin
         { Clear the newline and carriage return from the file }
         read(stageFile, item);
         read(stageFile, item);
-      end;
-      
-      { Try printing out the array to make sure things look OK }
-      for i := 0 to g_levelHeight - 1 do
-      begin
-        for j := 0 to g_levelWidth - 1 do
-        begin
-          getStageItem(j, i, stageItem);
-          write(stageItem);
-        end;
-        writeln('');
-      end;
-      
+      end;      
     end;
   end;
      
@@ -533,6 +615,7 @@ begin
   status := 0;
 end;
 
+{ Debug - prints out stage data to the console. }
 procedure writeLevel;
 var i, j, stageItem: Integer;
 begin
@@ -547,12 +630,18 @@ begin
   end;
 end;
 
+{ UI rendering function.  Draws all parts of the screen that aren't the play area. }
 procedure drawUi;
 var
   i, j: Integer;
   tileId: Integer;
 begin
-  { draw background squares }
+  { draw background squares The background consists of a 3x3 grid of tiles containing 
+    3 different tile types, allowing seamless tiling across the background. 
+    The layout is:
+      X Y Z
+      Y Z X
+      Z X Y }
   for i := 0 to 19 do
   begin
     for j := 0 to 19 do
@@ -586,6 +675,9 @@ begin
   tg_rectangle(100, 0, 159, 99, c_white);
 end;
 
+{ Draws the list of dirty tiles; areas of the screen that changed since the last
+  screen draw.  This is used to minimize the amount of drawing, keeping the
+  updates relatively fast even for slow PCs. }
 procedure redrawDirtyLevelArea;
 var
   i, item: Integer;
@@ -602,11 +694,14 @@ begin
   end;
 end;
 
+{ Does a *full* draw of the level area, as opposed to just dirty blocks.  Gets all of
+  the level contents on the screen, but can cause noticeable flicker on very slow PCs.
+  Mainly used to draw the level initially; dirty blocks are used afterward to only
+  draw the changes. }
 procedure drawLevel;
 var 
   startX, startY: Integer;
   i, j, item: Integer;
-  useSmallTiles: Boolean;
 begin 
   
   { draw the walls and floors }
@@ -642,6 +737,7 @@ begin
              ID_BOX);
   end;
   
+  { Draw the player. }
   tg_tile5(g_levelStartX + g_playerX * LARGE_TILE_SIZE, 
            g_levelStartY + g_playerY * LARGE_TILE_SIZE, 
            ID_PLAYER);
