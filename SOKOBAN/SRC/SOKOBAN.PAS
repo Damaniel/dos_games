@@ -50,6 +50,9 @@ const
   SMALL_TILE_SIZE = 3;
   LARGE_TILE_SIZE = 5;
 
+  UNDO_BUFFER_SIZE = 10;
+  UNDO_NO_BOX = -1;
+
 type
   location = record
     x, y: Integer;
@@ -60,6 +63,15 @@ type
     item: Integer;
   end;
   
+  undoitem = record
+    px, py: Integer;
+    boxId: Integer;
+    bx, by: Integer;
+    valid: Boolean;
+    npx, npy: Integer;
+    nbx, nby: Integer;
+  end;
+
 var
   g_ExitProgram: Boolean;
 
@@ -99,6 +111,8 @@ var
   
   g_dirtyBlocks: array[0..399] of dirty;
   g_numDirtyBlocks: Integer;
+
+  g_undoBuffer: undoitem;
   
 procedure getStageItem(x: Integer; y: Integer; var item: Integer); forward;
 procedure writeLevel; forward;
@@ -109,6 +123,75 @@ begin
   g_dirtyBlocks[g_numDirtyBlocks].y := y;
   g_dirtyBlocks[g_numDirtyBlocks].item := item;
   g_numDirtyBlocks := g_numDirtyBlocks + 1;
+end;
+
+procedure isOnTarget(x: Integer; y: Integer; var result: Boolean);
+var
+  i: Integer;
+begin
+  result := False;
+  {Scan the list of targets and see if one exists at the current position}
+  for i:= 0 to g_numTargets do
+  begin
+    if (g_targetLocations[i].x =x) and (g_targetLocations[i].y = y) then
+    begin
+      result := True;
+    end
+  end;
+end;
+
+procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer);
+begin
+  g_undoBuffer.px := px;
+  g_undoBuffer.py := py;
+  g_undoBuffer.boxId := bId;
+  g_undoBuffer.bx := bx;
+  g_undoBuffer.by := by;
+  g_undoBuffer.valid := True;
+  g_undoBuffer.npx := npx;
+  g_undoBuffer.npy := npy;
+  g_undoBuffer.nbx := nbx;
+  g_undoBuffer.nby := nby
+end;
+
+procedure restoreUndoBuffer;
+var
+  isPlayerOnTarget: Boolean;
+  isBoxOnTarget: Boolean;
+begin
+  if (g_undoBuffer.valid = True) then
+  begin
+    g_playerX := g_undoBuffer.px;
+    g_playerY := g_undoBuffer.py;
+    addDirtyBlock(g_playerX, g_playerY, ID_PLAYER);
+    { Add the pre-undo player position to the dirty block list }
+    isOnTarget(g_undoBuffer.npx, g_undoBuffer.npy, isPlayerOnTarget);
+    if (isPlayerOnTarget = True) then
+    begin
+      addDirtyBlock(g_undoBuffer.npx, g_undoBuffer.npy, ID_TARGET);
+    end 
+    else begin
+      addDirtyBlock(g_undoBuffer.npx, g_undoBuffer.npy, ID_FLOOR);
+    end;
+
+    if (g_undoBuffer.boxId <> UNDO_NO_BOX) then
+    begin
+      g_boxLocations[g_undoBuffer.boxId].x := g_undoBuffer.bx;
+      g_boxLocations[g_undoBuffer.boxId].y := g_undoBuffer.by;
+      addDirtyBlock(g_boxLocations[g_undoBuffer.boxId].x, g_boxLocations[g_undoBuffer.boxId].y, ID_BOX);
+      { Add the pre-undo box position to the dirty block list }
+      isOnTarget(g_undoBuffer.nbx, g_undoBuffer.nby, isBoxOnTarget);
+      if (isBoxOnTarget = True) then
+      begin
+        addDirtyBlock(g_undoBuffer.nbx, g_undoBuffer.nby, ID_TARGET);
+      end
+      else begin
+        addDirtyBlock(g_undoBuffer.nbx, g_undoBuffer.nby, ID_FLOOR);
+      end;      
+    end;
+    g_redrawDirtyLevelArea := True;
+    g_undoBuffer.valid := False;
+  end;
 end;
 
 { Processes potential player movement (and possible box movement).  This consists of:
@@ -134,6 +217,9 @@ var
   boxByBoxIdx: Integer;     { The index in the box list of the offending adjacent box}
   targetX, targetY, adjX, adjY: Integer;
   i, j, item: Integer;
+  oldPlayerX, oldPlayerY: Integer;
+  movedBox: Integer;
+  oldBoxX, oldBoxY: Integer;
 begin
   targetX := g_playerX;
   targetY := g_playerY;
@@ -183,14 +269,8 @@ begin
     end;
   end;  
   
-  {Scan the list of targets and see if one exists on the player's current position}
-  for i:= 0 to g_numTargets do
-  begin
-    if (g_targetLocations[i].x = g_playerX) and (g_targetLocations[i].y = g_playerY) then
-    begin
-      isPlayerOnTarget := True;
-    end;
-  end;
+  { Check to see if the player is standing on a target }
+  isOnTarget(g_playerX, g_playerY, isPlayerOnTarget);
   
   { If the target space is empty, make the move. }
   getStageItem(targetX, targetY, item);
@@ -208,10 +288,20 @@ begin
     else begin
       addDirtyBlock(g_playerX, g_playerY, ID_FLOOR);    
     end;
+    
+    { Prepare the undo buffer }
+    oldPlayerX := g_playerX;
+    oldPlayerY := g_playerY;
+    movedBox := UNDO_NO_BOX;
+    oldBoxX := 0;
+    oldBoxY := 0;
+
+    { Process the move }
     g_playerX := targetX;
     g_playerY := targetY;
     g_redrawDirtyLevelArea := True;
     moved := true;  
+
   end 
   else if (isBoxByPlayer = True) and (isBoxByBox = False) then
   begin
@@ -227,6 +317,15 @@ begin
       else begin
         addDirtyBlock(g_playerX, g_playerY, ID_FLOOR);      
       end;
+
+      { Prepare the undo buffer }
+      oldPlayerX := g_playerX;
+      oldPlayerY := g_playerY;
+      movedBox := boxByPlayerIdx;
+      oldBoxX := g_boxLocations[boxByPlayerIdx].x;
+      oldBoxY := g_boxLocations[boxByPlayerIdx].y;
+
+      { Process the move }
       g_playerX := targetX;  
       g_playerY := targetY;
       g_boxLocations[boxByPlayerIdx].x := adjX;
@@ -238,6 +337,12 @@ begin
       moved := false;
     end;
   end;
+
+  if (moved = True) then
+  begin
+    { Update the undo buffer list }
+    addToUndoBuffer(oldPlayerX, oldPlayerY, movedBox, oldBoxX, oldBoxY, g_playerX, g_playerY, adjX, adjY);
+  end
   
 end;
 
@@ -271,15 +376,18 @@ begin
       processMovement(DIR_DOWN, isSuccess);
     end;
 
-    { Move the cursor in the edit window LEFT }
     if (keyRead = #75) and (extended = True) then begin
       processMovement(DIR_LEFT, isSuccess)
     end;
 
-     { Move the cursor in the edit window RIGHT }
     if (keyRead = #77) and (extended = True) then begin
       processMovement(DIR_RIGHT, isSuccess);
     end;
+
+    if (keyRead = 'u') and (extended = False) then begin
+      restoreUndoBuffer;
+    end;
+
   end;
 end;
          
