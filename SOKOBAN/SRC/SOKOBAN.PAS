@@ -58,10 +58,11 @@ const
   ID_BOX = 3;
   ID_PLAYER = 4;
   
-  { Values representing repeating background tiles.  Not currently used. }
+  { Values representing repeating background tiles. }
   ID_BACKGROUND1 = 5;
   ID_BACKGROUND2 = 6;
   ID_BACKGROUND3 = 7;
+  ID_BACKGROUND4 = 8;
   
   { this is the maximum size of a single level.  The size of sprite used to render
     elements depends on the size of the level.  }
@@ -624,40 +625,27 @@ var
   i, j: Integer;
   tileId: Integer;
 begin
-  { draw background squares The background consists of a 3x3 grid of tiles containing 
-    3 different tile types, allowing seamless tiling across the background. 
-    The layout is:
-      X Y Z
-      Y Z X
-      Z X Y }
+  { draw background squares The background consists of a 2x2 grid of tiles containing 
+    4 different tile types, allowing seamless tiling across the background. }
   for i := 0 to 19 do
   begin
     for j := 0 to 19 do
     begin
-      case (j mod 3) of
+      case (j mod 2) of
         0: begin 
-             case (i mod 3) of
+             case (i mod 2) of
                0: tileId := ID_BACKGROUND1;
                1: tileId := ID_BACKGROUND2;
-               2: tileId := ID_BACKGROUND3;
              end;
            end; 
         1: begin
-             case (i mod 3) of
-               0: tileId := ID_BACKGROUND2;
-               1: tileId := ID_BACKGROUND3;
-               2: tileId := ID_BACKGROUND1;
+             case (i mod 2) of
+               0: tileId := ID_BACKGROUND3;
+               1: tileId := ID_BACKGROUND4;
              end;
            end;
-        2: begin
-             case (i mod 3) of
-               0: tileId := ID_BACKGROUND3;
-               1: tileId := ID_BACKGROUND1;
-               2: tileId := ID_BACKGROUND2;
-             end;
-           end;        
       end;
-      {tg_tile5(i * LARGE_TILE_SIZE, j * LARGE_TILE_SIZE, tileId);}
+      tg_tile5(i * LARGE_TILE_SIZE, j * LARGE_TILE_SIZE, tileId);
     end;
   end;
   tg_rectangle(100, 0, 159, 99, c_white);

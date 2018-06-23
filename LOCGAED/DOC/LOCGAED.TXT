@@ -2,6 +2,16 @@
 LOCGAED - Lo-Res CGA (160x100 text mode) sprite editor
 ------------------------------------------------------
 
+Usage:
+
+LOCGAED.EXE <base name of sprite sheet>
+
+Example:
+
+LOCGAED.EXE DAMANOID
+  - This creates or opens a sprite file called 'DAMANOID.SPR',
+    and will export headerless files to 'DAMANOID.DAT'.
+    
 Controls:
 
 Arrow keys - move the draw cursor within the edit window for the current  (up = 0, 72, down = 0, 80, left = 0, 75, right = 0, 77)

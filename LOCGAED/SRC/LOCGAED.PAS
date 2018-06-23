@@ -102,6 +102,10 @@ var
    { The name of the file to save and load from. }
    g_SpriteFileName: String;
 
+   { The name of the headerless export file.  Has the same prefix as
+     g_SpriteFileName, but has a '.DAT' extension instead. }
+   g_exportFileName: String;
+
    { Holds the position of the cursor in the edit window }
    g_EditXPos:    Integer;
    g_EditYPos:    Integer;
@@ -213,7 +217,7 @@ procedure InitNewSpriteSize(size: Integer); forward;
 procedure LoadSpriteListFromFile(var status: Integer); forward;
 procedure PasteSpriteBuffer(var dest: SpriteEntryPtr); forward;
 procedure ProcessInput; forward;
-procedure SaveSpriteListToFile(var status: Integer); forward;
+procedure SaveSpriteListToFile(var status: Integer; addHeader: Boolean); forward;
 
 { ========================================================================= }
 {  FUNCTIONS / PROCEDURES                                                   }
@@ -329,11 +333,12 @@ begin
 end;
 
 { SaveSpriteListToFile: Creates a file with the name specified in
-                        g_SpriteFileName containing a short header (12 bytes:
-                        6 assorted bytes to identify the file (77d, 88d, 99d),
-                        2 for x width, 2 for y width, 2 for sprite count)
-                        and the raw sprite/transparency data.  The color
-                        and data transparancies for pairs of pixels are
+                        g_SpriteFileName containing (optionally) a short
+                        header (12 bytes: 6 assorted bytes to identify 
+                        the file (77d, 88d, 99d), 2 for x width, 2 for
+                        y width, 2 for sprite count) and the raw 
+                        sprite/transparency data.  The color and data 
+                        transparancies for pairs of pixels are
                         interleaved.  Additionally, two versions of each
                         sprite are written to the file: one for blitting at
                         odd pixel offsets, and one for blitting at even
@@ -343,7 +348,7 @@ end;
                               hold the largest sprite size supported by the
                               program, since it's not dynamically allocated.
 }
-procedure SaveSpriteListToFile(var status: Integer);
+procedure SaveSpriteListToFile(var status: Integer; addHeader: Boolean);
 var
    spriteFile: file;
    header:  array[0..5] of Integer;     { Holds the header bytes }
@@ -364,13 +369,22 @@ begin
      header[5] := g_TotalSprites;
 
      { Open the file. }
-     assign(spriteFile, g_SpriteFileName);
+     if (addHeader = True) then
+     begin
+       assign(spriteFile, g_SpriteFileName);
+     end
+     else begin
+       assign(spriteFile, g_exportFileName);
+     end;
 
      { Delete it if it already exists. }
      rewrite(spriteFile, 1);
 
      { Write the header out first. }
-     blockwrite(spriteFile, header, 6 * sizeof(Integer));
+     if (addHeader = True) then
+     begin
+        blockwrite(spriteFile, header, 6 * sizeof(Integer));
+     end;
 
      { Now, for each sprite in the sheet, write one byte of color data,
        then one byte of transparency data.  Because this data needs to be
@@ -1311,10 +1325,10 @@ begin
         i := i + 1;
    end;
 
-   Writeln('The list element count is ', i, '.');
-   Writeln('The stored element count is ', g_TotalSprites, '.');
-   Writeln('The list index is ', g_CurrentSpriteIdx, '.');
-   Writeln;
+   writeln('The list element count is ', i, '.');
+   writeln('The stored element count is ', g_TotalSprites, '.');
+   writeln('The list index is ', g_CurrentSpriteIdx, '.');
+   writeln;
 end;
 
 { CopySpriteBuffer: Allocates a buffer to hold a copy of the current sprite,
@@ -1421,7 +1435,7 @@ begin
       extended := False;
       if (keyRead = #0) then begin
          extended := True;
-         keyRead := readkey;
+         keyRead := readkey;       
       end;
 
       { Process all actions related to dialogs on-screen. }
@@ -1559,6 +1573,15 @@ begin
                g_DialogLockID := DIALOG_HELP_PAGE_2;
                DrawDialogBox(DIALOG_HELP_PAGE_2);
             end;
+         end;
+
+         { Confirm successful export. }
+         if (g_DialogLockID = DIALOG_EXPORT_OK) then
+         begin
+            g_LockInputFromDialog := False;
+            g_DialogLockID := -1;
+            g_RedrawAll := True;
+            DrawUi;
          end;
 
       end
@@ -1731,12 +1754,24 @@ begin
          { Save the current sprite list. }
          if (keyRead = '<') and (extended = True) then
          begin
-            SaveSpriteListToFile(status);
+            SaveSpriteListToFile(status, True);
             if (status = 0) then
             begin
                  g_LockInputFromDialog := True;
                  g_DialogLockID := DIALOG_SAVE_OK;
                  DrawDialogBox(DIALOG_SAVE_OK);
+            end;
+         end;
+
+         { Export a headerless version of the current sprite list. }
+         if (keyRead = '=') and (extended = True) then
+         begin
+            SaveSpriteListToFile(status, False);
+            if (status = 0) then
+            begin
+                 g_LockInputFromDialog := True;
+                 g_DialogLockID := DIALOG_EXPORT_OK;
+                 DrawDialogBox(DIALOG_EXPORT_OK);
             end;
          end;
 
@@ -1780,7 +1815,8 @@ begin
      tileSource := g_SpriteTiles.dataStart;
 
      if (paramCount > 0) then begin
-        g_SpriteFileName := paramStr(1);
+        g_SpriteFileName := Concat(paramStr(1), '.SPR');
+        g_ExportFileName := Concat(paramStr(1), '.DAT');
      end;
 
      { Determine the initial size and position of the edit box. }
@@ -1794,7 +1830,7 @@ begin
         AddEmptySprite;
         g_CurrentSprite := g_SpriteList;
         g_CurrentSpriteIdx := 0;
-        SaveSpriteListToFile(g_status);
+        SaveSpriteListToFile(g_status, True);
      end;
 
      { Set up all the dialog definitions. }
@@ -1811,5 +1847,7 @@ begin
      { Clean up and exit. }
      DeallocateDialogBoxes;
      DeleteAllSprites;
+
+     tg_clear(0);
      tg_term;
 end.

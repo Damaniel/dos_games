@@ -52,8 +52,6 @@ implementation
 
 { Initializes the buffer. }
 procedure UndoBuf.init;
-var 
-  i: Integer;
 begin
   startIdx := 0;
   count := 0;

@@ -26,6 +26,7 @@ const
    DIALOG_HELP_PAGE_2 = 7;
    DIALOG_HELP_PAGE_3 = 8;
    DIALOG_WARN_DELETE = 9;
+   DIALOG_EXPORT_OK = 10;
 type
    { A pointer to a dialog box entry. }
    DialogPtr = ^Dialog;
@@ -50,7 +51,7 @@ type
 var
    { The 'global' dialog list.  Used in the main code to render dialogs as
      needed. }
-   g_DialogList: array[0..9] of DialogPtr;
+   g_DialogList: array[0..10] of DialogPtr;
 
 procedure InitializeDialogBoxes;
 procedure DeallocateDialogBoxes;
@@ -228,22 +229,22 @@ begin
      g_DialogList[6]^.lines[1] := 'DESIGNED FOR THE CGA 160x100 LO-RES';
      g_DialogList[6]^.lineX[1] := 80;
      g_DialogList[6]^.lineY[1] := 25;
-     g_DialogList[6]^.lines[2] := 'GRAPHICS MODE.  THE MOST USEFUL KEYS';
+     g_DialogList[6]^.lines[2] := 'GRAPHICS MODE.  USEFUL KEYS:';
      g_DialogList[6]^.lineX[2] := 80;
      g_DialogList[6]^.lineY[2] := 32;
-     g_DialogList[6]^.lines[3] := 'ARE AS FOLLOWS:';
+     g_DialogList[6]^.lines[3] := '\CARROW KEYS\F - MOVE EDIT CURSOR';
      g_DialogList[6]^.lineX[3] := 80;
      g_DialogList[6]^.lineY[3] := 39;
-     g_DialogList[6]^.lines[4] := '\CARROW KEYS\F - MOVE EDIT CURSOR';
+     g_DialogList[6]^.lines[4] := '\CSPACE BAR\F - DRAW PIXEL AT CURSOR';
      g_DialogList[6]^.lineX[4] := 80;
      g_DialogList[6]^.lineY[4] := 52;
-     g_DialogList[6]^.lines[5] := '\CSPACE BAR\F - DRAW PIXEL AT CURSOR';
+     g_DialogList[6]^.lines[5] := '\CX\F - DELETE PIXEL AT CURSOR';
      g_DialogList[6]^.lineX[5] := 80;
      g_DialogList[6]^.lineY[5] := 59;
-     g_DialogList[6]^.lines[6] := '\CX\F - DELETE PIXEL AT CURSOR';
+     g_DialogList[6]^.lines[6] := '\C[\F / \C]\F - CYCLE THROUGH PALETTE';
      g_DialogList[6]^.lineX[6] := 80;
      g_DialogList[6]^.lineY[6] := 66;
-     g_DialogList[6]^.lines[7] := '\C[\F / \C]\F - CYCLE THROUGH PALETTE';
+     g_DialogList[6]^.lines[7] := '\CC\F - CLEAR CURRENT SPRITE';
      g_DialogList[6]^.lineX[7] := 80;
      g_DialogList[6]^.lineY[7] := 73;
      g_DialogList[6]^.lines[8] := 'PRESS ESC TO LEAVE, ANY KEY FOR MORE';
@@ -260,28 +261,28 @@ begin
      g_DialogList[7]^.yPos := 15;
      g_DialogList[7]^.width := 154;
      g_DialogList[7]^.height := 80;
-     g_DialogList[7]^.lines[0] := '\CC\F - CLEAR CURRENT SPRITE';
+     g_DialogList[7]^.lines[0] := '\CN\F - ADD A NEW SPRITE TO THE SHEET';
      g_DialogList[7]^.lineX[0] := 80;
      g_DialogList[7]^.lineY[0] := 24;
-     g_DialogList[7]^.lines[1] := '\CN\F - ADD A NEW SPRITE TO THE SHEET';
+     g_DialogList[7]^.lines[1] := '\C,\F / \C.\F - CYCLE THROUGH SPRITES';
      g_DialogList[7]^.lineX[1] := 80;
      g_DialogList[7]^.lineY[1] := 31;
-     g_DialogList[7]^.lines[2] := '\C,\F / \C.\F - CYCLE THROUGH SPRITES';
+     g_DialogList[7]^.lines[2] := '\C\\\F - DELETE SELECTED SPRITE';
      g_DialogList[7]^.lineX[2] := 80;
      g_DialogList[7]^.lineY[2] := 38;
-     g_DialogList[7]^.lines[3] := '\C\\\F - DELETE SELECTED SPRITE';
+     g_DialogList[7]^.lines[3] := ' \C3 5 7 9\F - SET SPRITE SIZE IN PIXELS';
      g_DialogList[7]^.lineX[3] := 80;
      g_DialogList[7]^.lineY[3] := 45;
-     g_DialogList[7]^.lines[4] := ' \C3 5 7 9\F - SET SPRITE SIZE IN PIXELS';
+     g_DialogList[7]^.lines[4] := '\CE\F - COPY CURRENT SPRITE TO BUFFER';
      g_DialogList[7]^.lineX[4] := 80;
      g_DialogList[7]^.lineY[4] := 52;
-     g_DialogList[7]^.lines[5] := '\CE\F - COPY CURRENT SPRITE TO BUFFER';
+     g_DialogList[7]^.lines[5] := '\CR\F - PASTE SPRITE FROM BUFFER';
      g_DialogList[7]^.lineX[5] := 80;
      g_DialogList[7]^.lineY[5] := 59;
-     g_DialogList[7]^.lines[6] := '\CR\F - PASTE SPRITE FROM BUFFER';
+     g_DialogList[7]^.lines[6] := '\CESC\F - EXIT LOCGAED';
      g_DialogList[7]^.lineX[6] := 80;
      g_DialogList[7]^.lineY[6] := 66;
-     g_DialogList[7]^.lines[7] := '\CESC\F - EXIT LOCGAED';
+     g_DialogList[7]^.lines[7] := '\CG\F - TOGGLE GRID MODE';
      g_DialogList[7]^.lineX[7] := 80;
      g_DialogList[7]^.lineY[7] := 73;
      g_DialogList[7]^.lines[8] := 'PRESS ESC TO LEAVE, ANY KEY FOR MORE';
@@ -298,13 +299,13 @@ begin
      g_DialogList[8]^.yPos := 15;
      g_DialogList[8]^.width := 154;
      g_DialogList[8]^.height := 80;
-     g_DialogList[8]^.lines[0] := '\CG\F - TOGGLE GRID MODE';
+     g_DialogList[8]^.lines[0] := '\CH\F - MARK TRANSPARENT PIXELS';
      g_DialogList[8]^.lineX[0] := 80;
      g_DialogList[8]^.lineY[0] := 22;
-     g_DialogList[8]^.lines[1] := '\CH\F - MARK TRANSPARENT PIXELS';
+     g_DialogList[8]^.lines[1] := '\CF2\F - SAVE SPRITE SHEET TO FILE';
      g_DialogList[8]^.lineX[1] := 80;
      g_DialogList[8]^.lineY[1] := 29;
-     g_DialogList[8]^.lines[2] := '\CF2\F - SAVE SPRITE SHEET TO FILE';
+     g_DialogList[8]^.lines[2] := '\CF3\F - EXPORT WITH NO HEADER';
      g_DialogList[8]^.lineX[2] := 80;
      g_DialogList[8]^.lineY[2] := 36;
      g_DialogList[8]^.lines[3] := '\CF4\F - REVERT TO SAVED FILE';
@@ -350,6 +351,25 @@ begin
      g_DialogList[9]^.lineY[3] := 62;
      g_DialogList[9]^.numLines := 4;
 
+     { Dialog 10: Successful export. }
+     New(g_DialogList[10]);
+     g_DialogList[10]^.innerColor := c_blue;
+     g_DialogList[10]^.borderColor := c_ltBlue;
+     g_DialogList[10]^.textColor := c_white;
+     g_DialogList[10]^.xPos := 30;
+     g_DialogList[10]^.yPos := 35;
+     g_DialogList[10]^.width := 100;
+     g_DialogList[10]^.height := 30;
+     g_DialogList[10]^.lines[0] := 'THE FILE WAS EXPORTED';
+     g_DialogList[10]^.lineX[0] := 80;
+     g_DialogList[10]^.lineY[0] := 38;
+     g_DialogList[10]^.lines[1] := 'SUCCESSFULLY.';
+     g_DialogList[10]^.lineX[1] := 80;
+     g_DialogList[10]^.lineY[1] := 45;
+     g_DialogList[10]^.lines[2] := 'PRESS ANY KEY.';
+     g_DialogList[10]^.lineX[2] := 80;
+     g_DialogList[10]^.lineY[2] := 57;
+     g_DialogList[10]^.numLines := 3;
 end;
 
 { DeallocateDialogBoxes:  Deallocates all memory used by the dialog boxes. }
@@ -357,7 +377,7 @@ procedure DeallocateDialogBoxes;
 var
    i: Integer;
 begin
-   for i:= 0 to 1 do
+   for i:= 0 to 10 do
    begin
       if(g_DialogList[i] <> nil) then
          dispose(g_DialogList[i]);
