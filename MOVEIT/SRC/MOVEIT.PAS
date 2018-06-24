@@ -1,4 +1,4 @@
-{ SOKOBAN - an implementation of the generic 'move boxes onto targets' puzzle game
+{ MOVEIT - an implementation of the generic 'move boxes onto targets' puzzle game
             that uses the 160x100, 16 color CGA graphics mode.  
 
             Created by Shaun Brandt / Holy Meatgoat Software.
@@ -14,11 +14,12 @@
             As such, my code falls under the same (ultra-broad) public
             domain license - use it for any purpose whatsoever.          
 }
-program Sokoban;
+program Moveit;
 uses
   Dos,                  { for GetIntVec, SetIntVec }
   jfunc,
   timer,
+  title,
   txtgraph,
   undo;
 
@@ -143,6 +144,8 @@ var
 
   { The undo buffer.  Currently one move.  Eventually multiple moves. }
   g_undoBuffer: UndoBuf;
+
+  g_i, g_j: Integer;
 
 { Forward declarations. }
 procedure addDirtyBlock(x: Integer; y: Integer; item: Integer); forward;  
@@ -726,7 +729,7 @@ begin
   startTimer;
   g_TimerInterval := getUserClockInterval(60);
 
-  g_GameTiles.init('SOKOBAN');
+  g_GameTiles.init('MOVEIT');
   tileSource := g_GameTiles.dataStart;
   
   processStageFile('LEVELS.DAT', 1, g_status);
@@ -768,7 +771,7 @@ begin
       end;
     end;  
   end;
-  
+
   tg_clear(0);
   tg_term;
   
