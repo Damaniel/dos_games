@@ -1,6 +1,6 @@
 { globals - a unit containing all of the components that may be shared among different
                 parts of Moveit.
-                
+
           Copyright (c) 2018, Shaun Brandt / Holy Meatgoat Software
           All rights reserved.
 
@@ -94,6 +94,16 @@ const
   SMALL_TILE_SIZE = 3;  {Currently unused.  May be used for larger stages.}
   LARGE_TILE_SIZE = 5;
 
+  { Various states for the state machine. }
+  STATE_TITLE = 0;
+  STATE_OPTIONS = 1;
+  STATE_SAVE = 2;
+  STATE_LOAD = 3;
+  STATE_INGAME = 4;
+  STATE_WIN = 5;
+  STATE_PAUSE = 6;
+  STATE_EXIT = 7;
+
 type
   { Grid offset in the play area. }
   location = record
@@ -156,8 +166,18 @@ var
   { The undo buffer.  Currently one move.  Eventually multiple moves. }
   g_undoBuffer: UndoBuf;
 
-  g_i, g_j: Integer;
+  { Current state in the state machine. }
+  g_currentState: Integer;
 
+  { Previous state in the state machine. }
+  g_previousState: Integer;
+
+  { The current stage the player is on. }
+  g_currentLevel: Integer;
+
+  { The number of levels embedded in the data file. }
+  g_numLevels: Integer;
+  
 implementation
 
 end.

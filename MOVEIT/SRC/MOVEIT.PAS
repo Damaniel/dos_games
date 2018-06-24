@@ -1,7 +1,5 @@
 { MOVEIT - an implementation of the generic 'move boxes onto targets' puzzle game
-            that uses the 160x100, 16 color CGA graphics mode.  
-
-            Created by Shaun Brandt / Holy Meatgoat Software.
+            that uses the 160x100, 16 color CGA graphics mode.  .
 
             Uses Jason Knight's CGA (and later!) 160x100 'graphics' mode
             library. It must have taken a lot of work, and since he released
@@ -11,8 +9,30 @@
 
                     (http://www.deathshadow.com/pakuPaku)
 
-            As such, my code falls under the same (ultra-broad) public
-            domain license - use it for any purpose whatsoever.          
+          Copyright (c) 2018, Shaun Brandt / Holy Meatgoat Software
+          All rights reserved.
+
+          Redistribution and use in source and binary forms, with or without
+          modification, are permitted provided that the following conditions are met:
+              * Redistributions of source code must retain the above copyright
+                notice, this list of conditions and the following disclaimer.
+              * Redistributions in binary form must reproduce the above copyright
+                notice, this list of conditions and the following disclaimer in the
+                documentation and/or other materials provided with the distribution.
+              * Neither the name of Holy Meatgoat Software nor the
+                names of its contributors may be used to endorse or promote products
+                derived from this software without specific prior written permission.
+
+          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+          DISCLAIMED. IN NO EVENT SHALL HOLY MEATGOAT SOFTWARE BE LIABLE FOR ANY
+          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.       
 }
 program Moveit;
 uses
@@ -27,15 +47,20 @@ uses
 { Forward declarations. }
 procedure addDirtyBlock(x: Integer; y: Integer; item: Integer); forward;  
 procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer); forward;
+procedure changeState(targetState: Integer); forward;
+procedure cleanup; forward;
 procedure drawLevel; forward;
 procedure drawUi; forward;
+procedure gameInit; forward;
 procedure getStageItem(x: Integer; y: Integer; var item: Integer); forward;
 procedure getStageOffset(x: Integer; y: Integer; var offset: Integer); forward;
 procedure isOnTarget(x: Integer; y: Integer; var result: Boolean); forward;
+procedure levelInit(level: Integer); forward;
 procedure processInput; forward;
 procedure processMovement(dir: Integer; var moved: Boolean); forward;
 procedure processStageFile(fileName: string; stage: Integer; var status: Integer); forward;
 procedure redrawDirtyLevelArea; forward;
+procedure render; forward;
 procedure restoreUndoBuffer; forward;
 procedure Wait(ticks: Integer); forward;
 procedure writeLevel; forward;
@@ -309,36 +334,66 @@ begin
       keyRead := readkey;
     end;
 
-    { ESC - exit program }
-    if (keyRead = #27) then begin
-      g_ExitProgram := True;
-    end;
-    
-    { Up arrow }
-    if (keyRead = #72) and (extended = True) then begin
-      processMovement(DIR_UP, isSuccess);
-    end;
+    case g_currentState of
+      STATE_TITLE: begin
+        { ESC - exit program }
+        if (keyRead = #27) then begin
+          g_ExitProgram := True;
+        end
+        else begin
+          { Any other key - go ingame }
+          changeState(STATE_INGAME);
+        end;
+      end;
+      STATE_INGAME: begin
+        { ESC - exit program }
+        if (keyRead = #27) then begin
+          changeState(STATE_TITLE);
+        end;
+        { Up arrow }
+        if (keyRead = #72) and (extended = True) then begin
+          processMovement(DIR_UP, isSuccess);
+        end;
 
-    { Down arrow }
-    if (keyRead = #80) and (extended = True) then begin
-      processMovement(DIR_DOWN, isSuccess);
-    end;
+        { Down arrow }
+        if (keyRead = #80) and (extended = True) then begin
+          processMovement(DIR_DOWN, isSuccess);
+        end;
 
-    { Left arrow }
-    if (keyRead = #75) and (extended = True) then begin
-      processMovement(DIR_LEFT, isSuccess)
-    end;
+        { Left arrow }
+        if (keyRead = #75) and (extended = True) then begin
+          processMovement(DIR_LEFT, isSuccess)
+        end;
 
-    { Right arrow }
-    if (keyRead = #77) and (extended = True) then begin
-      processMovement(DIR_RIGHT, isSuccess);
-    end;
+        { Right arrow }
+        if (keyRead = #77) and (extended = True) then begin
+          processMovement(DIR_RIGHT, isSuccess);
+        end;
 
-    { u - undo }
-    if (keyRead = 'u') and (extended = False) then begin
-      restoreUndoBuffer;
-    end;
+        { u - undo }
+        if (keyRead = 'u') and (extended = False) then begin
+          restoreUndoBuffer;
+        end;
 
+        { n - debug, load next stage }
+        if (keyRead = 'n') and (extended = False) then begin
+          if (g_currentLevel < g_numLevels) then 
+          begin
+            g_currentLevel := g_currentLevel + 1;
+            levelInit(g_currentLevel);
+          end;
+        end;
+
+        { p - debug, load previous stage }
+        if (keyRead = 'p') and (extended = False) then begin
+          if(g_currentLevel > 1) then
+          begin
+            g_currentLevel := g_currentLevel - 1;
+            levelInit(g_currentLevel);
+          end;
+        end;
+      end;
+    end;
   end;
 end;
          
@@ -404,7 +459,7 @@ begin
   end
   else begin
     readln(stageFile, numLevels);
-    writeln('There are ', numLevels, ' levels in this file.');
+    g_numLevels := numLevels;
     if (stage > numLevels) or (stage <= 0) then
     begin
       writeln('There is no stage ', stage, ' in this file!');
@@ -424,9 +479,7 @@ begin
       
       { Process this stage of data }
       readln(stageFile, stageNumber, numLines);
-      writeln('Found level ', stageNumber, ' - there are ', numLines, ' lines in it');
       readln(stageFile, g_levelWidth, g_levelHeight);
-      writeln('Size of level is ', g_levelWidth, 'x', g_levelHeight);
       
       { Square types:
           'X' - empty space (no level data)
@@ -599,9 +652,27 @@ begin
            ID_PLAYER);
 end;
 
-{ MAIN }
+{ Transition to a new state in the state machine, and perform any state-specific initialization. }
+procedure changeState(targetState: Integer);
 begin
+  g_previousState := g_currentState;
+  g_currentState := targetState;
 
+  { Do any state-specific initialization here. }
+  case g_currentState of 
+    STATE_TITLE: begin
+      { Tell the renderer to draw the title screen. }
+      g_redrawAll := True;
+    end;
+    STATE_INGAME: begin
+      levelInit(g_currentLevel);
+    end;
+  end;
+end;
+
+{ One-time initialization for when the game first starts. }
+procedure gameInit;
+begin
   { Replace the default DOS timer handler with a custom one. }
   startTimer;
   g_TimerInterval := getUserClockInterval(60);
@@ -609,34 +680,65 @@ begin
   g_GameTiles.init('MOVEIT');
   tileSource := g_GameTiles.dataStart;
   
-  processStageFile('LEVELS.DAT', 1, g_status);
-     
+  { Set up the graphics mode }
+  tg_init;
+
+  { Initialize the state machine. }
+  g_currentState := STATE_TITLE;
+  g_previousState := STATE_TITLE;
+
+  { Set input and render flags }
   g_ExitProgram := False;
   g_redrawAll := True;
-  g_redrawDirtyLevelArea := False;
-  g_numDirtyBlocks := 0;
+
+  { Reset the level counter. }
+  g_currentLevel := 1;
+end;
+
+{ Initialization done once per stage. }
+procedure levelInit(level: Integer);
+begin
+  { Read the stage data. }
+  processStageFile('LEVELS.DAT', level, g_status);
   
-  { These two lines need to be re-initialized every time a new stage is loaded }  
+  { Determine where to draw the upper left corner of the stage }
   g_levelStartX := Trunc(CENTER_OF_PLAY_AREA_X - (LARGE_TILE_SIZE * g_levelWidth / 2));
   g_levelstartY := Trunc(CENTER_OF_PLAY_AREA_Y - (LARGE_TILE_SIZE * g_levelHeight / 2)); 
-  
-  tg_init;
-  tg_clear(0);
- 
-  { Clear the undo buffer }
-  g_undoBuffer.init;
 
-  drawUi;
-  drawLevel;
-  
-  { Game loop. }
-  while (g_ExitProgram = False) do
-  begin
-    if (userTimerExpired(g_TimerInterval)) then
-    begin
-      processInput;
+  { Clear the undo buffer }
+  g_undoBuffer.init;  
+
+  { Prep the renderer }
+  g_redrawAll := True;
+  g_redrawDirtyLevelArea := False;
+  g_numDirtyBlocks := 0;  
+end;
+
+{ Code that draws stuff on the screen. }
+procedure render;
+var
+  x, y: Integer;
+begin
+  case g_currentState of
+    STATE_TITLE: begin
       if (g_redrawAll = True) then
       begin
+        tg_clear(0);
+        { Read the tile data and draw the tiles to the display}
+        for y := 0 to 19 do
+        begin
+          for x := 0 to 31 do
+          begin
+            tg_tile5(x*5, y*5, g_titleScreen[y*32 + x]);
+          end;
+        end;
+        g_redrawAll := False;        
+      end;
+    end;
+    STATE_INGAME: begin
+      if (g_redrawAll = True) then
+      begin
+        tg_clear(0);
         drawUi;
         drawLevel;     
         g_redrawAll := False;
@@ -646,12 +748,35 @@ begin
         redrawDirtyLevelArea;
         g_redrawDirtyLevelArea := False;
       end;
-    end;  
+    end;
   end;
+end;
 
+{ Stuff to do right before the game shuts down. }
+procedure cleanup;
+begin
   tg_clear(0);
   tg_term;
   
   { Replace the original interrupt handler. }
   killTimer;
+end;
+
+{ MAIN }
+begin
+
+  gameInit;
+
+  { Game loop. }
+  while (g_ExitProgram = False) do
+  begin
+    if (userTimerExpired(g_TimerInterval)) then
+    begin
+      processInput;
+      render;
+    end;  
+  end;
+
+  cleanup;
+
 end.
