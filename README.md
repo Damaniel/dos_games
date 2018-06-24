@@ -10,4 +10,5 @@ These games include the following:
 * DAMANOID: An in-progress brick breaker clone that uses the CGA 160x100 16-color mode
 * MOVEIT: Move-it, Man! - An in-progress Sokoban clone that uses the CGA 160x100 16-color mode
 
-All of these games and utilities are public domain.
+LOCGAED, YATC and DAMANOID are public domain.  MOVEIT is licensed under the 3-clause BSD license.
+
