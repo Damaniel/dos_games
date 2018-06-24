@@ -39,8 +39,9 @@ E          - Copy the current sprite in the edit window.
 R          - Paste any copied sprite into the current edit window.
 
 F1         - Help screen.
-F2         - Save image.  Name is provided on command line.
-F4         - Load/Reload image
+F2         - Save sprite sheet.
+F3         - Export headerless version of sprite sheet.
+F4         - Revert the sprite sheet to the initial version.
 F8         - About program.
 F10        - Quit.
 
