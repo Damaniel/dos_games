@@ -48,6 +48,7 @@ uses
 procedure addDirtyBlock(x: Integer; y: Integer; item: Integer); forward;  
 procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer); forward;
 procedure changeState(targetState: Integer); forward;
+procedure checkWinState; forward;
 procedure cleanup; forward;
 procedure drawInGameText(drawLevel: Boolean; drawScore: Boolean; drawMoves: Boolean; drawTime: Boolean); forward;
 procedure drawLevel; forward;
@@ -767,6 +768,17 @@ begin
     STATE_INGAME: begin
       levelInit(g_currentLevel);
     end;
+    STATE_WIN: begin
+      { If past max level, then exit game, otherwise move to the next level. }
+      if (g_currentLevel = g_numLevels) then
+      begin
+        g_ExitProgram := True;
+      end
+      else begin
+        g_currentLevel := g_currentLevel + 1;
+        changeState(STATE_INGAME);
+      end;
+    end;
   end;
 end;
 
@@ -893,7 +905,7 @@ begin
     { If all boxes are on targets, then quit (for now). }
     if (g_numBoxesOnTargets = g_numBoxes) then
     begin
-      g_ExitProgram := True;
+      changeState(STATE_WIN);
     end;  
   end;
 end;
