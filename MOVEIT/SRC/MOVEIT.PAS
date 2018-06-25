@@ -83,7 +83,7 @@ var
 begin
   result := False;
   {Scan the list of targets and see if one exists at the current position}
-  for i:= 0 to g_numTargets do
+  for i:= 0 to g_numTargets-1 do
   begin
     if (g_targetLocations[i].x =x) and (g_targetLocations[i].y = y) then
     begin
@@ -141,6 +141,19 @@ begin
     { If a box was moved, set the box position to the previous position in the undo buffer. }
     if (u.boxId <> UNDO_NO_BOX) then
     begin
+      { If the box was sitting on a target, reduce the boxes on targets counter. }
+      isOnTarget(u.nbx, u.nby, isBoxOnTarget);
+      if (isBoxOnTarget = True) then
+      begin
+        g_numBoxesOnTargets := g_numBoxesOnTargets - 1;
+      end;
+      { If the box is now sitting on a target, increment the boxes on targets counter.}
+      isOnTarget(u.bx, u.by, isBoxOnTarget);
+      if (isBoxOnTarget = True) then
+      begin
+        g_numBoxesOnTargets := g_numBoxesOnTargets + 1;
+      end;
+
       g_boxLocations[u.boxId].x := u.bx;
       g_boxLocations[u.boxId].y := u.by;
       addDirtyBlock(g_boxLocations[u.boxId].x, g_boxLocations[u.boxId].y, ID_BOX);
@@ -182,6 +195,7 @@ end;
 procedure processMovement(dir: Integer; var moved: Boolean);
 var
   isPlayerOnTarget: Boolean; { Is the player standing on a target square? }
+  isBoxOnTarget: Boolean; { Is this box sitting on a target square?}
   isBoxByPlayer: Boolean;   { True if a box is in the direction of movement }
   isBoxByBox: Boolean;      { True if a box is adjacent to the box in the direction of movement}
   boxByPlayerIdx: Integer;  { The index in the box list of the offending box}
@@ -221,7 +235,7 @@ begin
   end;
   
   { Scan the list of boxes and see if any are in the target or adjacent locations. }
-  for i := 0 to g_numBoxes do
+  for i := 0 to g_numBoxes-1 do
   begin
     if (g_boxLocations[i].x = targetX) and (g_boxLocations[i].y = targetY) then
     begin
@@ -231,7 +245,7 @@ begin
   end;
   
   { Found an adjacent box.  Now find out if there's a box adjacent to *it*. }
-  for i := 0 to g_numBoxes do
+  for i := 0 to g_numBoxes-1 do
   begin
     if (isBoxByPlayer = True) and (g_boxLocations[i].x = adjX) and (g_boxLocations[i].y = adjY) then
     begin
@@ -276,10 +290,16 @@ begin
   end 
   else if (isBoxByPlayer = True) and (isBoxByBox = False) then
   begin
-    { The target space is a box, and no box is adjacent, so the box will move. }
     getStageItem(adjX, adjY, item);
     if(item = LEVEL_FLOOR) then
     begin
+      { The target space is a box, and no box is adjacent, so the box will move. }
+      isOnTarget(targetX, targetY, isBoxOnTarget);
+      { If the box is already on a target, reduce the 'box on target' counter. }
+      if (isBoxOnTarget = True) then
+      begin
+        g_numBoxesOnTargets:= g_numBoxesOnTargets - 1;
+      end;    
       addDirtyBlock(targetX, targetY, ID_PLAYER);      
       addDirtyBlock(adjX, adjY, ID_BOX);     
       if (isPlayerOnTarget = True) then
@@ -304,6 +324,13 @@ begin
       g_boxLocations[boxByPlayerIdx].y := adjY;
       g_redrawDirtyLevelArea := True;
       moved := true;    
+
+      { If the box is now on a target, increment the 'box on target' counter. }
+      isOnTarget(adjX, adjY, isBoxOnTarget);
+      if (isBoxOnTarget = True) then
+      begin
+        g_numBoxesOnTargets := g_numBoxesOnTargets + 1;
+      end;
     end
     else begin
       moved := false;
@@ -318,8 +345,8 @@ begin
     g_drawMoves := True;
     { Update the undo buffer list }
     addToUndoBuffer(oldPlayerX, oldPlayerY, movedBox, oldBoxX, oldBoxY, g_playerX, g_playerY, adjX, adjY);
-  end
-  
+  end;
+
 end;
 
 { Get and handle keypresses. }
@@ -452,7 +479,8 @@ begin
 
   g_numBoxes := 0;
   g_numTargets := 0;
-  
+  g_numBoxesOnTargets := 0;
+
   assign(stageFile, fileName);
   
   {$I-}
@@ -531,6 +559,7 @@ begin
                     g_targetLocations[g_numTargets].y := i;                    
                     g_numTargets := g_numTargets + 1;        
                     g_numBoxes := g_numBoxes + 1;
+                    g_numBoxesOnTargets := g_numBoxesOnTargets + 1;
                   end;
           end;
         end;
@@ -857,6 +886,18 @@ begin
   killTimer;
 end;
 
+procedure checkWinState;
+begin
+  if (g_currentState = STATE_INGAME) then
+  begin
+    { If all boxes are on targets, then quit (for now). }
+    if (g_numBoxesOnTargets = g_numBoxes) then
+    begin
+      g_ExitProgram := True;
+    end;  
+  end;
+end;
+
 { MAIN }
 begin
   gameInit;
@@ -867,6 +908,7 @@ begin
     if (userTimerExpired(g_TimerInterval)) then
     begin
       processInput;
+      checkWinState;
       render;
     end;  
   end;

@@ -237,6 +237,11 @@ var
   g_drawMoves: Boolean;
   g_drawTime:  Boolean;
 
+  { A count of boxes sitting on targets. Through careful adding and removing of this variable when boxes
+   are moved around, we can check for end of stage with only a single comparison as opposed to scanning
+   box and target locations. }
+  g_numBoxesOnTargets : Integer;
+  
 implementation
 
 end.
