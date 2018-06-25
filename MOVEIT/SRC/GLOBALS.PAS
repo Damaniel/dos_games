@@ -26,6 +26,14 @@
           (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
           SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.       
 }
+
+{ Tile indices inside MOVEIT.DAT: 
+    0 - 4: Stage elements (wall, floor, target, box, player)
+    5 - 8: Tiling background elements
+    9 - 202: Title screen elements
+    203 - 242: Game logo elements
+}
+
 unit globals;
 
 interface
@@ -36,6 +44,8 @@ uses
   undo;
 
 const
+  FRAME_RATE = 60;
+
   DIR_UP = 0;
   DIR_LEFT = 1;
   DIR_RIGHT = 2;
@@ -48,7 +58,7 @@ const
   KEY_CLEAR = 0;
   KEY_DOWN = 1;
   KEY_PRESSED = 2;
-  
+
   { Values that represent the current item positioned on a single square of the
     level.  This could be empty (no stage content), walls, floors, the player, 
     boxes, and so on.  This is distinct from the ID_* series of values, which
@@ -104,6 +114,34 @@ const
   STATE_PAUSE = 6;
   STATE_EXIT = 7;
 
+  { Screen offsets for dynamic text in-game. }
+  LEVEL_STRING_X = 105;
+  LEVEL_STRING_Y =  32;
+  LEVEL_VAL_X    = 130;
+  LEVEL_VAL_Y    =  32;
+
+  SCORE_STRING_X = 105;
+  SCORE_STRING_Y =  42;
+  SCORE_VAL_X    = 130;
+  SCORE_VAL_Y    =  50;
+
+  MOVES_STRING_X = 105;
+  MOVES_STRING_Y =  60;
+  MOVES_VAL_X    = 130;
+  MOVES_VAL_Y    =  68;
+
+  TIME_STRING_X  = 105;
+  TIME_STRING_Y  =  78;
+  TIME_VAL_X     = 130;
+  TIME_VAL_Y     =  86;
+
+  { The tiles that make up the game logo in the upper right corner of the game window. }
+  g_gameLogo: array[0..39] of Byte=(
+     203, 204, 205, 206, 207, 208, 209, 210, 211, 212,
+     213, 214, 215, 216, 217, 218, 219, 220, 221, 222,
+     223, 224, 225, 226, 227, 228, 229, 230, 231, 232,
+     233, 234, 235, 236, 237, 238, 239, 240, 241, 242);
+
 type
   { Grid offset in the play area. }
   location = record
@@ -133,6 +171,9 @@ var
   { The tile sprite data. }
   g_GameTiles: tDynamicData;
   
+  { Font data }
+  g_font: pFontSet;
+
   { The data for the current level. }
   g_levelData: array[0..(MAX_WIDTH * MAX_HEIGHT)] of byte;
   g_levelWidth: Integer;
@@ -177,7 +218,25 @@ var
 
   { The number of levels embedded in the data file. }
   g_numLevels: Integer;
-  
+
+  { The player's cumulative score. }
+  g_score: Integer;
+
+  { The number of moves (moves + undos) made in the current level. }
+  g_numMoves: Integer;
+
+  { The number of seconds since the level started. }
+  g_elapsedTime: Integer;
+
+  { A rough count of rendered frames.  Used to track time (very roughly) since the timer interrupt 
+    has been replaced with something higher-resolution (but with less functionality...)}
+  g_frameCounter: Integer;
+
+  g_drawLevel: Boolean;
+  g_drawScore: Boolean;
+  g_drawMoves: Boolean;
+  g_drawTime:  Boolean;
+
 implementation
 
 end.

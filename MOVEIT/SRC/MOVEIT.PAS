@@ -49,6 +49,7 @@ procedure addDirtyBlock(x: Integer; y: Integer; item: Integer); forward;
 procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer); forward;
 procedure changeState(targetState: Integer); forward;
 procedure cleanup; forward;
+procedure drawInGameText(drawLevel: Boolean; drawScore: Boolean; drawMoves: Boolean; drawTime: Boolean); forward;
 procedure drawLevel; forward;
 procedure drawUi; forward;
 procedure gameInit; forward;
@@ -154,10 +155,14 @@ begin
         addDirtyBlock(u.nbx, u.nby, ID_FLOOR);
       end;      
     end;
+    
     { Redraw everything that was changed as part of the restore. }
     g_redrawDirtyLevelArea := True;    
-  end;
 
+    { Increment the move counter - undo is still a move! }
+    g_numMoves := g_numMoves + 1;
+    g_drawMoves := True;    
+  end;
 end;
 
 { Processes potential player movement (and possible box movement).  This consists of:
@@ -308,6 +313,9 @@ begin
   { If a move was made, then add it to the undo buffer. }
   if (moved = True) then
   begin
+    { Increment the move counter }
+    g_numMoves := g_numMoves + 1;
+    g_drawMoves := True;
     { Update the undo buffer list }
     addToUndoBuffer(oldPlayerX, oldPlayerY, movedBox, oldBoxX, oldBoxY, g_playerX, g_playerY, adjX, adjY);
   end
@@ -552,6 +560,56 @@ begin
   end;
 end;
 
+procedure drawInGameText(drawLevel: Boolean; drawScore: Boolean; drawMoves: Boolean; drawTime: Boolean);
+var
+  renderString, minString, secString, timeString: String;
+  minutes, seconds: Integer;
+begin
+
+  if (drawLevel = True) then
+  begin
+    { Draw the score and move text }
+    Str(g_currentLevel, renderString);
+    tg_bar(LEVEL_VAL_X, LEVEL_VAL_Y, LEVEL_VAL_X+15, LEVEL_VAL_Y+4, c_black);
+    g_font^.outText(LEVEL_STRING_X, LEVEL_STRING_Y, 'LEVEL:', c_cyan);
+    g_font^.outText(LEVEL_VAL_X, LEVEL_VAL_Y, renderString, c_white);
+  end;
+
+  if (drawScore = True) then
+  begin
+    tg_bar(SCORE_VAL_X-20, SCORE_VAL_Y, SCORE_VAL_X+20, SCORE_VAL_Y+4, c_black);  
+    g_font^.outText(SCORE_STRING_X, SCORE_STRING_Y, 'SCORE:', c_cyan);
+    g_font^.outTextCentered(SCORE_VAL_X, SCORE_VAL_Y, longtost8(g_score), c_white);
+  end;
+
+  if (drawMoves = True) then
+  begin
+    tg_bar(MOVES_VAL_X-20, MOVES_VAL_Y, MOVES_VAL_X+20, MOVES_VAL_Y+4, c_black);
+    g_font^.outText(MOVES_STRING_X, MOVES_STRING_Y, 'MOVES MADE:', c_cyan);
+    g_font^.outTextCentered(MOVES_VAL_X, MOVES_VAL_Y, longtost8(g_numMoves), c_white);
+  end;
+
+  if (drawTime = True) then
+  begin
+    g_font^.outText(TIME_STRING_X, TIME_STRING_Y, 'TIME:', c_cyan);
+    minutes := Trunc(g_elapsedTime / 60.0);
+    seconds := g_elapsedTime mod 60;
+    Str(minutes, minString);
+    Str(seconds, secString);  
+    { Add a leading zero for seconds counts from 0-9 }  
+    if (seconds < 10) then
+    begin
+      timeString := Concat(minString, ':0', secString);
+    end
+    else begin
+      timeString := Concat(minString, ':', secString);
+    end;
+    tg_bar(TIME_VAL_X-15, TIME_VAL_Y, TIME_VAL_X+15, TIME_VAL_Y+4, c_black);
+    g_font^.outTextCentered(TIME_VAL_X, TIME_VAL_Y, timeString, c_white);
+  end;
+end;
+
+
 { UI rendering function.  Draws all parts of the screen that aren't the play area. }
 procedure drawUi;
 var
@@ -582,6 +640,18 @@ begin
     end;
   end;
   tg_rectangle(100, 0, 159, 99, c_white);
+
+  { Draw the logo in the upper corner. }
+  for i:= 0 to 3 do
+  begin
+    for j := 0 to 9 do
+    begin
+      tg_tile5(105 + j*5, 5 + i*5, g_gameLogo[i*10+j]);
+    end;
+  end;
+
+  drawInGameText(True, True, True, True);
+
 end;
 
 { Draws the list of dirty tiles; areas of the screen that changed since the last
@@ -663,6 +733,7 @@ begin
     STATE_TITLE: begin
       { Tell the renderer to draw the title screen. }
       g_redrawAll := True;
+      g_currentLevel := 1;
     end;
     STATE_INGAME: begin
       levelInit(g_currentLevel);
@@ -675,11 +746,14 @@ procedure gameInit;
 begin
   { Replace the default DOS timer handler with a custom one. }
   startTimer;
-  g_TimerInterval := getUserClockInterval(60);
+  g_TimerInterval := getUserClockInterval(FRAME_RATE);
+  g_frameCounter := 0;
 
+  { Set up tiles and font }
   g_GameTiles.init('MOVEIT');
   tileSource := g_GameTiles.dataStart;
-  
+  new(g_font, init('FONTS'));
+
   { Set up the graphics mode }
   tg_init;
 
@@ -691,8 +765,9 @@ begin
   g_ExitProgram := False;
   g_redrawAll := True;
 
-  { Reset the level counter. }
+  { Reset the level and score counter. }
   g_currentLevel := 1;
+  g_score := 0;
 end;
 
 { Initialization done once per stage. }
@@ -712,6 +787,14 @@ begin
   g_redrawAll := True;
   g_redrawDirtyLevelArea := False;
   g_numDirtyBlocks := 0;  
+
+  { Reset the move counter }
+  g_numMoves := 0;
+
+  { Reset the timer }
+  g_frameCounter := 0;  
+  g_elapsedTime := 0;
+
 end;
 
 { Code that draws stuff on the screen. }
@@ -736,6 +819,13 @@ begin
       end;
     end;
     STATE_INGAME: begin
+      g_frameCounter := g_frameCounter + 1;
+      if (g_frameCounter >= FRAME_RATE) then
+      begin
+        g_elapsedTime := g_elapsedTime + 1;
+        g_frameCounter := g_frameCounter mod FRAME_RATE;
+        g_drawTime := True;
+      end;    
       if (g_redrawAll = True) then
       begin
         tg_clear(0);
@@ -748,6 +838,11 @@ begin
         redrawDirtyLevelArea;
         g_redrawDirtyLevelArea := False;
       end;
+      drawInGameText(g_drawLevel, g_drawScore, g_drawMoves, g_drawTime);
+      g_drawLevel := False;
+      g_drawScore := False;
+      g_drawMoves := False;
+      g_drawTime := False;
     end;
   end;
 end;
@@ -764,7 +859,6 @@ end;
 
 { MAIN }
 begin
-
   gameInit;
 
   { Game loop. }
