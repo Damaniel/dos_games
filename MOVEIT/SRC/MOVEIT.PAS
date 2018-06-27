@@ -54,7 +54,7 @@ procedure gameCleanup; forward;
 { One-time initialization for when the game first starts. }
 procedure gameInit;
 begin
-  { Replace the default DOS timer handler with a custom one. }
+  { Replace the default DOS timer handler with a custom one and start a global frame counter. }
   startTimer;
   g_TimerInterval := getUserClockInterval(FRAME_RATE);
   g_frameCounter := 0;
@@ -84,6 +84,7 @@ end;
 { Stuff to do right before the game shuts down. }
 procedure gameCleanup;
 begin
+  { Clear the display and restore standard text mode. }
   tg_clear(0);
   tg_term;
   

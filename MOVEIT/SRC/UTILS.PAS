@@ -86,7 +86,7 @@ procedure checkWinState;
 begin
   if (g_currentState = STATE_INGAME) then
   begin
-    { If all boxes are on targets, then quit (for now). }
+    { If all boxes are on targets, then change to the win state. }
     if (g_numBoxesOnTargets = g_numBoxes) then
     begin
       changeState(STATE_WIN);
