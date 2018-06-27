@@ -28,7 +28,6 @@
 unit title;
 
 interface
-uses globals;
 
 const
   g_titleScreen: array[0..639] of Byte=(

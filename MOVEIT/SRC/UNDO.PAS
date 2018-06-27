@@ -70,7 +70,12 @@ type
     procedure getEnd(var item: undoitem);
   end;
 
+procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer);
+procedure restoreUndoBuffer;
+
 implementation
+
+uses globals, renderer, levelops;
 
 { Initializes the buffer. }
 procedure UndoBuf.init;
@@ -113,6 +118,92 @@ begin
       item := buf[(startIdx + count - 1) mod MAX_BUF_SIZE];
       count := count - 1;
     end;
+end;
+
+{ Add a state (old/new positions) to the undo buffer. }
+procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer);
+var
+  u: undoitem;
+begin
+  u.px := px;
+  u.py := py;
+  u.boxId := bId;
+  u.bx := bx;
+  u.by := by;
+  u.npx := npx;
+  u.npy := npy;
+  u.nbx := nbx;
+  u.nby := nby; 
+  g_undoBuffer.addItem(u);
+end;
+
+{ Restores a state from the undo buffer. }
+procedure restoreUndoBuffer;
+var
+  isPlayerOnTarget: Boolean;
+  isBoxOnTarget: Boolean;
+  u: undoitem;
+  isEmpty: Boolean;
+begin
+
+  g_undoBuffer.checkEmpty(isEmpty);
+  if (isEmpty = False) then
+  begin
+    g_undoBuffer.getEnd(u);
+
+    { Set the player position to the previous position in the undo buffer }
+    g_playerX := u.px;
+    g_playerY := u.py;
+    addDirtyBlock(g_playerX, g_playerY, ID_PLAYER);
+
+    { Add the pre-undo player position to the dirty block list }
+    isOnTarget(u.npx, u.npy, isPlayerOnTarget);
+    if (isPlayerOnTarget = True) then
+    begin
+      addDirtyBlock(u.npx, u.npy, ID_TARGET);
+    end 
+    else begin
+      addDirtyBlock(u.npx, u.npy, ID_FLOOR);
+    end;
+
+    { If a box was moved, set the box position to the previous position in the undo buffer. }
+    if (u.boxId <> UNDO_NO_BOX) then
+    begin
+      { If the box was sitting on a target, reduce the boxes on targets counter. }
+      isOnTarget(u.nbx, u.nby, isBoxOnTarget);
+      if (isBoxOnTarget = True) then
+      begin
+        g_numBoxesOnTargets := g_numBoxesOnTargets - 1;
+      end;
+      { If the box is now sitting on a target, increment the boxes on targets counter.}
+      isOnTarget(u.bx, u.by, isBoxOnTarget);
+      if (isBoxOnTarget = True) then
+      begin
+        g_numBoxesOnTargets := g_numBoxesOnTargets + 1;
+      end;
+
+      g_boxLocations[u.boxId].x := u.bx;
+      g_boxLocations[u.boxId].y := u.by;
+      addDirtyBlock(g_boxLocations[u.boxId].x, g_boxLocations[u.boxId].y, ID_BOX);
+
+      { Add the pre-undo box position to the dirty block list }
+      isOnTarget(u.nbx, u.nby, isBoxOnTarget);
+      if (isBoxOnTarget = True) then
+      begin
+        addDirtyBlock(u.nbx, u.nby, ID_TARGET);
+      end
+      else begin
+        addDirtyBlock(u.nbx, u.nby, ID_FLOOR);
+      end;      
+    end;
+    
+    { Redraw everything that was changed as part of the restore. }
+    g_redrawDirtyLevelArea := True;    
+
+    { Increment the move counter - undo is still a move! }
+    g_numMoves := g_numMoves + 1;
+    g_drawMoves := True;    
+  end;
 end;
 
 end.
