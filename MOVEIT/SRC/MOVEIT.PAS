@@ -47,11 +47,13 @@ uses
 { Forward declarations. }
 procedure addDirtyBlock(x: Integer; y: Integer; item: Integer); forward;  
 procedure addToUndoBuffer(px, py, bId, bx, by, npx, npy, nbx, nby: Integer); forward;
+procedure calculateScore(var timeBonus: Longint; var moveBonus: Longint); forward;
 procedure changeState(targetState: Integer); forward;
 procedure checkWinState; forward;
 procedure cleanup; forward;
 procedure drawInGameText(drawLevel: Boolean; drawScore: Boolean; drawMoves: Boolean; drawTime: Boolean); forward;
 procedure drawLevel; forward;
+procedure drawLevelDialog; forward;
 procedure drawUi; forward;
 procedure gameInit; forward;
 procedure getStageItem(x: Integer; y: Integer; var item: Integer); forward;
@@ -64,6 +66,7 @@ procedure processStageFile(fileName: string; stage: Integer; var status: Integer
 procedure redrawDirtyLevelArea; forward;
 procedure render; forward;
 procedure restoreUndoBuffer; forward;
+procedure secondsToMinSecString(time: Integer; var timeString: String); forward;
 procedure Wait(ticks: Integer); forward;
 procedure writeLevel; forward;
 
@@ -378,9 +381,12 @@ begin
         end
         else begin
           { Any other key - go ingame }
-          changeState(STATE_INGAME);
+          changeState(STATE_LEVEL_DIALOG);
         end;
       end;
+      STATE_LEVEL_DIALOG: begin
+        changeState(STATE_INGAME);
+        end;      
       STATE_INGAME: begin
         { ESC - exit program }
         if (keyRead = #27) then begin
@@ -416,7 +422,7 @@ begin
           if (g_currentLevel < g_numLevels) then 
           begin
             g_currentLevel := g_currentLevel + 1;
-            levelInit(g_currentLevel);
+            changeState(STATE_LEVEL_DIALOG);
           end;
         end;
 
@@ -425,7 +431,7 @@ begin
           if(g_currentLevel > 1) then
           begin
             g_currentLevel := g_currentLevel - 1;
-            levelInit(g_currentLevel);
+            changeState(STATE_LEVEL_DIALOG);
           end;
         end;
       end;
@@ -516,7 +522,7 @@ begin
       
       { Process this stage of data }
       readln(stageFile, stageNumber, numLines);
-      readln(stageFile, g_levelWidth, g_levelHeight);
+      readln(stageFile, g_levelWidth, g_levelHeight, g_parTime, g_targetMoves);
       
       { Square types:
           'X' - empty space (no level data)
@@ -622,30 +628,69 @@ begin
   if (drawTime = True) then
   begin
     g_font^.outText(TIME_STRING_X, TIME_STRING_Y, 'TIME:', c_cyan);
-    minutes := Trunc(g_elapsedTime / 60.0);
-    seconds := g_elapsedTime mod 60;
-    Str(minutes, minString);
-    Str(seconds, secString);  
-    { Add a leading zero for seconds counts from 0-9 }  
-    if (seconds < 10) then
-    begin
-      timeString := Concat(minString, ':0', secString);
-    end
-    else begin
-      timeString := Concat(minString, ':', secString);
-    end;
+    secondsToMinSecString(g_elapsedTime, timeString);
     tg_bar(TIME_VAL_X-15, TIME_VAL_Y, TIME_VAL_X+15, TIME_VAL_Y+4, c_black);
     g_font^.outTextCentered(TIME_VAL_X, TIME_VAL_Y, timeString, c_white);
   end;
 end;
 
+procedure secondsToMinSecString(time: Integer; var timeString: String);
+var
+  minutes, seconds: Integer;
+  minString, secString: String;
+begin
+  minutes := Trunc(time / 60.0);
+  seconds := time mod 60;
+  Str(minutes, minString);
+  Str(seconds, secString);  
+  { Add a leading zero for seconds counts from 0-9 }  
+  if (seconds < 10) then
+  begin
+    timeString := Concat(minString, ':0', secString);
+  end
+  else begin
+    timeString := Concat(minString, ':', secString);
+  end;
+end;
+
+{ Draws the dialog showing the level number, par time and move target }
+procedure drawLevelDialog;
+var
+  tmpString, tmpString2: String;
+  timeString: String;
+begin
+  tg_bar(0, 23, 99, 75, c_black);
+
+  tg_bar(16, 31, 83, 68, c_blue);
+  tg_rectangle(14, 29, 85, 70, c_white);
+  tg_bar(15,30,84,30, c_ltgrey);
+  tg_bar(15,31,15,69, c_ltgrey);
+  tg_bar(84,31,84,69, c_ltblue);
+  tg_bar(16,69,83,69, c_ltblue);
+  
+  Str(g_currentLevel, tmpString);
+  tmpString2 := Concat('LEVEL ', tmpString);
+  g_font^.outTextCentered(50, 34, tmpString2, c_white);
+
+  g_font^.outText(29, 44, 'PAR:', c_white);
+  secondsToMinSecString(g_parTime, timeString);
+  g_font^.outText(49, 44, timeString, c_yellow);
+  
+  g_font^.outText(29, 51, 'TARGET:', c_white);
+  Str(g_targetMoves, tmpString);
+  g_font^.outText(59, 51, tmpString, c_yellow);
+  g_font^.outText(25, 61, 'PRESS ANY KEY', c_white);
+
+  tg_tile5(18, 61, ID_BOX);
+  tg_tile5(77, 61, ID_BOX);
+end;
 
 { UI rendering function.  Draws all parts of the screen that aren't the play area. }
 procedure drawUi;
 var
   i, j: Integer;
   tileId: Integer;
-begin
+begin  
   { draw background squares The background consists of a 2x2 grid of tiles containing 
     4 different tile types, allowing seamless tiling across the background. }
   for i := 0 to 19 do
@@ -669,7 +714,14 @@ begin
       tg_tile5(i * LARGE_TILE_SIZE, j * LARGE_TILE_SIZE, tileId);
     end;
   end;
+
+  { Draw the stuff on the right side }
+  tg_bar(102,2,157,97,c_blue);
   tg_rectangle(100, 0, 159, 99, c_white);
+  tg_bar(101,1,158,1, c_ltgrey);
+  tg_bar(101,2,101,98, c_ltgrey);
+  tg_bar(158,2,158,98, c_ltblue);
+  tg_bar(102,98, 157,98, c_ltblue);
 
   { Draw the logo in the upper corner. }
   for i:= 0 to 3 do
@@ -680,6 +732,13 @@ begin
     end;
   end;
 
+  { Draw the black boxes }
+  tg_bar(BLACK_BAR_X1, LEVEL_VAL_Y-1, BLACK_BAR_X2, LEVEL_VAL_Y+5, c_black);
+  tg_bar(BLACK_BAR_X1, SCORE_VAL_Y-1, BLACK_BAR_X2, SCORE_VAL_Y+5, c_black);
+  tg_bar(BLACK_BAR_X1, MOVES_VAL_Y-1, BLACK_BAR_X2, MOVES_VAL_Y+5, c_black);
+  tg_bar(BLACK_BAR_X1, TIME_VAL_Y-1,  BLACK_BAR_X2, TIME_VAL_Y+5,  c_black);
+
+  
   drawInGameText(True, True, True, True);
 
 end;
@@ -750,10 +809,13 @@ begin
   tg_tile5(g_levelStartX + g_playerX * LARGE_TILE_SIZE, 
            g_levelStartY + g_playerY * LARGE_TILE_SIZE, 
            ID_PLAYER);
+
 end;
 
 { Transition to a new state in the state machine, and perform any state-specific initialization. }
 procedure changeState(targetState: Integer);
+var
+  timeBonus, moveBonus: Longint;
 begin
   g_previousState := g_currentState;
   g_currentState := targetState;
@@ -765,18 +827,26 @@ begin
       g_redrawAll := True;
       g_currentLevel := 1;
     end;
+    STATE_LEVEL_DIALOG: begin
+      g_redrawAll := True;
+      g_redrawLevelDialog := True;
+      levelInit(g_currentLevel);     { Need to load level here so we can draw the dialog over it. }   
+    end;
     STATE_INGAME: begin
-      levelInit(g_currentLevel);
+      g_redrawAll := True;
     end;
     STATE_WIN: begin
+
       { If past max level, then exit game, otherwise move to the next level. }
       if (g_currentLevel = g_numLevels) then
       begin
         g_ExitProgram := True;
       end
       else begin
+        calculateScore(timeBonus, moveBonus);
+        g_score := g_score + timeBonus + moveBonus;
         g_currentLevel := g_currentLevel + 1;
-        changeState(STATE_INGAME);
+        changeState(STATE_LEVEL_DIALOG);
       end;
     end;
   end;
@@ -803,8 +873,9 @@ begin
   g_previousState := STATE_TITLE;
 
   { Set input and render flags }
+  g_redrawAll := True;  
   g_ExitProgram := False;
-  g_redrawAll := True;
+  g_redrawLevelDialog := False;
 
   { Reset the level and score counter. }
   g_currentLevel := 1;
@@ -833,8 +904,11 @@ begin
   g_numMoves := 0;
 
   { Reset the timer }
-  g_frameCounter := 0;  
   g_elapsedTime := 0;
+
+  { This code will need to be moved to the end of whatever animations or notifications are done
+    before the player gets control. }
+  g_frameTarget := g_frameCounter + FRAME_RATE;
 
 end;
 
@@ -859,12 +933,25 @@ begin
         g_redrawAll := False;        
       end;
     end;
+    STATE_LEVEL_DIALOG: begin
+      if( g_redrawLevelDialog = True) then
+      begin
+        tg_clear(0);
+        drawUi;
+        drawLevel;
+        drawLevelDialog;
+        g_redrawAll := False;
+        g_redrawLevelDialog := False;
+      end;
+    end;
     STATE_INGAME: begin
       g_frameCounter := g_frameCounter + 1;
-      if (g_frameCounter >= FRAME_RATE) then
+      if (g_frameCounter >= g_frameTarget) then
       begin
         g_elapsedTime := g_elapsedTime + 1;
-        g_frameCounter := g_frameCounter mod FRAME_RATE;
+        { Set the next frame target, accounting for any extra frames of overflow (to minimize 
+          counter inaccuracy). }
+        g_frameTarget := g_frameCounter + (FRAME_RATE - (g_frameCounter - g_frameTarget));
         g_drawTime := True;
       end;    
       if (g_redrawAll = True) then
@@ -910,6 +997,18 @@ begin
   end;
 end;
 
+procedure calculateScore(var timeBonus: Longint; var moveBonus: Longint);
+begin
+    if (g_elapsedTime <= g_parTime) then
+    begin
+      timeBonus := (g_parTime - g_elapsedTime) * POINTS_PER_SECOND;
+    end;
+    if (g_numMoves <= g_targetMoves) then
+    begin
+      moveBonus := (g_targetMoves - g_numMoves) * POINTS_PER_MOVE;
+    end;
+end;
+
 { MAIN }
 begin
   gameInit;
@@ -921,6 +1020,7 @@ begin
     begin
       processInput;
       checkWinState;
+      tg_waitRetrace;
       render;
     end;  
   end;

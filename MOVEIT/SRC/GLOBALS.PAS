@@ -44,7 +44,7 @@ uses
   undo;
 
 const
-  FRAME_RATE = 60;
+  FRAME_RATE = 30;
 
   DIR_UP = 0;
   DIR_LEFT = 1;
@@ -109,31 +109,38 @@ const
   STATE_OPTIONS = 1;
   STATE_SAVE = 2;
   STATE_LOAD = 3;
-  STATE_INGAME = 4;
-  STATE_WIN = 5;
-  STATE_PAUSE = 6;
-  STATE_EXIT = 7;
+  STATE_LEVEL_DIALOG = 4;
+  STATE_INGAME = 5;
+  STATE_WIN = 6;
+  STATE_PAUSE = 7;
+  STATE_EXIT = 8;
 
   { Screen offsets for dynamic text in-game. }
   LEVEL_STRING_X = 105;
-  LEVEL_STRING_Y =  32;
+  LEVEL_STRING_Y =  30;
   LEVEL_VAL_X    = 130;
-  LEVEL_VAL_Y    =  32;
+  LEVEL_VAL_Y    =  38;
 
   SCORE_STRING_X = 105;
-  SCORE_STRING_Y =  42;
+  SCORE_STRING_Y =  46;
   SCORE_VAL_X    = 130;
-  SCORE_VAL_Y    =  50;
+  SCORE_VAL_Y    =  54;
 
   MOVES_STRING_X = 105;
-  MOVES_STRING_Y =  60;
+  MOVES_STRING_Y =  62;
   MOVES_VAL_X    = 130;
-  MOVES_VAL_Y    =  68;
+  MOVES_VAL_Y    =  70;
 
   TIME_STRING_X  = 105;
   TIME_STRING_Y  =  78;
   TIME_VAL_X     = 130;
   TIME_VAL_Y     =  86;
+
+  BLACK_BAR_X1   = 104;
+  BLACK_BAR_X2   = 155;
+
+  POINTS_PER_SECOND = 50;
+  POINTS_PER_MOVE = 50;
 
   { The tiles that make up the game logo in the upper right corner of the game window. }
   g_gameLogo: array[0..39] of Byte=(
@@ -199,7 +206,8 @@ var
   { Flags used to decide what will get redrawn, if anything, on the next frame. }
   g_redrawAll: Boolean;
   g_redrawDirtyLevelArea: Boolean;
-  
+  g_redrawLevelDialog: Boolean;
+
   { A list of all 'dirty' blocks that need to be redrawn on the next frame. }
   g_dirtyBlocks: array[0..399] of dirty;
   g_numDirtyBlocks: Integer;
@@ -220,7 +228,7 @@ var
   g_numLevels: Integer;
 
   { The player's cumulative score. }
-  g_score: Integer;
+  g_score: Longint;
 
   { The number of moves (moves + undos) made in the current level. }
   g_numMoves: Integer;
@@ -229,8 +237,13 @@ var
   g_elapsedTime: Integer;
 
   { A rough count of rendered frames.  Used to track time (very roughly) since the timer interrupt 
-    has been replaced with something higher-resolution (but with less functionality...)}
-  g_frameCounter: Integer;
+    has been replaced with something higher-resolution (but with less functionality...)
+    Will overflow after a year of continious running.  Ha.}
+  g_frameCounter: Longint;
+
+  { Used to determine when the number of frames equates to a second beyond the previous target. 
+    Tracks the amount of time since a new level started. }
+  g_frameTarget: Integer;
 
   g_drawLevel: Boolean;
   g_drawScore: Boolean;
@@ -241,7 +254,10 @@ var
    are moved around, we can check for end of stage with only a single comparison as opposed to scanning
    box and target locations. }
   g_numBoxesOnTargets : Integer;
-  
+
+  g_parTime : Integer;
+  g_targetMoves: Integer;
+
 implementation
 
 end.
