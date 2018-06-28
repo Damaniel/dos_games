@@ -70,9 +70,11 @@ begin
           changeState(STATE_LEVEL_DIALOG);
         end;
       end;
+
       STATE_LEVEL_DIALOG: begin
         changeState(STATE_INGAME);
-        end;      
+      end;      
+      
       STATE_INGAME: begin
         { ESC - exit program }
         if (keyRead = #27) then begin
@@ -120,6 +122,10 @@ begin
             changeState(STATE_LEVEL_DIALOG);
           end;
         end;
+      end;
+     
+      STATE_WIN: begin
+        changeState(STATE_NEXT_LEVEL);
       end;
     end;
   end;

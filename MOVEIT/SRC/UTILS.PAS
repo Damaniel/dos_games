@@ -29,7 +29,7 @@ unit utils;
 
 interface
 
-procedure calculateScore(var timeBonus: Longint; var moveBonus: Longint);
+procedure calculateScore(var timeBase: Integer; var moveBase: Integer; var timeBonus: Longint; var moveBonus: Longint);
 procedure changeState(targetState: Integer);
 procedure checkWinState;
 procedure secondsToMinSecString(time: Integer; var timeString: String);
@@ -45,6 +45,7 @@ uses globals,
 { Transition to a new state in the state machine, and perform any state-specific initialization. }
 procedure changeState(targetState: Integer);
 var
+  timeBase, moveBase: Integer;
   timeBonus, moveBonus: Longint;
 begin
   g_previousState := g_currentState;
@@ -66,19 +67,21 @@ begin
       g_redrawAll := True;
     end;
     STATE_WIN: begin
-
+      g_redrawWinDialog := True;
+      calculateScore(timeBase, movebase, timeBonus, moveBonus);
+      g_score := g_score + timeBonus + moveBonus;
+    end;
+    STATE_NEXT_LEVEL: begin
       { If past max level, then exit game, otherwise move to the next level. }
       if (g_currentLevel = g_numLevels) then
       begin
         g_ExitProgram := True;
       end
       else begin
-        calculateScore(timeBonus, moveBonus);
-        g_score := g_score + timeBonus + moveBonus;
         g_currentLevel := g_currentLevel + 1;
         changeState(STATE_LEVEL_DIALOG);
       end;
-    end;
+    end;    
   end;
 end;
 
@@ -94,15 +97,25 @@ begin
   end;
 end;
 
-procedure calculateScore(var timeBonus: Longint; var moveBonus: Longint);
+procedure calculateScore(var timeBase:Integer; var moveBase: Integer; var timeBonus: Longint; var moveBonus: Longint);
 begin
     if (g_elapsedTime <= g_parTime) then
     begin
-      timeBonus := (g_parTime - g_elapsedTime) * POINTS_PER_SECOND;
+      timeBase := (g_parTime - g_elapsedTime);
+      timeBonus := timeBase * POINTS_PER_SECOND;
+    end else 
+    begin
+      timeBase := 0;
+      timeBonus := 0;
     end;
     if (g_numMoves <= g_targetMoves) then
     begin
-      moveBonus := (g_targetMoves - g_numMoves) * POINTS_PER_MOVE;
+      moveBase := (g_targetMoves - g_numMoves);
+      moveBonus := moveBase * POINTS_PER_MOVE;
+    end else
+    begin
+      moveBase := 0;
+      moveBonus := 0;
     end;
 end;
 

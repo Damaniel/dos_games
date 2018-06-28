@@ -32,6 +32,7 @@ interface
 procedure addDirtyBlock(x: Integer; y: Integer; item: Integer);
 procedure drawInGameText(drawLevel: Boolean; drawScore: Boolean; drawMoves: Boolean; drawTime: Boolean);
 procedure drawLevel;
+procedure drawLevelCompleteDialog;
 procedure drawLevelDialog;
 procedure drawUi;
 procedure render;
@@ -164,6 +165,7 @@ begin
 end;
 
 { Draws the dialog showing the level number, par time and move target }
+{ TODO: Remove magic numbers }
 procedure drawLevelDialog;
 var
   tmpString, tmpString2: String;
@@ -193,6 +195,55 @@ begin
 
   tg_tile5(18, 61, ID_BOX);
   tg_tile5(77, 61, ID_BOX);
+end;
+
+{ Draws the dialog showing the score for the level }
+{ TODO: Remove magic numbers }
+procedure drawLevelCompleteDialog;
+var
+  tmpString, tmpString2, tmpString3: String;
+  timeString, moveString: String;
+  timeMultString, moveMultString: String;
+  totalTimeString, totalMoveString: String;
+  timeBase, moveBase: Integer;
+  timeScore, moveScore: Longint;
+begin
+
+  calculateScore(timeBase, moveBase, timeScore, moveScore);
+
+  tg_bar(0, 23, 99, 75, c_black);
+  tg_bar(8, 27, 89, 71, c_blue);
+  tg_rectangle(6, 25, 91, 73, c_white);
+  tg_bar(7, 26, 90, 26, c_ltgrey);
+  tg_bar(7, 27, 7, 72, c_ltgrey);
+  tg_bar(90, 27, 90, 72, c_ltblue);
+  tg_bar(8, 72, 89, 72, c_ltblue);
+  
+  g_font^.outTextCentered(48, 29, 'LEVEL COMPLETE!', c_white);
+  g_font^.outTextCentered(48, 38, 'BONUS:', c_yellow);
+
+  g_font^.outText(12, 46, 'TIME:', c_ltGreen);
+  g_font^.outText(12, 54, 'MOVES:', c_ltGreen);
+
+  { put the score numbers together }
+  Str(timeBase, timeString);
+  Str(moveBase, moveString);
+  Str(POINTS_PER_SECOND, timeMultString);
+  Str(POINTS_PER_MOVE, moveMultString);
+  Str(timeScore, totalTimeString);
+  Str(moveScore, totalMoveString);
+
+  g_font^.outText(25, 65, 'PRESS ANY KEY', c_white);
+  
+  tmpString := Concat(timeString, 'x', timeMultString, '=', totalTimeString);
+  tmpString2 := Concat(moveString, 'x', moveMultString, '=', totalMoveString);
+
+  g_font^.outText(35, 46, tmpString, c_white);
+  g_font^.outText(39, 54, tmpString2, c_white);
+
+  tg_tile5(18, 65, ID_BOX);
+  tg_tile5(77, 65, ID_BOX);  
+
 end;
 
 { UI rendering function.  Draws all parts of the screen that aren't the play area. }
@@ -311,6 +362,13 @@ begin
       g_drawScore := False;
       g_drawMoves := False;
       g_drawTime := False;
+    end;
+    STATE_WIN: begin
+      if (g_redrawWinDialog = True) then
+      begin
+        drawLevelCompleteDialog;
+        g_redrawWinDialog := False;
+      end;
     end;
   end;
 end;

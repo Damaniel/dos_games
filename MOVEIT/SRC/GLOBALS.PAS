@@ -114,6 +114,7 @@ const
   STATE_WIN = 6;
   STATE_PAUSE = 7;
   STATE_EXIT = 8;
+  STATE_NEXT_LEVEL = 9;
 
   { Screen offsets for dynamic text in-game. }
   LEVEL_STRING_X = 105;
@@ -207,6 +208,7 @@ var
   g_redrawAll: Boolean;
   g_redrawDirtyLevelArea: Boolean;
   g_redrawLevelDialog: Boolean;
+  g_redrawWinDialog: Boolean;
 
   { A list of all 'dirty' blocks that need to be redrawn on the next frame. }
   g_dirtyBlocks: array[0..399] of dirty;
