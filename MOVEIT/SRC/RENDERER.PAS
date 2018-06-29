@@ -34,6 +34,7 @@ procedure drawInGameText(drawLevel: Boolean; drawScore: Boolean; drawMoves: Bool
 procedure drawLevel;
 procedure drawLevelCompleteDialog;
 procedure drawLevelDialog;
+procedure drawRevertDialog;
 procedure drawUi;
 procedure render;
 procedure redrawDirtyLevelArea;
@@ -69,7 +70,7 @@ begin
     Str(g_currentLevel, renderString);
     tg_bar(LEVEL_VAL_X, LEVEL_VAL_Y, LEVEL_VAL_X+15, LEVEL_VAL_Y+4, c_black);
     g_font^.outText(LEVEL_STRING_X, LEVEL_STRING_Y, 'LEVEL:', c_cyan);
-    g_font^.outText(LEVEL_VAL_X, LEVEL_VAL_Y, renderString, c_white);
+    g_font^.outTextCentered(LEVEL_VAL_X, LEVEL_VAL_Y, renderString, c_white);
   end;
 
   if (drawScore = True) then
@@ -112,6 +113,23 @@ begin
     end;  
     g_numDirtyBlocks := 0;
   end;
+end;
+
+procedure drawRevertDialog;
+begin
+  tg_bar(0, 23, 99, 75, c_black);
+
+  tg_bar(16, 31, 83, 68, c_blue);
+  tg_rectangle(14, 29, 85, 70, c_white);
+  tg_bar(15,30,84,30, c_ltgrey);
+  tg_bar(15,31,15,69, c_ltgrey);
+  tg_bar(84,31,84,69, c_ltblue);
+  tg_bar(16,69,83,69, c_ltblue);
+
+  g_font^.outTextCentered(50, 33, 'RESET LEVEL?', c_white);
+  g_font^.outTextCentered(50, 44, '(ALL PROGRESS', c_white);
+  g_font^.outTextCentered(50, 51, 'WILL BE LOST! )', c_white);
+  g_font^.outTextCentered(50, 62, '(Y)ES OR (N)O?', c_white);
 end;
 
 { Does a *full* draw of the level area, as opposed to just dirty blocks.  Gets all of
@@ -368,6 +386,13 @@ begin
       begin
         drawLevelCompleteDialog;
         g_redrawWinDialog := False;
+      end;
+    end;
+    STATE_REVERT: begin
+      if (g_redrawRevertDialog = True) then
+      begin
+        drawRevertDialog;
+        g_redrawRevertDialog := False;
       end;
     end;
   end;

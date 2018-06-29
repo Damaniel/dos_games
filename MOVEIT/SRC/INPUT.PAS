@@ -110,8 +110,16 @@ begin
           if (g_currentLevel < g_numLevels) then 
           begin
             g_currentLevel := g_currentLevel + 1;
-            changeState(STATE_LEVEL_DIALOG);
+          end else
+          begin
+            g_currentLevel := 1;
           end;
+          changeState(STATE_LEVEL_DIALOG);          
+        end;
+
+        { r - reset level }
+        if (keyRead = 'r') and (extended = False) then begin
+            changeState(STATE_REVERT);
         end;
 
         { p - debug, load previous stage }
@@ -119,13 +127,26 @@ begin
           if(g_currentLevel > 1) then
           begin
             g_currentLevel := g_currentLevel - 1;
-            changeState(STATE_LEVEL_DIALOG);
+          end else
+          begin
+            g_currentLevel := g_numLevels;
           end;
+          changeState(STATE_LEVEL_DIALOG);          
         end;
       end;
      
       STATE_WIN: begin
         changeState(STATE_NEXT_LEVEL);
+      end;
+
+      STATE_REVERT: begin
+        if (keyRead = 'y') and (extended = False) then begin
+            levelInit(g_currentLevel);        
+            changeState(STATE_INGAME);
+        end ;
+        if (keyRead = 'n') and (extended = False) then begin
+           changeState(STATE_INGAME);
+        end;
       end;
     end;
   end;

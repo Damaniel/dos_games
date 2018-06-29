@@ -82,6 +82,9 @@ begin
         changeState(STATE_LEVEL_DIALOG);
       end;
     end;    
+    STATE_REVERT: begin
+      g_redrawRevertDialog := True;
+    end;
   end;
 end;
 
