@@ -85,6 +85,9 @@ begin
     STATE_REVERT: begin
       g_redrawRevertDialog := True;
     end;
+    STATE_END_GAME: begin
+      g_redrawEndGameDialog := True;
+    end;
   end;
 end;
 

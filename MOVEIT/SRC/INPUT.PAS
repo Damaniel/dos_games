@@ -43,7 +43,7 @@ uses globals,
 procedure processInput;
 var
   keyRead: Char;
-  extended: Boolean;
+  extendedKey: Boolean;
   status: Integer;
   isSuccess: Boolean;
 begin
@@ -51,11 +51,11 @@ begin
     is and process appropriately. }
   if keypressed then begin
     keyRead := readkey;
-    extended := False;
+    extendedKey := False;
     
     { Detect extended keypress. }
     if (keyRead = #0) then begin
-      extended := True;
+      extendedKey := True;
       keyRead := readkey;
     end;
 
@@ -63,7 +63,7 @@ begin
       STATE_TITLE: begin
         { ESC - exit program }
         if (keyRead = #27) then begin
-          g_ExitProgram := True;
+            g_ExitProgram := True;
         end
         else begin
           { Any other key - go ingame }
@@ -72,41 +72,43 @@ begin
       end;
 
       STATE_LEVEL_DIALOG: begin
-        changeState(STATE_INGAME);
+        if (keyRead = #13) and (extendedKey = False) then begin
+          changeState(STATE_INGAME);
+        end;
       end;      
       
       STATE_INGAME: begin
         { ESC - exit program }
         if (keyRead = #27) then begin
-          changeState(STATE_TITLE);
+          changeState(STATE_END_GAME);
         end;
         { Up arrow }
-        if (keyRead = #72) and (extended = True) then begin
+        if (keyRead = #72) and (extendedKey = True) then begin
           processMovement(DIR_UP, isSuccess);
         end;
 
         { Down arrow }
-        if (keyRead = #80) and (extended = True) then begin
+        if (keyRead = #80) and (extendedKey = True) then begin
           processMovement(DIR_DOWN, isSuccess);
         end;
 
         { Left arrow }
-        if (keyRead = #75) and (extended = True) then begin
+        if (keyRead = #75) and (extendedKey = True) then begin
           processMovement(DIR_LEFT, isSuccess)
         end;
 
         { Right arrow }
-        if (keyRead = #77) and (extended = True) then begin
+        if (keyRead = #77) and (extendedKey = True) then begin
           processMovement(DIR_RIGHT, isSuccess);
         end;
 
         { u - undo }
-        if (keyRead = 'u') and (extended = False) then begin
+        if (keyRead = 'u') and (extendedKey = False) then begin
           restoreUndoBuffer;
         end;
 
         { n - debug, load next stage }
-        if (keyRead = 'n') and (extended = False) then begin
+        if (keyRead = 'n') and (extendedKey = False) then begin
           if (g_currentLevel < g_numLevels) then 
           begin
             g_currentLevel := g_currentLevel + 1;
@@ -118,12 +120,12 @@ begin
         end;
 
         { r - reset level }
-        if (keyRead = 'r') and (extended = False) then begin
+        if (keyRead = 'r') and (extendedKey = False) then begin
             changeState(STATE_REVERT);
         end;
 
         { p - debug, load previous stage }
-        if (keyRead = 'p') and (extended = False) then begin
+        if (keyRead = 'p') and (extendedKey = False) then begin
           if(g_currentLevel > 1) then
           begin
             g_currentLevel := g_currentLevel - 1;
@@ -136,18 +138,30 @@ begin
       end;
      
       STATE_WIN: begin
-        changeState(STATE_NEXT_LEVEL);
+        if (keyRead = #13) and (extendedKey = False) then begin      
+          changeState(STATE_NEXT_LEVEL);
+        end;
       end;
 
       STATE_REVERT: begin
-        if (keyRead = 'y') and (extended = False) then begin
+        if (keyRead = 'y') and (extendedKey = False) then begin
             levelInit(g_currentLevel);        
             changeState(STATE_INGAME);
         end ;
-        if (keyRead = 'n') and (extended = False) then begin
+        if (keyRead = 'n') and (extendedKey = False) then begin
            changeState(STATE_INGAME);
         end;
       end;
+
+      STATE_END_GAME: begin
+        if (keyRead = 'y') and (extendedKey = False) then begin
+            changeState(STATE_TITLE);
+        end ;
+        if (keyRead = 'n') and (extendedKey = False) then begin
+           changeState(STATE_INGAME);
+        end;
+      end;
+
     end;
   end;
 end;      

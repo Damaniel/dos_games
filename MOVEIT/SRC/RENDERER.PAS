@@ -30,6 +30,8 @@ unit renderer;
 interface
 
 procedure addDirtyBlock(x: Integer; y: Integer; item: Integer);
+procedure drawBackground(x1: Integer; y1: Integer; x2: Integer; y2: Integer);
+procedure drawEndGameDialog;
 procedure drawInGameText(drawLevel: Boolean; drawScore: Boolean; drawMoves: Boolean; drawTime: Boolean);
 procedure drawLevel;
 procedure drawLevelCompleteDialog;
@@ -132,6 +134,23 @@ begin
   g_font^.outTextCentered(50, 62, '(Y)ES OR (N)O?', c_white);
 end;
 
+procedure drawEndGameDialog;
+begin
+  tg_bar(0, 23, 99, 75, c_black);
+
+  tg_bar(16, 31, 83, 68, c_blue);
+  tg_rectangle(14, 29, 85, 70, c_white);
+  tg_bar(15,30,84,30, c_ltgrey);
+  tg_bar(15,31,15,69, c_ltgrey);
+  tg_bar(84,31,84,69, c_ltblue);
+  tg_bar(16,69,83,69, c_ltblue);
+
+  g_font^.outTextCentered(50, 33, 'EXIT GAME?', c_white);
+  g_font^.outTextCentered(50, 44, '(ALL PROGRESS', c_white);
+  g_font^.outTextCentered(50, 51, 'WILL BE LOST! )', c_white);
+  g_font^.outTextCentered(50, 62, '(Y)ES OR (N)O?', c_white);
+end;
+
 { Does a *full* draw of the level area, as opposed to just dirty blocks.  Gets all of
   the level contents on the screen, but can cause noticeable flicker on very slow PCs.
   Mainly used to draw the level initially; dirty blocks are used afterward to only
@@ -209,7 +228,7 @@ begin
   g_font^.outText(29, 51, 'TARGET:', c_white);
   Str(g_targetMoves, tmpString);
   g_font^.outText(59, 51, tmpString, c_yellow);
-  g_font^.outText(25, 61, 'PRESS ANY KEY', c_white);
+  g_font^.outText(27, 61, 'PRESS ENTER!', c_white);
 
   tg_tile5(18, 61, ID_BOX);
   tg_tile5(77, 61, ID_BOX);
@@ -251,7 +270,7 @@ begin
   Str(timeScore, totalTimeString);
   Str(moveScore, totalMoveString);
 
-  g_font^.outText(25, 65, 'PRESS ANY KEY', c_white);
+  g_font^.outText(27, 65, 'PRESS ENTER!', c_white);
   
   tmpString := Concat(timeString, 'x', timeMultString, '=', totalTimeString);
   tmpString2 := Concat(moveString, 'x', moveMultString, '=', totalMoveString);
@@ -264,12 +283,11 @@ begin
 
 end;
 
-{ UI rendering function.  Draws all parts of the screen that aren't the play area. }
-procedure drawUi;
+procedure drawBackground(x1: Integer; y1: Integer; x2: Integer; y2: Integer);
 var
   i, j: Integer;
   tileId: Integer;
-begin  
+begin
   { draw background squares The background consists of a 2x2 grid of tiles containing 
     4 different tile types, allowing seamless tiling across the background. }
   for i := 0 to 19 do
@@ -293,7 +311,13 @@ begin
       tg_tile5(i * LARGE_TILE_SIZE, j * LARGE_TILE_SIZE, tileId);
     end;
   end;
+end;
 
+{ UI rendering function.  Draws all parts of the screen that aren't the play area. }
+procedure drawUi;
+var
+  i, j: Integer;
+begin  
   { Draw the stuff on the right side }
   tg_bar(102,2,157,97,c_blue);
   tg_rectangle(100, 0, 159, 99, c_white);
@@ -342,17 +366,19 @@ begin
         g_redrawAll := False;        
       end;
     end;
+ 
     STATE_LEVEL_DIALOG: begin
       if( g_redrawLevelDialog = True) then
       begin
         tg_clear(0);
+        drawBackground(0, 0, 99, 99);
         drawUi;
-        drawLevel;
         drawLevelDialog;
         g_redrawAll := False;
         g_redrawLevelDialog := False;
       end;
     end;
+ 
     STATE_INGAME: begin
       g_frameCounter := g_frameCounter + 1;
       if (g_frameCounter >= g_frameTarget) then
@@ -365,8 +391,7 @@ begin
       end;    
       if (g_redrawAll = True) then
       begin
-        tg_clear(0);
-        drawUi;
+        drawBackground(0, 23, 99, 75);
         drawLevel;     
         g_redrawAll := False;
       end;
@@ -381,6 +406,7 @@ begin
       g_drawMoves := False;
       g_drawTime := False;
     end;
+ 
     STATE_WIN: begin
       if (g_redrawWinDialog = True) then
       begin
@@ -388,6 +414,7 @@ begin
         g_redrawWinDialog := False;
       end;
     end;
+
     STATE_REVERT: begin
       if (g_redrawRevertDialog = True) then
       begin
@@ -395,6 +422,15 @@ begin
         g_redrawRevertDialog := False;
       end;
     end;
+
+    STATE_END_GAME: begin
+      if (g_redrawEndGameDialog = True) then
+      begin
+        drawEndGameDialog;
+        g_redrawEndGameDialog := False;
+      end;
+    end;
+
   end;
 end;
 

@@ -75,7 +75,10 @@ begin
   g_redrawAll := True;  
   g_ExitProgram := False;
   g_redrawLevelDialog := False;
-
+  g_redrawWinDialog := False;
+  g_redrawRevertDialog := False;
+  g_redrawEndGameDialog := False;
+  
   { Reset the level and score counter. }
   g_currentLevel := 1;
   g_score := 0;
