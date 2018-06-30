@@ -29,6 +29,13 @@ unit utils;
 
 interface
 
+const
+  characters: array[0..15] of Char =('A','B','C','E',
+                                      'H','L','P','T',
+                                      'Y','Z','3','4',
+                                      '6','7','9','0');
+  xorVal = $CACAD0D0;
+
 procedure calculateScore(var timeBase: Integer; var moveBase: Integer; var timeBonus: Longint; var moveBonus: Longint);
 procedure changeState(targetState: Integer);
 procedure checkWinState;
@@ -43,13 +50,6 @@ uses globals,
      levelops,
      timer,
      jfunc; 
-
-const
-  characters: array[0..15] of Char =('A','B','C','E',
-                                      'H','L','P','T',
-                                      'Y','Z','3','4',
-                                      '6','7','9','0');
-  xorVal = $CACAD0D0;
 
 { Transition to a new state in the state machine, and perform any state-specific initialization. }
 procedure changeState(targetState: Integer);
@@ -66,6 +66,11 @@ begin
       { Tell the renderer to draw the title screen. }
       g_redrawAll := True;
       g_currentLevel := 1;
+      { Reset the score if coming from the end game dialog}
+      if(g_previousState = STATE_END_GAME) then
+      begin
+        g_score := 0;
+      end;
     end;
     STATE_LEVEL_DIALOG: begin
       g_redrawAll := True;
@@ -279,11 +284,9 @@ var
   bytes: array[0..5] of Byte;
   topHalf, bottomHalf: Byte;
   tempString: String;
+  tmpPass: String;
   i, j: Integer;
 begin
-
-  writeln('Score is ', score);
-  writeln('Stage is ', stage);
 
   stage := stage shl 24;
   score := score or stage;
@@ -296,14 +299,13 @@ begin
   bytes[4] := temp and $FF;
   
   bytes[2] := bytes[0] + bytes[1] + bytes[3] + bytes[4];
+  password := '';
 
   for i := 0 to 4 do
   begin
     topHalf := (bytes[i] shr 4) and $F;
     bottomHalf := bytes[i] and $F;
-    password := Concat(password,
-                       characters[bottomHalf],
-                       characters[topHalf]);
+    password := Concat(password, characters[bottomHalf], characters[topHalf]);
   end;
 end;
 
