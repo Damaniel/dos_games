@@ -32,6 +32,8 @@ interface
 procedure calculateScore(var timeBase: Integer; var moveBase: Integer; var timeBonus: Longint; var moveBonus: Longint);
 procedure changeState(targetState: Integer);
 procedure checkWinState;
+procedure decodePassword(password: String; var score: Longint; var stage: Longint; var valid: Boolean);
+procedure encodePassword(score: Longint; stage: Longint; var password: String);
 procedure secondsToMinSecString(time: Integer; var timeString: String);
 procedure Wait(ticks: Integer);
 
@@ -48,7 +50,7 @@ const
                                       'Y','Z','3','4',
                                       '6','7','9','0');
   xorVal = $CACAD0D0;
-  
+
 { Transition to a new state in the state machine, and perform any state-specific initialization. }
 procedure changeState(targetState: Integer);
 var
