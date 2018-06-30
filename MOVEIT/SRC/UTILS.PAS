@@ -42,6 +42,13 @@ uses globals,
      timer,
      jfunc; 
 
+const
+  characters: array[0..15] of Char =('A','B','C','E',
+                                      'H','L','P','T',
+                                      'Y','Z','3','4',
+                                      '6','7','9','0');
+  xorVal = $CACAD0D0;
+  
 { Transition to a new state in the state machine, and perform any state-specific initialization. }
 procedure changeState(targetState: Integer);
 var
@@ -151,6 +158,150 @@ begin
   end
   else begin
     timeString := Concat(minString, ':', secString);
+  end;
+end;
+
+{ Password decoding algorithm:
+    - Given a 10 character string, do the following:
+      - Confirm that each character is a valid one from 'characters'.
+      - For each group of 2 (0-1, 2-3, 4-5, 6-7, 8-9)
+        - Convert the character back to it's numeric value
+        - Assign the first value to the upper 4 bites of a value byte
+        - Assign the second value to the lower 4 bits of a value byte
+      - Add the first, second, fourth and fifth values together and confirm
+        they sum to the checksum (the third value)
+      - Stick the first value in the top 8 bits of a longint
+      - Stick the second value in the next 8 bits of a longint
+      - Stick the fourth value in the next 8 bits of a longint
+      - Stick the fifth value in the lowest 8 bits of a longint
+      - XOR the result by $CACAD0D0
+      - Extract the top 8 bits as the stage
+      - Extract the bottom 24 bits as the score
+}
+procedure decodePassword(password: String; var score: Longint; var stage: Longint; var valid: Boolean);
+var
+  charVals: array[0..10] of Byte;
+  bytes: array[0..5] of Byte;
+  i, j: Integer;
+  inPassword: Boolean;
+  checksum: Byte;
+  fullValue, tempValue: Longint;
+begin
+  valid := True;
+  
+  if (Length(password) <> 10) then
+  begin
+    valid := False;
+  end;
+
+  { If length check passes, continue. }
+  if (valid = True) then
+  begin
+    for i := 1 to 10 do
+    begin
+      inPassword := False;
+      for j := 0 to 15 do
+      begin
+        if (password[i] = characters[j]) then
+        begin
+          inPassword := True;
+          charVals[i-1] := j;
+        end;
+      end;
+      if (inPassword = False) then
+      begin
+        valid := False;
+      end;
+    end;
+  end;
+
+  { If character check passes, continue. }
+  if (valid = True) then
+  begin
+    for i:= 0 to 4 do
+    begin
+      bytes[i] := charVals[2*i];
+      bytes[i] := bytes[i] or ((charVals[2*i+1] and $F) shl 4);
+    end;
+    checksum := bytes[0] + bytes[1] + bytes[3] + bytes[4];
+    if (checksum <> bytes[2]) then
+    begin
+      valid := False;
+    end;
+  end;
+
+  { If checksum check passes, continue. }
+  if (valid = True) then
+  begin    
+    fullValue := bytes[4];
+    tempValue := bytes[3];
+    tempValue := tempValue shl 8;
+    fullValue := fullValue or tempValue;
+    
+    tempValue := bytes[1];
+    tempValue := tempValue shl 16;
+    fullValue := fullValue or tempValue;
+    
+    tempValue := bytes[0];
+    tempValue := tempValue shl 24;
+    fullValue := fullValue or tempValue;
+
+    fullValue := fullValue xor xorVal;
+
+    stage := (fullValue shr 24) and $FF;
+    score := fullValue and $FFFFFF;
+  end;
+    
+end;
+
+{ Password generation algorithm:
+  Given a stage number from 0-255 and a score from 0-2^24:
+    - Take a 4 byte integer
+    - Set the top 8 bits to the value of the stage
+    - Set the bottom 24 bits to the value of the score
+    - XOR the result by $CACAD0D0
+    - Cut off each of the 4 bytes into their own values
+    - Calculate a 5th checksum byte as the sum of the other 4 bytes
+    - In the following order - byte 1, byte 2, checksum, byte 3, byte 4:
+      - Extract the top 4 bytes, get the character in 'characters'
+         associated with it
+      - Extract the bottom 4 bytes, get the character in 'characters'
+         associated with it
+      - Append the two characters to the password string
+
+    - The result should be a 10 character string.
+}
+procedure encodePassword(score: Longint; stage: Longint; var password: String);
+var
+  temp: Longint;
+  bytes: array[0..5] of Byte;
+  topHalf, bottomHalf: Byte;
+  tempString: String;
+  i, j: Integer;
+begin
+
+  writeln('Score is ', score);
+  writeln('Stage is ', stage);
+
+  stage := stage shl 24;
+  score := score or stage;
+  temp  := score xor xorVal;
+
+  bytes[0] := (temp shr 24) and $FF;
+  bytes[1] := (temp shr 16) and $FF;
+  bytes[2] := 0;
+  bytes[3] := (temp shr 8) and $FF;
+  bytes[4] := temp and $FF;
+  
+  bytes[2] := bytes[0] + bytes[1] + bytes[3] + bytes[4];
+
+  for i := 0 to 4 do
+  begin
+    topHalf := (bytes[i] shr 4) and $F;
+    bottomHalf := bytes[i] and $F;
+    password := Concat(password,
+                       characters[bottomHalf],
+                       characters[topHalf]);
   end;
 end;
 

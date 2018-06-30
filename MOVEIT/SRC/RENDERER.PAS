@@ -117,6 +117,7 @@ begin
   end;
 end;
 
+{ TODO: remove magic numbers }
 procedure drawRevertDialog;
 begin
   tg_bar(0, 23, 99, 75, c_black);
@@ -134,6 +135,7 @@ begin
   g_font^.outTextCentered(50, 62, '(Y)ES OR (N)O?', c_white);
 end;
 
+{ TODO: remove magic numbers }
 procedure drawEndGameDialog;
 begin
   tg_bar(0, 23, 99, 75, c_black);
