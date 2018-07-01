@@ -252,18 +252,18 @@ begin
   calculateScore(timeBase, moveBase, timeScore, moveScore);
 
   tg_bar(0, 23, 99, 75, c_black);
-  tg_bar(8, 25, 89, 73, c_blue);
-  tg_rectangle(6, 23, 91, 75, c_white);
-  tg_bar(7, 24, 90, 24, c_ltgrey);
-  tg_bar(7, 25, 7, 74, c_ltgrey);
-  tg_bar(90, 25, 90, 74, c_ltblue);
-  tg_bar(8, 74, 89, 74, c_ltblue);
+  tg_bar(8, 27, 89, 71, c_blue);
+  tg_rectangle(6, 25, 91, 73, c_white);
+  tg_bar(7, 26, 90, 26, c_ltgrey);
+  tg_bar(7, 27, 7, 72, c_ltgrey);
+  tg_bar(90, 27, 90, 72, c_ltblue);
+  tg_bar(8, 72, 89, 72, c_ltblue);
   
-  g_font^.outTextCentered(48, 27, 'LEVEL COMPLETE!', c_white);
-  g_font^.outTextCentered(48, 35, 'BONUS:', c_yellow);
+  g_font^.outTextCentered(48, 29, 'LEVEL COMPLETE!', c_white);
+  g_font^.outTextCentered(48, 38, 'BONUS:', c_yellow);
 
-  g_font^.outText(12, 43, 'TIME:', c_ltGreen);
-  g_font^.outText(12, 51, 'MOVES:', c_ltGreen);
+  g_font^.outText(12, 47, 'TIME:', c_ltGreen);
+  g_font^.outText(12, 56, 'MOVES:', c_ltGreen);
 
   { put the score numbers together }
   Str(timeBase, timeString);
@@ -276,19 +276,12 @@ begin
   tmpString := Concat(timeString, 'x', timeMultString, '=', totalTimeString);
   tmpString2 := Concat(moveString, 'x', moveMultString, '=', totalMoveString);
 
-  g_font^.outTextCentered(61, 43, tmpString, c_white);
-  g_font^.outTextCentered(61, 51, tmpString2, c_white);
+  g_font^.outTextCentered(61, 47, tmpString, c_white);
+  g_font^.outTextCentered(61, 56, tmpString2, c_white);
   
-  { Collect the password string }
-  if (g_currentLevel < g_numLevels) then
-  begin
-    encodePassword(g_score, g_currentLevel + 1, passwordString);
-    g_font^.outTextCentered(48, 59, passwordString, c_ltMagenta);
-  end;
-
-  g_font^.outText(27, 67, 'PRESS ENTER!', c_white);
-  tg_tile5(18, 67, ID_BOX);
-  tg_tile5(77, 67, ID_BOX);  
+  g_font^.outText(27, 65, 'PRESS ENTER!', c_white);
+  tg_tile5(18, 65, ID_BOX);
+  tg_tile5(77, 65, ID_BOX);  
 
 end;
 
