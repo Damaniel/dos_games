@@ -130,7 +130,7 @@ begin
   tg_bar(16,69,83,69, c_ltblue);
 
   g_font^.outTextCentered(50, 33, 'RESET LEVEL?', c_white);
-  g_font^.outTextCentered(50, 44, '(ALL PROGRESS', c_white);
+  g_font^.outTextCentered(50, 44, '(LEVEL PROGRESS', c_white);
   g_font^.outTextCentered(50, 51, 'WILL BE LOST! )', c_white);
   g_font^.outTextCentered(50, 62, '(Y)ES OR (N)O?', c_white);
 end;
@@ -148,7 +148,7 @@ begin
   tg_bar(16,69,83,69, c_ltblue);
 
   g_font^.outTextCentered(50, 33, 'EXIT GAME?', c_white);
-  g_font^.outTextCentered(50, 44, '(ALL PROGRESS', c_white);
+  g_font^.outTextCentered(50, 44, '(LEVEL PROGRESS', c_white);
   g_font^.outTextCentered(50, 51, 'WILL BE LOST! )', c_white);
   g_font^.outTextCentered(50, 62, '(Y)ES OR (N)O?', c_white);
 end;
@@ -343,8 +343,42 @@ begin
   tg_bar(BLACK_BAR_X1, MOVES_VAL_Y-1, BLACK_BAR_X2, MOVES_VAL_Y+5, c_black);
   tg_bar(BLACK_BAR_X1, TIME_VAL_Y-1,  BLACK_BAR_X2, TIME_VAL_Y+5,  c_black);
 
-  
   drawInGameText(True, True, True, True);
+end;
+
+procedure drawMainMenuOptions;
+begin
+  if(g_mainMenuOption = OPTION_NEW_GAME) then
+  begin
+    g_font^.outText(32, 61, '>', c_yellow);
+    g_font^.outText(74, 61, '<', c_yellow);
+    g_font^.outText(85, 61, '>', c_black);
+    g_font^.outText(125, 61, '<', c_black);
+    
+  end;
+  if(g_mainMenuOption = OPTION_CONTINUE) then
+  begin
+    g_font^.outText(85, 61, '>', c_yellow);
+    g_font^.outText(125, 61, '<', c_yellow);
+    g_font^.outText(32, 61, '>', c_black);
+    g_font^.outText(74, 61, '<', c_black);
+  end;
+end;
+
+{ Draws the main menu.  Could stand to use optimization}
+procedure drawMainMenu;
+begin
+  tg_bar(28, 59, 133, 69, c_black);
+  tg_bar(27, 58, 132, 58, c_white);
+  tg_bar(27, 68, 132, 68, c_white);
+  tg_bar(27, 59, 27, 67, c_white);
+  tg_bar(132, 59, 132, 67, c_white);
+
+  g_font^.outText(37, 61, 'NEW GAME', c_white);
+  g_font^.outText(90, 61, 'CONTINUE', c_white);
+
+  drawMainMenuOptions;
+
 end;
 
 { Code that draws stuff on the screen. }
@@ -369,6 +403,19 @@ begin
       end;
     end;
  
+    STATE_MAIN_MENU: begin
+      if (g_redrawMainMenu = True) then
+      begin
+        drawMainMenu;
+        g_redrawMainMenu := False;
+      end;
+      if (g_redrawMenuOptions = True) then
+      begin
+        drawMainMenuOptions;
+        g_redrawMenuOptions := False;
+      end;
+    end;
+
     STATE_LEVEL_DIALOG: begin
       if( g_redrawLevelDialog = True) then
       begin
@@ -402,11 +449,14 @@ begin
         redrawDirtyLevelArea;
         g_redrawDirtyLevelArea := False;
       end;
-      drawInGameText(g_drawLevel, g_drawScore, g_drawMoves, g_drawTime);
-      g_drawLevel := False;
-      g_drawScore := False;
-      g_drawMoves := False;
-      g_drawTime := False;
+      if (g_drawLevel = True) or (g_drawScore = True) or (g_drawMoves = True) or (g_drawTime = True) then
+      begin
+        drawInGameText(g_drawLevel, g_drawScore, g_drawMoves, g_drawTime);
+        g_drawLevel := False;
+        g_drawScore := False;
+        g_drawMoves := False;
+        g_drawTime := False;
+      end;
     end;
  
     STATE_WIN: begin

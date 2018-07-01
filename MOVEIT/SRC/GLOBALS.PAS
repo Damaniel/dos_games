@@ -117,6 +117,7 @@ const
   STATE_NEXT_LEVEL = 9;
   STATE_REVERT = 10;
   STATE_END_GAME = 11;
+  STATE_MAIN_MENU = 12;
 
   { Screen offsets for dynamic text in-game. }
   LEVEL_STRING_X = 105;
@@ -145,9 +146,12 @@ const
   POINTS_PER_SECOND = 50;
   POINTS_PER_MOVE = 50;
 
-  NUM_SAVE_GAMES = 3;
-
+  { The file that contain's the players save data (score, level) }
   SAVE_FILE = 'SAVE.DAT';
+
+  { Options for the main menu }
+  OPTION_NEW_GAME = 0;
+  OPTION_CONTINUE = 1;
 
   { The tiles that make up the game logo in the upper right corner of the game window. }
   g_gameLogo: array[0..39] of Byte=(
@@ -217,6 +221,8 @@ var
   g_redrawWinDialog: Boolean;
   g_redrawRevertDialog: Boolean;
   g_redrawEndGameDialog: Boolean;
+  g_redrawMainMenu: Boolean;
+  g_redrawMenuOptions: Boolean;
 
   { A list of all 'dirty' blocks that need to be redrawn on the next frame. }
   g_dirtyBlocks: array[0..399] of dirty;
@@ -255,6 +261,7 @@ var
     Tracks the amount of time since a new level started. }
   g_frameTarget: Integer;
 
+  { Flags to determine which fields should be redrawn when the UI is drawn }
   g_drawLevel: Boolean;
   g_drawScore: Boolean;
   g_drawMoves: Boolean;
@@ -265,13 +272,14 @@ var
    box and target locations. }
   g_numBoxesOnTargets : Integer;
 
+  { The target time required to complete the level. }
   g_parTime : Integer;
+
+  { The target number of moves required to complete the level. }
   g_targetMoves: Integer;
 
-  { Information for saved games, including scores, stages and the currently loaded game}
-  g_savedScores: array[0..NUM_SAVE_GAMES] of Longint;
-  g_savedLevels: array[0..NUM_SAVE_GAMES] of LongInt;
-  g_saveGameIdx: Integer;
+  { The selected option on the main menu }
+  g_mainMenuOption: Integer;
 
 implementation
 

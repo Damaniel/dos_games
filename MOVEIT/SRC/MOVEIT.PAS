@@ -81,19 +81,16 @@ begin
   g_redrawWinDialog := False;
   g_redrawRevertDialog := False;
   g_redrawEndGameDialog := False;
-
+  g_drawLevel := False;
+  g_drawScore := False;
+  g_drawMoves := False;
+  g_drawTime := False;
+  
   { Reset the level and score counter. }
   g_currentLevel := 1;
   g_score := 0;
 
-  { Initialize the save data structure. }
-  for i:=0 to NUM_SAVE_GAMES - 1 do
-  begin
-    g_savedScores[i] := 0;
-    g_savedLevels[i] := 1;
-  end;
-  g_saveGameIdx := 0;
-
+  g_mainMenuOption := OPTION_NEW_GAME;
 end;
 
 { Stuff to do right before the game shuts down. }

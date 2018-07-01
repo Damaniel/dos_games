@@ -67,7 +67,36 @@ begin
         end
         else begin
           { Any other key - go ingame }
-          changeState(STATE_LEVEL_DIALOG);
+          changeState(STATE_MAIN_MENU);
+        end;
+      end;
+
+      STATE_MAIN_MENU: begin
+        { ESC - clear the menu }
+        if (keyRead = #27) then begin
+           changeState(STATE_TITLE);
+        end;
+        
+        { Left arrow }
+        if ((keyRead = #75) or (keyRead = #77)) and (extendedKey = True) then begin
+          if (g_mainMenuOption = OPTION_NEW_GAME) then
+          begin
+            g_mainMenuOption := OPTION_CONTINUE;
+            g_redrawMenuOptions := True;
+          end else 
+          begin
+            g_mainMenuOption := OPTION_NEW_GAME;
+            g_redrawMenuOptions := True;       
+          end;   
+        end;
+
+        { Enter - execute the highlighted option }
+        if (keyRead = #13) and (extendedKey = False) then begin   
+          if (g_mainMenuOption = OPTION_CONTINUE) then
+          begin
+            loadGameData(isSuccess);
+          end;
+          changeState(STATE_LEVEL_DIALOG);        
         end;
       end;
 
@@ -144,8 +173,8 @@ begin
       end;
 
       STATE_REVERT: begin
-        if (keyRead = 'y') and (extendedKey = False) then begin
-            levelInit(g_currentLevel);        
+        if (keyRead = 'y') and (extendedKey = False) then begin        
+            levelInit(g_currentLevel);           
             changeState(STATE_INGAME);
         end ;
         if (keyRead = 'n') and (extendedKey = False) then begin
