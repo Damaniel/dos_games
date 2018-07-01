@@ -145,6 +145,10 @@ const
   POINTS_PER_SECOND = 50;
   POINTS_PER_MOVE = 50;
 
+  NUM_SAVE_GAMES = 3;
+
+  SAVE_FILE = 'SAVE.DAT';
+
   { The tiles that make up the game logo in the upper right corner of the game window. }
   g_gameLogo: array[0..39] of Byte=(
      203, 204, 205, 206, 207, 208, 209, 210, 211, 212,
@@ -263,6 +267,11 @@ var
 
   g_parTime : Integer;
   g_targetMoves: Integer;
+
+  { Information for saved games, including scores, stages and the currently loaded game}
+  g_savedScores: array[0..NUM_SAVE_GAMES] of Longint;
+  g_savedLevels: array[0..NUM_SAVE_GAMES] of LongInt;
+  g_saveGameIdx: Integer;
 
 implementation
 

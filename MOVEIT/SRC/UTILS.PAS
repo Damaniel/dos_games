@@ -41,6 +41,8 @@ procedure changeState(targetState: Integer);
 procedure checkWinState;
 procedure decodePassword(password: String; var score: Longint; var stage: Longint; var valid: Boolean);
 procedure encodePassword(score: Longint; stage: Longint; var password: String);
+procedure loadGameData(saveIdx: Integer; var result: Boolean);
+procedure saveGameData(saveIdx: Integer; var result: Boolean);
 procedure secondsToMinSecString(time: Integer; var timeString: String);
 procedure Wait(ticks: Integer);
 
@@ -51,11 +53,14 @@ uses globals,
      timer,
      jfunc; 
 
+
+
 { Transition to a new state in the state machine, and perform any state-specific initialization. }
 procedure changeState(targetState: Integer);
 var
   timeBase, moveBase: Integer;
   timeBonus, moveBonus: Longint;
+  result: Boolean;
 begin
   g_previousState := g_currentState;
   g_currentState := targetState;
@@ -93,6 +98,13 @@ begin
       end
       else begin
         g_currentLevel := g_currentLevel + 1;
+        saveGameData(g_saveGameIdx, result);
+        if (result = False) then
+        begin
+            writeln('Unable to save game due to internal error. Exiting...');
+            Halt;
+        end;
+
         changeState(STATE_LEVEL_DIALOG);
       end;
     end;    
@@ -307,6 +319,94 @@ begin
     bottomHalf := bytes[i] and $F;
     password := Concat(password, characters[bottomHalf], characters[topHalf]);
   end;
+end;
+
+procedure saveGameData(saveIdx: Integer; var result: Boolean);
+var
+    saveFile: Text;
+    pass: String;
+    i: Integer;
+begin
+
+    result := True;
+
+    { Assign the current score/stage data to the array to be written to a file }
+    if (saveIdx >= 0) and (saveIdx < NUM_SAVE_GAMES ) then
+    begin
+        g_savedScores[saveIdx] := g_score;
+        g_savedLevels[saveIdx] := g_currentLevel;
+    end else
+    begin
+        result := False;
+    end;
+
+    if (result = True) then 
+    begin
+        assign(saveFile, SAVE_FILE);
+    
+        {$I-}
+            rewrite(saveFile);
+        {$I+}
+
+        if (IOResult <> 0) then
+        begin
+            result := False;
+        end else
+        begin
+            for i := 0 to NUM_SAVE_GAMES - 1 do
+            begin
+                encodePassword(g_savedScores[i], g_savedLevels[i], pass);
+                writeln(saveFile, pass);
+            end;
+            close(saveFile);
+            result := True;
+        end;
+    end;
+
+    writeln(result);
+end;
+
+procedure loadGameData(saveIdx: Integer; var result: Boolean);
+var
+    saveFile: Text;
+    pass: String;
+    valid: Boolean;
+    i: Integer;
+begin
+    result := True;
+
+    if (saveIdx < 0)  or (saveIdx >= NUM_SAVE_GAMES) then
+    begin
+        result := False;
+    end;
+
+    if (result = True) then
+    begin
+        assign(saveFile, SAVE_FILE);
+
+        {$I-}
+            reset(saveFile);
+        {$I+}  
+
+        if (IOResult <> 0) then
+        begin
+            result := False;
+        end else
+        begin
+            for i:=0 to NUM_SAVE_GAMES - 1 do
+            begin
+              readln(saveFile, pass);
+              decodePassword(pass, g_savedScores[i], g_savedLevels[i], valid);
+              result := valid;
+            end;
+
+            g_currentLevel := g_savedLevels[saveIdx];
+            g_score := g_savedScores[saveIdx];
+
+        end;
+
+        close(saveFile);
+    end;
 end;
 
 end.
