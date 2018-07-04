@@ -94,7 +94,7 @@ begin
       g_redrawLevelDialog := True;
       levelInit(g_currentLevel);     { Need to load level here so we can draw the dialog over it. }   
     end;
-    STATE_INGAME: beginAdd
+    STATE_INGAME: begin
       if (g_previousState = STATE_REVERT) then
       begin
         { If reverting, just redraw the time and moves counter. }
