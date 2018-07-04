@@ -1,3 +1,4 @@
 *.PAS text eol=crlf
 LEVELS.DAT text eol=crlf
+LICENSE text eol=crlf
 
