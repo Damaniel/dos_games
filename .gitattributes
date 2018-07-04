@@ -1,4 +1,5 @@
 *.PAS text eol=crlf
+*.BAT text eol=crlf
 LEVELS.DAT text eol=crlf
 LICENSE text eol=crlf
 
