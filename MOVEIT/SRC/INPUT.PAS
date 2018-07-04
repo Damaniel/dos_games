@@ -92,9 +92,11 @@ begin
 
         { Enter - execute the highlighted option }
         if (keyRead = #13) and (extendedKey = False) then begin   
-          if (g_mainMenuOption = OPTION_CONTINUE) then
+          { If 'New Game' is selected, then make sure that the data loaded from the
+            save file is ignored. }
+          if (g_mainMenuOption = OPTION_NEW_GAME) then
           begin
-            loadGameData(isSuccess);
+            newGameInit;     
           end;
           changeState(STATE_LEVEL_DIALOG);        
         end;

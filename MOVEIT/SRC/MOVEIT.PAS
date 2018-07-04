@@ -85,10 +85,6 @@ begin
   g_drawScore := False;
   g_drawMoves := False;
   g_drawTime := False;
-  
-  { Reset the level and score counter. }
-  g_currentLevel := 1;
-  g_score := 0;
 
   g_mainMenuOption := OPTION_NEW_GAME;
 end;

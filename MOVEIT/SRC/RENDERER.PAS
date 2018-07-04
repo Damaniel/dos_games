@@ -92,7 +92,7 @@ begin
   if (drawTime = True) then
   begin
     g_font^.outText(TIME_STRING_X, TIME_STRING_Y, 'TIME:', c_cyan);
-    secondsToMinSecString(g_elapsedTime, timeString);
+    secondsToHourMinSecString(g_elapsedTime, timeString);
     tg_bar(TIME_VAL_X-15, TIME_VAL_Y, TIME_VAL_X+15, TIME_VAL_Y+4, c_black);
     g_font^.outTextCentered(TIME_VAL_X, TIME_VAL_Y, timeString, c_white);
   end;
@@ -224,7 +224,7 @@ begin
   g_font^.outTextCentered(50, 34, tmpString2, c_white);
 
   g_font^.outText(29, 44, 'PAR:', c_white);
-  secondsToMinSecString(g_parTime, timeString);
+  secondsToHourMinSecString(g_parTime, timeString);
   g_font^.outText(49, 44, timeString, c_yellow);
   
   g_font^.outText(29, 51, 'TARGET:', c_white);
@@ -347,6 +347,10 @@ begin
 end;
 
 procedure drawMainMenuOptions;
+var 
+  levString: String;
+  timeString: String;  
+  leftString: String;
 begin
   if(g_mainMenuOption = OPTION_NEW_GAME) then
   begin
@@ -354,7 +358,11 @@ begin
     g_font^.outText(74, 61, '<', c_yellow);
     g_font^.outText(85, 61, '>', c_black);
     g_font^.outText(125, 61, '<', c_black);
-    
+    tg_bar(32, 69, 127, 77, c_blue);
+    tg_bar(31, 69, 31, 78, c_white);
+    tg_bar(128, 69, 128, 78, c_white);
+    tg_bar(32, 78, 127, 78, c_white);
+    g_font^.outTextCentered(80, 71, 'START FROM LEVEL 1', c_white);
   end;
   if(g_mainMenuOption = OPTION_CONTINUE) then
   begin
@@ -362,6 +370,15 @@ begin
     g_font^.outText(125, 61, '<', c_yellow);
     g_font^.outText(32, 61, '>', c_black);
     g_font^.outText(74, 61, '<', c_black);
+    tg_bar(32, 69, 127, 77, c_green);
+    tg_bar(31, 69, 31, 78, c_white);
+    tg_bar(128, 69, 128, 78, c_white);
+    tg_bar(32, 78, 127, 78, c_white);
+    Str(g_currentLevel, levString);
+    secondsToHourMinSecString(g_totalElapsedTime, timeString);
+    leftString := Concat('LEVEL ', levString);
+    g_font^.outTextCentered(57, 71, leftString , c_white);    
+    g_font^.outTextCentered(101, 71, timeString , c_white);
   end;
 end;
 

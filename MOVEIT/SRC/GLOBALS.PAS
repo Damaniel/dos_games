@@ -252,6 +252,9 @@ var
   { The number of seconds since the level started. }
   g_elapsedTime: Integer;
 
+  { The total amount of time spent playing all stages. }
+  g_totalElapsedTime: Longint;
+  
   { A rough count of rendered frames.  Used to track time (very roughly) since the timer interrupt 
     has been replaced with something higher-resolution (but with less functionality...)
     Will overflow after a year of continious running.  Ha.}

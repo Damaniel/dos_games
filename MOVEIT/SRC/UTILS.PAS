@@ -39,11 +39,12 @@ const
 procedure calculateScore(var timeBase: Integer; var moveBase: Integer; var timeBonus: Longint; var moveBonus: Longint);
 procedure changeState(targetState: Integer);
 procedure checkWinState;
-procedure decodePassword(password: String; var score: Longint; var stage: Longint; var valid: Boolean);
-procedure encodePassword(score: Longint; stage: Longint; var password: String);
+procedure decodePassword(password: String; var score: Longint; var stage: Longint; var time: Longint; var valid: Boolean);
+procedure encodePassword(score: Longint; stage: Longint; time: Longint; var password: String);
 procedure loadGameData(var result: Boolean);
 procedure saveGameData(var result: Boolean);
-procedure secondsToMinSecString(time: Integer; var timeString: String);
+procedure secondsToHourMinSecString(time: Longint; var timeString: String);
+procedure newGameInit;
 procedure Wait(ticks: Integer);
 
 implementation
@@ -52,6 +53,14 @@ uses globals,
      levelops,
      timer,
      jfunc; 
+
+procedure newGameInit;
+begin
+  g_currentLevel := 1;
+  g_totalElapsedTime := 0;
+  g_score := 0;
+end;
+
 
 { Transition to a new state in the state machine, and perform any state-specific initialization. }
 procedure changeState(targetState: Integer);
@@ -68,15 +77,16 @@ begin
     STATE_TITLE: begin
       { Tell the renderer to draw the title screen. }
       g_redrawAll := True;
-      g_currentLevel := 1;
-      { Reset the score if coming from the end game dialog}
-      if(g_previousState = STATE_END_GAME) then
-      begin
-        g_score := 0;
-      end;
     end;
     STATE_MAIN_MENU: begin
         g_mainMenuOption := OPTION_NEW_GAME;
+        { Load the game data here so we can display it on the main menu }
+        loadGameData(result);
+        { If the file doesn't exist, set the values to sane defaults. }
+        if (result = False) then
+        begin
+          newGameInit;
+        end;
         g_redrawMainMenu := True;
     end;
     STATE_LEVEL_DIALOG: begin
@@ -99,6 +109,8 @@ begin
       g_redrawWinDialog := True;
       calculateScore(timeBase, movebase, timeBonus, moveBonus);
       g_score := g_score + timeBonus + moveBonus;
+      { Increment the *total* played time - to be saved in the save file. }
+      g_totalElapsedTime := g_totalElapsedTime + g_elapsedTime;
     end;
     STATE_NEXT_LEVEL: begin
       { If past max level, then exit game, otherwise move to the next level. }
@@ -171,33 +183,59 @@ begin
   until ticks <= 0;
 end;
 
-procedure secondsToMinSecString(time: Integer; var timeString: String);
+procedure secondsToHourMinSecString(time: Longint; var timeString: String);
 var
-  minutes, seconds: Integer;
-  minString, secString: String;
+  hours, minutes, seconds: Integer;
+  hourString, minString, secString: String;
 begin
-  minutes := Trunc(time / 60.0);
+  hours := Trunc(time / 3600.0);
+  minutes := Trunc((time - 3600*hours) / 60.0);
   seconds := time mod 60;
+  Str(hours, hourString);
   Str(minutes, minString);
   Str(seconds, secString);  
-  { Add a leading zero for seconds counts from 0-9 }  
-  if (seconds < 10) then
+  { Add a leading zero for seconds counts from 0-9 and for minutes from 0-9 }  
+  if (hours > 0) then
   begin
-    timeString := Concat(minString, ':0', secString);
-  end
-  else begin
-    timeString := Concat(minString, ':', secString);
+    if (minutes >= 10) then
+    begin
+      if (seconds >= 10) then
+      begin
+        timeString := Concat(hourString, ':', minString, ':', secString);
+      end else
+      begin
+        timeString := Concat(hourString, ':', minString, ':0', secString);
+      end;
+    end else
+    begin
+      if (seconds >= 10) then
+      begin
+        timeString := Concat(hourString, ':0', minString, ':', secString);
+      end else
+      begin
+        timeString := Concat(hourString, ':0', minString, ':0', secString);
+      end;
+    end;
+  end else
+  begin
+    if (seconds >= 10) then
+    begin
+      timeString := Concat(minString, ':', secString);
+    end
+    else begin
+      timeString := Concat(minString, ':0', secString);
+    end;
   end;
 end;
 
 { Password decoding algorithm:
-    - Given a 10 character string, do the following:
+    - Given a 18 character string, do the following:
       - Confirm that each character is a valid one from 'characters'.
       - For each group of 2 (0-1, 2-3, 4-5, 6-7, 8-9)
         - Convert the character back to it's numeric value
         - Assign the first value to the upper 4 bites of a value byte
         - Assign the second value to the lower 4 bits of a value byte
-      - Add the first, second, fourth and fifth values together and confirm
+      - Add the first, second, and 4th through 9th values together and confirm
         they sum to the checksum (the third value)
       - Stick the first value in the top 8 bits of a longint
       - Stick the second value in the next 8 bits of a longint
@@ -206,11 +244,13 @@ end;
       - XOR the result by $CACAD0D0
       - Extract the top 8 bits as the stage
       - Extract the bottom 24 bits as the score
+      - Repeat the previous 'stick' and XOR steps with values 6-9 
+        for a second longint, which gives the elapsed time.
 }
-procedure decodePassword(password: String; var score: Longint; var stage: Longint; var valid: Boolean);
+procedure decodePassword(password: String; var score: Longint; var stage: Longint; var time: Longint; var valid: Boolean);
 var
-  charVals: array[0..10] of Byte;
-  bytes: array[0..5] of Byte;
+  charVals: array[0..18] of Byte;
+  bytes: array[0..8] of Byte;
   i, j: Integer;
   inPassword: Boolean;
   checksum: Byte;
@@ -218,7 +258,7 @@ var
 begin
   valid := True;
   
-  if (Length(password) <> 10) then
+  if (Length(password) <> 18) then
   begin
     valid := False;
   end;
@@ -226,7 +266,7 @@ begin
   { If length check passes, continue. }
   if (valid = True) then
   begin
-    for i := 1 to 10 do
+    for i := 1 to 18 do
     begin
       inPassword := False;
       for j := 0 to 15 do
@@ -247,12 +287,12 @@ begin
   { If character check passes, continue. }
   if (valid = True) then
   begin
-    for i:= 0 to 4 do
+    for i:= 0 to 8 do
     begin
       bytes[i] := charVals[2*i];
       bytes[i] := bytes[i] or ((charVals[2*i+1] and $F) shl 4);
     end;
-    checksum := bytes[0] + bytes[1] + bytes[3] + bytes[4];
+    checksum := bytes[0] + bytes[1] + bytes[3] + bytes[4] + bytes[5] + bytes[6] + bytes[7] + bytes[8];
     if (checksum <> bytes[2]) then
     begin
       valid := False;
@@ -262,6 +302,7 @@ begin
   { If checksum check passes, continue. }
   if (valid = True) then
   begin    
+    { Assemble the score and level. }
     fullValue := bytes[4];
     tempValue := bytes[3];
     tempValue := tempValue shl 8;
@@ -279,31 +320,48 @@ begin
 
     stage := (fullValue shr 24) and $FF;
     score := fullValue and $FFFFFF;
+
+    { Assemble the elapsed time. }
+    fullValue := bytes[8];
+    tempValue := bytes[7];
+    tempValue := tempValue shl 8;
+    fullValue := fullValue or tempValue;
+
+    tempValue := bytes[6];
+    tempValue := tempValue shl 16;
+    fullValue := fullValue or tempValue;
+
+    tempValue := bytes[5];
+    tempValue := tempValue shl 24;
+    fullValue := fullValue or tempValue;
+
+    time := fullValue xor xorVal;
   end;
     
 end;
 
 { Password generation algorithm:
-  Given a stage number from 0-255 and a score from 0-2^24:
+  Given a stage number from 0-255, a score from 0-2^24 and a Longint elapsed time:
     - Take a 4 byte integer
     - Set the top 8 bits to the value of the stage
     - Set the bottom 24 bits to the value of the score
     - XOR the result by $CACAD0D0
     - Cut off each of the 4 bytes into their own values
-    - Calculate a 5th checksum byte as the sum of the other 4 bytes
-    - In the following order - byte 1, byte 2, checksum, byte 3, byte 4:
+    - Repeat the process with the elapsed time value (XOR, split off the bytes)
+    - Calculate a 9th checksum byte as the sum of the other 8 bytes
+    - In the following order - byte 1, byte 2, checksum, bytes 3-9:
       - Extract the top 4 bytes, get the character in 'characters'
          associated with it
       - Extract the bottom 4 bytes, get the character in 'characters'
          associated with it
       - Append the two characters to the password string
 
-    - The result should be a 10 character string.
+    - The result should be a 18 character string.
 }
-procedure encodePassword(score: Longint; stage: Longint; var password: String);
+procedure encodePassword(score: Longint; stage: Longint; time: Longint; var password: String);
 var
-  temp: Longint;
-  bytes: array[0..5] of Byte;
+  temp, temp2: Longint;
+  bytes: array[0..9] of Byte;
   topHalf, bottomHalf: Byte;
   tempString: String;
   tmpPass: String;
@@ -314,16 +372,23 @@ begin
   score := score or stage;
   temp  := score xor xorVal;
 
+  temp2 := time xor xorVal;
+
   bytes[0] := (temp shr 24) and $FF;
   bytes[1] := (temp shr 16) and $FF;
   bytes[2] := 0;
   bytes[3] := (temp shr 8) and $FF;
   bytes[4] := temp and $FF;
   
-  bytes[2] := bytes[0] + bytes[1] + bytes[3] + bytes[4];
+  bytes[5] := (temp2 shr 24) and $FF;
+  bytes[6] := (temp2 shr 16) and $FF;
+  bytes[7] := (temp2 shr 8) and $FF;
+  bytes[8] := temp2 and $FF;
+
+  bytes[2] := bytes[0] + bytes[1] + bytes[3] + bytes[4] + bytes[5] + bytes[6] + bytes[7] + bytes[8];
   password := '';
 
-  for i := 0 to 4 do
+  for i := 0 to 8 do
   begin
     topHalf := (bytes[i] shr 4) and $F;
     bottomHalf := bytes[i] and $F;
@@ -352,7 +417,7 @@ begin
     end else
     begin
         li := Longint(g_currentLevel);
-        encodePassword(g_score, li, pass);
+        encodePassword(g_score, li, g_totalElapsedTime, pass);
         writeln(saveFile, pass);
         close(saveFile);
     end;
@@ -362,7 +427,6 @@ procedure loadGameData(var result: Boolean);
 var
     saveFile: Text;
     pass: String;
-    score: Longint;
     level: Longint;
     i: Integer;
 begin
@@ -381,8 +445,7 @@ begin
     begin
         readln(saveFile, pass);
         level := Longint(g_currentLevel);
-        decodePassword(pass, score, level, result);
-        g_score := score;
+        decodePassword(pass, g_score, level, g_totalElapsedTime, result);
         g_currentLevel := level;
         close(saveFile);    
     end;
