@@ -44,6 +44,7 @@ procedure encodePassword(score: Longint; stage: Longint; time: Longint; var pass
 procedure loadGameData(var result: Boolean);
 procedure saveGameData(var result: Boolean);
 procedure secondsToHourMinSecString(time: Longint; var timeString: String);
+procedure setMainMenuOption;
 procedure newGameInit;
 procedure Wait(ticks: Integer);
 
@@ -61,6 +62,26 @@ begin
   g_score := 0;
 end;
 
+procedure setMainMenuOption;
+var
+  saveFile: Text;
+begin;
+  { Check for a save file and decide whether to highlight new game or continue. }
+  assign(saveFile, 'SAVE.DAT');  
+  {$I-}
+  reset(saveFile);
+  {$I+}
+
+  if (IOResult <> 0) then
+  begin
+    g_mainMenuOption := OPTION_NEW_GAME;
+  end else
+  begin
+    g_mainMenuOption := OPTION_CONTINUE;
+    close(savefile);    
+  end;
+
+end;
 
 { Transition to a new state in the state machine, and perform any state-specific initialization. }
 procedure changeState(targetState: Integer);
@@ -79,7 +100,7 @@ begin
       g_redrawAll := True;
     end;
     STATE_MAIN_MENU: begin
-        g_mainMenuOption := OPTION_NEW_GAME;
+        setMainMenuOption;    
         { Load the game data here so we can display it on the main menu }
         loadGameData(result);
         { If the file doesn't exist, set the values to sane defaults. }
@@ -116,7 +137,7 @@ begin
       { If past max level, then exit game, otherwise move to the next level. }
       if (g_currentLevel = g_numLevels) then
       begin
-        g_ExitProgram := True;
+        changeState(STATE_END_CREDITS);
       end
       else begin
         g_currentLevel := g_currentLevel + 1;
@@ -135,6 +156,9 @@ begin
     end;
     STATE_END_GAME: begin
       g_redrawEndGameDialog := True;
+    end;
+    STATE_END_CREDITS: begin
+      g_redrawCreditsScreen := True;
     end;
   end;
 end;

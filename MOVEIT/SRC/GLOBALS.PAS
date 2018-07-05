@@ -118,6 +118,7 @@ const
   STATE_REVERT = 10;
   STATE_END_GAME = 11;
   STATE_MAIN_MENU = 12;
+  STATE_END_CREDITS = 13;
 
   { Screen offsets for dynamic text in-game. }
   LEVEL_STRING_X = 105;
@@ -223,7 +224,8 @@ var
   g_redrawEndGameDialog: Boolean;
   g_redrawMainMenu: Boolean;
   g_redrawMenuOptions: Boolean;
-
+  g_redrawCreditsScreen: Boolean;
+  
   { A list of all 'dirty' blocks that need to be redrawn on the next frame. }
   g_dirtyBlocks: array[0..399] of dirty;
   g_numDirtyBlocks: Integer;
@@ -254,7 +256,7 @@ var
 
   { The total amount of time spent playing all stages. }
   g_totalElapsedTime: Longint;
-  
+
   { A rough count of rendered frames.  Used to track time (very roughly) since the timer interrupt 
     has been replaced with something higher-resolution (but with less functionality...)
     Will overflow after a year of continious running.  Ha.}

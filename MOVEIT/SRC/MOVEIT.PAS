@@ -81,12 +81,13 @@ begin
   g_redrawWinDialog := False;
   g_redrawRevertDialog := False;
   g_redrawEndGameDialog := False;
+  g_redrawCreditsScreen := False;
   g_drawLevel := False;
   g_drawScore := False;
   g_drawMoves := False;
-  g_drawTime := False;
+  g_drawTime := False;;
 
-  g_mainMenuOption := OPTION_NEW_GAME;
+  setMainMenuOption;
 end;
 
 { Stuff to do right before the game shuts down. }

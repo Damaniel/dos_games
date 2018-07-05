@@ -31,6 +31,7 @@ interface
 
 procedure addDirtyBlock(x: Integer; y: Integer; item: Integer);
 procedure drawBackground(x1: Integer; y1: Integer; x2: Integer; y2: Integer);
+procedure drawCreditsScreen;
 procedure drawEndGameDialog;
 procedure drawInGameText(drawLevel: Boolean; drawScore: Boolean; drawMoves: Boolean; drawTime: Boolean);
 procedure drawLevel;
@@ -292,9 +293,9 @@ var
 begin
   { draw background squares The background consists of a 2x2 grid of tiles containing 
     4 different tile types, allowing seamless tiling across the background. }
-  for i := 0 to 19 do
+  for i := x1 to x2 do
   begin
-    for j := 0 to 19 do
+    for j := y1 to y2 do
     begin
       case (j mod 2) of
         0: begin 
@@ -398,6 +399,79 @@ begin
 
 end;
 
+procedure drawCreditsScreen;
+var
+  i: Integer;
+  outStr: String;
+begin
+
+  tg_clear(0);
+  
+  { Draw the background }
+  drawBackground(0, 0, 31, 19);
+
+  { Draw the boxes and borders }
+  tg_bar(15, 8, 144, 40, c_black);
+  tg_bar(15, 46, 144, 77, c_black);
+  tg_bar(15, 83, 144, 91, c_black);
+
+  { Top box border }
+  tg_bar(14, 7, 145, 7, c_white);
+  tg_bar(14, 8, 14, 41, c_white);
+  tg_bar(15, 41, 145, 41, c_white);
+  tg_bar(145, 8, 145, 40, c_white);
+ 
+  { Middle box border }
+  tg_bar(14, 45, 145, 45, c_white);
+  tg_bar(14, 46, 14, 78, c_white);
+  tg_bar(15, 78, 145, 78, c_white);
+  tg_bar(145, 46, 145, 77, c_white);
+
+  { Bottom box border }
+  tg_bar(14, 82, 145, 82, c_white);
+  tg_bar(14, 83, 14, 92, c_white);
+  tg_bar(15, 92, 145, 92, c_white);
+  tg_bar(145, 83, 145, 91, c_white);
+
+  { Edging }
+  tg_bar(5, 5, 154, 5, c_black);
+  tg_bar(5, 94, 154, 94, c_black);
+  tg_bar(5, 6, 5, 93, c_black);
+  tg_bar(154, 5, 154, 93, c_black);
+  
+  { Boxes }
+  for i:=0 to 31 do
+  begin
+    tg_tile5(i * LARGE_TILE_SIZE, 0, ID_BOX);
+    tg_tile5(i * LARGE_TILE_SIZE, 95, ID_BOX);
+  end;
+
+  for i:=1 to 18 do
+  begin
+    tg_tile5(0, i * LARGE_TILE_SIZE, ID_BOX);
+    tg_tile5(155, i * LARGE_TILE_SIZE, ID_BOX);
+  end;
+
+  { Text }
+  g_font^.outTextCentered(80, 10, 'WOW - YOU ACTUALLY FINISHED!' , c_white);  
+  g_font^.outTextCentered(80, 17, 'THANKS FOR PLAYING!' , c_white);  
+  g_font^.outText(38, 27, 'FINAL SCORE:' , c_yellow);  
+  g_font^.outText(38, 34, 'PLAYED TIME:' , c_yellow);  
+  
+  g_font^.outText(90, 27, longtost8(g_score), c_white);
+  secondsToHourMinSecString(g_totalElapsedTime, outStr);
+  g_font^.outText(90, 34, outStr , c_white);  
+
+  g_font^.outTextCentered(80, 48, 'CREDITS' , c_magenta);  
+  g_font^.outText(19, 56, 'EVERYTHING:' , c_yellow);
+  g_font^.outText(93, 56, 'SHAUN BRANDT' , c_white);
+  g_font^.outTextCentered(80, 64, 'HTTPS://GITHUB.COM/DAMANIEL/' , c_green);
+  g_font^.outTextCentered(80, 72, 'WWW.HOLYMEATGOAT.COM' , c_ltblue); 
+
+  g_font^.outTextCentered(80, 85, 'PRESS ENTER!' , c_white); 
+end;
+
+
 { Code that draws stuff on the screen. }
 procedure render;
 var
@@ -416,7 +490,7 @@ begin
             tg_tile5(x*5, y*5, g_titleScreen[y*32 + x]);
           end;
         end;
-        g_redrawAll := False;        
+        g_redrawAll := False;    
       end;
     end;
  
@@ -437,7 +511,7 @@ begin
       if( g_redrawLevelDialog = True) then
       begin
         tg_clear(0);
-        drawBackground(0, 0, 99, 99);
+        drawBackground(0, 0, 19, 19);
         drawUi;
         drawLevelDialog;
         g_redrawAll := False;
@@ -457,7 +531,7 @@ begin
       end;    
       if (g_redrawAll = True) then
       begin
-        drawBackground(0, 23, 99, 75);
+        drawBackground(0, 4, 19, 16);
         drawLevel;     
         g_redrawAll := False;
       end;
@@ -500,6 +574,13 @@ begin
       end;
     end;
 
+    STATE_END_CREDITS: begin
+      if (g_redrawCreditsScreen = True) then
+      begin
+        drawCreditsScreen;;
+        g_redrawCreditsScreen := False;
+      end;
+    end;
   end;
 end;
 

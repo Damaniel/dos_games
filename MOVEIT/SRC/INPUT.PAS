@@ -193,6 +193,12 @@ begin
         end;
       end;
 
+      STATE_END_CREDITS: begin
+        if (keyRead = #13) and (extendedKey = False) then begin      
+          changeState(STATE_TITLE);
+        end;
+      end;
+
     end;
   end;
 end;      
