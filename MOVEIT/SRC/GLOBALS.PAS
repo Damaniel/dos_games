@@ -225,7 +225,7 @@ var
   g_redrawMainMenu: Boolean;
   g_redrawMenuOptions: Boolean;
   g_redrawCreditsScreen: Boolean;
-  
+
   { A list of all 'dirty' blocks that need to be redrawn on the next frame. }
   g_dirtyBlocks: array[0..399] of dirty;
   g_numDirtyBlocks: Integer;
@@ -264,7 +264,7 @@ var
 
   { Used to determine when the number of frames equates to a second beyond the previous target. 
     Tracks the amount of time since a new level started. }
-  g_frameTarget: Integer;
+  g_frameTarget: Longint;
 
   { Flags to determine which fields should be redrawn when the UI is drawn }
   g_drawLevel: Boolean;
