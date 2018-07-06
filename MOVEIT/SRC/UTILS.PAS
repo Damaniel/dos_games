@@ -118,13 +118,11 @@ begin
     STATE_INGAME: begin
       if (g_previousState = STATE_REVERT) then
       begin
-        { If reverting, just redraw the time and moves counter. }
+        { If reverting, redraw the time and moves counter. }
         g_drawMoves := True;
         g_drawTime := True;         
-      end else
-      begin      
-        g_redrawAll := True;
-      end;
+      end;  
+      g_redrawAll := True;
     end;
     STATE_WIN: begin
       g_redrawWinDialog := True;
