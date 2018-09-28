@@ -641,7 +641,7 @@ X######  ##$$@#
 XXXXXX#      ##
 XXXXXX########X
 51 14
-17 13 60 100
+17 13 240 850
 XXXX#########XXXX
 XXXX#       #XXXX
 XXXX#$$ $$# ####X
@@ -656,7 +656,7 @@ XXXX#$$ $$# ####X
 XXXXX########   #
 XXXXXXXXXXXX#####
 52 15
-20 14 60 100
+20 14 240 950
 XXXXXXXXXXX####XXXXX
 XX##########@ #XXXXX
 ###   #   ##$ ######
@@ -672,7 +672,7 @@ XX##########@ #XXXXX
 #      ######XXXXXXX
 ########XXXXXXXXXXXX
 53 11
-11 10 60 100
+11 10 150 350
 XXXXX######
 X#####.   #
 X#  #..## #
@@ -684,7 +684,7 @@ X#  # .# ##
 #@  #######
 #####XXXXXX
 54 16
-15 15 60 100
+15 15 240 550
 #########XXXXXX
 #       #XXXXXX
 #       ####XXX
@@ -701,7 +701,7 @@ X##### $  #...#
 XXXXX##   #####
 XXXXXX#####XXXX
 55 17
-20 16 60 100
+20 16 300 850
 X####XXXXXXXXXXXXXXX
 ##  ###XXXXXXXXXXXXX
 #@$   #XXXXXXXXXXXXX
@@ -719,7 +719,7 @@ XXXXXX###   #$ $ $ #
 XXXXXXXX#####   #  #
 XXXXXXXXXXXX########
 56 19
-20 18 60 100
+20 18 600 1900
 XX#######X######XXXX
 X##     ###    #XXXX
 X#  ###   # $$ ###XX
@@ -739,7 +739,7 @@ X#        ####XXXXXX
 X###    ###XXXXXXXXX
 XXX######XXXXXXXXXXX
 57 16
-18 15 60 100
+18 15 240 750
 XXXXXX###########X
 XXXXXX#     #   ##
 XXXXXX# $      ..#
@@ -756,7 +756,7 @@ X##$# $ #######  #
 # @#XXXXXXXXXXXXXX
 ####XXXXXXXXXXXXXX
 58 15
-18 14 60 100
+18 14 420 1300
 ########XXXXXXXXXX
 #...   ########XXX
 #....     $   ##XX
@@ -772,7 +772,7 @@ XX#@$    $   $  #X
 XX#####   #######X
 XXXXXX#####XXXXXXX
 59 16
-16 15 60 100
+16 15 300 850
 XXXX######XXXXXX
 XXXX#    #XXXXXX
 XX### ## #XXXXXX
@@ -789,7 +789,7 @@ XX### ## #XXXXXX
 #     #XXXXXXXXX
 #######XXXXXXXXX
 60 15
-15 14 60 100
+15 14 420 900
 ####XXXXXXXXXXX
 #  ###XXXXXXXXX
 # $  ###XXXXXXX
