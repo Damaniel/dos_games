@@ -1,6 +1,8 @@
 *.PAS text eol=crlf
 *.BAT text eol=crlf
 *.TXT text eol=crlf
-LEVELS.DAT text eol=crlf
-LICENSE text eol=crlf
-
+*.C text eol=crlf
+*.CPP text eol=crlf
+*.H text eol=crlf
+LEVELS.DAT eol=crlf
+LICENSE eol=crlf
