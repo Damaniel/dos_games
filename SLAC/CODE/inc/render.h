@@ -1,26 +1,8 @@
 #ifndef __RENDER_H__
 #define __RENDER_H__
 
-void generate_prop_font_offsets(void);
-void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);
-void render_fixed_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);
-void copy_data_to_offscreen_vram(void);
-
-/* Functions to draw various screen components */
-void render_map(void);
-
-
-enum {
-	FONT_YELLOW,
-	FONT_BLUE,
-	FONT_GREEN,
-	FONT_RED,
-	FONT_GRAY
-};
-
-#define fixed_font_width  8
-#define fixed_font_height 8
-#define prop_font_height  8
+/* Number of characters defined in each instance of a font */
+#define FONT_ENTRIES       96
 
 /* A copy of the map bitmap is stored at this location in video memory. */
 #define MAP_VMEM_X	0
@@ -29,11 +11,51 @@ enum {
 /* The size of the map bitmap in offscreen memory */
 #define MAP_VMEM_WIDTH   144
 #define MAP_VMEM_HEIGHT  160
- 
-#define FONT_ENTRIES       96
-extern int prop_font_offset[FONT_ENTRIES];
-extern int prop_font_width[FONT_ENTRIES];
 
+/* Each font has 5 different versions in different colors.  These are used to grab the correct
+   color font from the bitmaps */
+enum {
+	FONT_YELLOW,
+	FONT_BLUE,
+	FONT_GREEN,
+	FONT_RED,
+	FONT_GRAY
+};
+
+/* Width and height of all characters from ASCII values 32 to 127 in the standard 
+   proportional font */
+const int prop_font_width[FONT_ENTRIES] = {
+	6, 2, 6, 7, 6, 6, 7, 2, 4, 4, 5, 5, 2, 6, 2, 6, 
+	7, 4, 7, 7, 7, 7, 7, 7, 7, 7, 2, 2, 5, 6, 5, 6, 
+	8, 8, 7, 7, 7, 7, 7, 7, 8, 4, 7, 8, 7, 8, 8, 7, 
+	7, 7, 8, 7, 6, 8, 8, 8, 8, 8, 6, 4, 6, 4, 5, 8, 
+	3, 7, 7, 6, 7, 6, 5, 7, 8, 4, 6, 7, 4, 8, 8, 6, 
+	7, 7, 7, 6, 4, 7, 8, 7, 6, 6, 6, 4, 2, 4, 7, 7  
+};		
+const int prop_font_height = 8;
+
+/* Width and height of all characters in the standard fixed font */
+const int fixed_font_width = 8;
+const int fixed_font_height = 8;
+
+/* The Render class itself */
+class Render {
+	private:
+		/* This is filled in by a function based on prop_font_width */
+		int prop_font_offset[FONT_ENTRIES];
+	
+	public:
+		Render();
+		void generate_prop_font_offsets(void);
+		void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);
+		void render_fixed_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);
+		void copy_data_to_offscreen_vram(void);
+	
+		/* Functions to draw various screen components */	
+		void render_map_to_screen(void);
+		void render_world_at(int x, int y);
+};
+ 
 #endif	
 	
 	
