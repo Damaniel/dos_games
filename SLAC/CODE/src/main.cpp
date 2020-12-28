@@ -29,6 +29,9 @@ void unload_resources(void) {
 
 int main(void) {
 
+	int x, y, key;
+	bool done, update_display;
+	
 	srand(time(NULL));
 	
 	allegro_init();
@@ -48,24 +51,50 @@ int main(void) {
 
 	init_resources(r);
 
-	r.render_map_to_screen();
-		
 	Maze m = Maze(64, 64);
 	m.generate();
-		
-	for (int i = 0; i < m.getHeight(); i++) {
-		for (int j = 0; j < m.getWidth(); j++) {
-			if (m.isCarved(j, i) == false) {
-				putpixel(screen, 7+j*2, 16+i*2, 15);
-				putpixel(screen, 7+j*2+1, 16+i*2, 15);
-				putpixel(screen, 7+j*2, 16+i*2+1, 15);
-				putpixel(screen, 7+j*2+1, 16+i*2+1, 15);
-			}
+	
+	x = 0;
+	y = 0;
+	done = false;
+	update_display = true;
+	
+	BITMAP *memBmp = create_bitmap(240, 208);
+	
+	r.render_status_base(screen);
+	r.render_text_base(screen, false);
+	
+	while (done == false) {
+		if (update_display == true) {
+			r.render_world_at(memBmp, m, x, y);
+			blit(memBmp, screen, 0, 0, 0, 0, 240, 208);
+			update_display = false;
 		}
-	}
+		
+		key = (readkey() >> 8);
+		if (key == KEY_ESC) {
+			done = true;
+		}
+		if (key == KEY_LEFT) {
+			x = x -1;
+			update_display = true;
+		}
+		if (key == KEY_RIGHT) {
+			x = x + 1;
+			update_display = true;
+		}
+		if (key == KEY_UP) {
+			y = y - 1;
+			update_display = true;
+		}
+		if (key == KEY_DOWN) {
+			y = y + 1;
+			update_display = true;
+		}
+		
 
-	while(!keypressed()) {
 	}
+		
 	
 	unload_resources();
 	set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);

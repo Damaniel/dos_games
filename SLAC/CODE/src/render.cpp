@@ -58,5 +58,96 @@ void Render::render_fixed_text(BITMAP *destination, char *text, int x_pos, int y
 	}
 }
 
-void Render::render_world_at(int x, int y) {
+void Render::render_status_base(BITMAP *destination) {
+	BITMAP *b = (BITMAP *)g_game_data[DAMRL_MAIN_STATUS].dat;
+	blit(b, destination, 0, 0, STATUS_AREA_X, STATUS_AREA_Y, b->w, b->h);
+}
+
+void Render::render_text_base(BITMAP *destination, bool extended) {
+	BITMAP *bstd = (BITMAP *)g_game_data[DAMRL_MAIN_TEXT].dat;
+	BITMAP *bext = (BITMAP *)g_game_data[DAMRL_MAIN_TEXT_EXT].dat;
+	
+	if(extended == true) {
+		blit(bext, destination, 0, 0, TEXT_AREA_EXT_X, TEXT_AREA_EXT_Y, bext->w, bext->h);
+	}
+	else {
+		blit(bstd, destination, 0, 0, TEXT_AREA_STD_X, TEXT_AREA_STD_Y, bstd->w, bstd->h);		
+	}
+}
+
+void Render::render_world_at(BITMAP *destination, Maze m, int x, int y) {
+
+	// Render the world with the 0,0 tile position equal to (x,y).  
+	// Negative values for x and y are allowed, as are values outside of the positive
+	// end of the range - tiles just won't be drawn for invalid locations
+	
+	// Also note that the code that draws the floor (that is, where isCarved == true),
+	// checks tiles to the left and above it when deciding what to draw.  There isn't 
+	// any check done to see if those tiles are valid, but the default Maze class will 
+	// always have a valid tile to the left and above any carved tile, so this shouldn't
+	// cause a problem.  If weird crashes happen, try looking here.
+	for (int i=0; i<PLAY_AREA_TILE_WIDTH; i++) {
+		for (int j=0; j<PLAY_AREA_TILE_HEIGHT; j++) {
+			int tilex = x + i;
+			int tiley = y + j;
+			int tileToUse;
+			bool carvedLeft = m.isCarved(tilex -1, tiley);
+			bool carvedUp = m.isCarved(tilex, tiley - 1);
+			
+			if(tilex >=0 && tiley >=0 && tilex < m.getWidth() && tiley < m.getHeight()) {
+				int stairs = m.stairsHere(tilex, tiley);
+				if (stairs == STAIRS_UP) {
+					blit((BITMAP *)g_game_data[DAMRL_MAZE_BASE_TILES_1].dat, 
+					     destination,
+					     TILE_UP_STAIRS * TILE_PIXEL_WIDTH, 
+						 0, 
+						 i * TILE_PIXEL_WIDTH,
+						 j * TILE_PIXEL_HEIGHT,
+						 TILE_PIXEL_WIDTH,
+						 TILE_PIXEL_HEIGHT);					
+				}
+				else if (stairs == STAIRS_DOWN) {
+					blit((BITMAP *)g_game_data[DAMRL_MAZE_BASE_TILES_1].dat, 
+					     destination,
+					     TILE_DOWN_STAIRS * TILE_PIXEL_WIDTH, 
+						 0, 
+						 i * TILE_PIXEL_WIDTH,
+						 j * TILE_PIXEL_HEIGHT,
+						 TILE_PIXEL_WIDTH,
+						 TILE_PIXEL_HEIGHT);						
+				}
+				else if (m.isCarved(tilex, tiley) == true) {
+					if (carvedLeft == false && carvedUp == true) {
+						tileToUse = TILE_FLOOR_LEFT_HIGHLIGHT;
+					}
+					else if (carvedLeft == true && carvedUp == false) {
+						tileToUse = TILE_FLOOR_TOP_HIGHLIGHT;
+					}
+					else if (carvedLeft == false && carvedUp == false) {
+						tileToUse = TILE_FLOOR_BOTH_HIGHLIGHT;
+					}
+					else {
+						tileToUse = TILE_FLOOR;
+					}
+					blit((BITMAP *)g_game_data[DAMRL_MAZE_BASE_TILES_1].dat, 
+					     destination,
+					     tileToUse * TILE_PIXEL_WIDTH, 
+						 0, 
+						 i * TILE_PIXEL_WIDTH,
+						 j * TILE_PIXEL_HEIGHT,
+						 TILE_PIXEL_WIDTH,
+						 TILE_PIXEL_HEIGHT);
+				} else {
+					blit((BITMAP *)g_game_data[DAMRL_MAZE_BASE_TILES_1].dat, 
+					     destination,
+					     TILE_WALL * TILE_PIXEL_WIDTH, 
+						 0, 
+						 i * TILE_PIXEL_WIDTH,
+						 j * TILE_PIXEL_HEIGHT,
+						 TILE_PIXEL_WIDTH,
+						 TILE_PIXEL_HEIGHT);
+				}		
+			}
+		}
+	}
 }

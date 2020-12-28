@@ -1,6 +1,8 @@
 #ifndef __RENDER_H__
 #define __RENDER_H__
 
+#include "maze.h"
+
 /* Number of characters defined in each instance of a font */
 #define FONT_ENTRIES       96
 
@@ -12,6 +14,26 @@
 #define MAP_VMEM_WIDTH   144
 #define MAP_VMEM_HEIGHT  160
 
+/* The size of a dungeon tile in pixels */
+#define TILE_PIXEL_WIDTH		  16
+#define TILE_PIXEL_HEIGHT	      16
+
+/* The size of the visible play area (in tiles)
+ * PLAY_AREA_TILE_HEIGHT_EXT measures the height in tiles when the extended message
+ * log is displayed. */
+#define PLAY_AREA_TILE_WIDTH   		15
+#define PLAY_AREA_TILE_HEIGHT  		13
+#define PLAY_AREA_TILE_HEIGHT_EXT	10
+
+#define STATUS_AREA_X			   240
+#define STATUS_AREA_Y				 0
+
+#define TEXT_AREA_STD_X			     0
+#define TEXT_AREA_STD_Y			   208
+
+#define TEXT_AREA_EXT_X              0
+#define TEXT_AREA_EXT_Y			   160
+
 /* Each font has 5 different versions in different colors.  These are used to grab the correct
    color font from the bitmaps */
 enum {
@@ -22,6 +44,20 @@ enum {
 	FONT_GRAY
 };
 
+/* The base tiles that make up the fixed portions of a dungeon level */
+enum {
+	TILE_DARK,
+	TILE_BORDER_WALL,
+	TILE_WALL,
+	TILE_FLOOR,
+	TILE_FLOOR_TOP_HIGHLIGHT,
+	TILE_FLOOR_LEFT_HIGHLIGHT,
+	TILE_FLOOR_BOTH_HIGHLIGHT,
+	TILE_UP_STAIRS,
+	TILE_DOWN_STAIRS,
+	TILE_DOOR
+};
+	
 /* Width and height of all characters from ASCII values 32 to 127 in the standard 
    proportional font */
 const int prop_font_width[FONT_ENTRIES] = {
@@ -53,7 +89,9 @@ class Render {
 	
 		/* Functions to draw various screen components */	
 		void render_map_to_screen(void);
-		void render_world_at(int x, int y);
+		void render_world_at(BITMAP *destination, Maze m, int x, int y);
+		void render_text_base(BITMAP *destination, bool extended);
+		void render_status_base(BITMAP *destination);
 };
  
 #endif	
