@@ -75,6 +75,20 @@ void Render::render_text_base(BITMAP *destination, bool extended) {
 	}
 }
 
+void Render::render_statics(BITMAP *destination, int x, int y) {
+	
+}
+
+// Renders all non-static dungeon elements.  This includes the player and all
+// enemies.  
+void Render::render_actors(BITMAP *destination, int x, int y) {
+	BITMAP *bpc = (BITMAP *)g_game_data[DAMRL_PLAYER_SPRITES].dat;
+	// For now, just draw the player
+	masked_blit(bpc, destination, PLAYER_TILE_OFFSET * TILE_PIXEL_WIDTH, 0, 
+	            PLAYER_PLAY_AREA_X * TILE_PIXEL_WIDTH, PLAYER_PLAY_AREA_Y * TILE_PIXEL_HEIGHT,
+		        TILE_PIXEL_WIDTH, TILE_PIXEL_HEIGHT);
+}
+
 void Render::render_world_at(BITMAP *destination, Maze m, int x, int y) {
 
 	// Render the world with the 0,0 tile position equal to (x,y).  
@@ -150,4 +164,7 @@ void Render::render_world_at(BITMAP *destination, Maze m, int x, int y) {
 			}
 		}
 	}
+	
+	render_statics(destination, x, y);
+	render_actors(destination, x, y);
 }

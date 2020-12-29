@@ -54,8 +54,6 @@ int main(void) {
 	Maze m = Maze(64, 64);
 	m.generate();
 	
-	x = 0;
-	y = 0;
 	done = false;
 	update_display = true;
 	
@@ -63,6 +61,17 @@ int main(void) {
 	
 	r.render_status_base(screen);
 	r.render_text_base(screen, false);
+	
+	// Place the player on a random set of up stairs
+	vector<int> stairLoc = m.getRandomStair(STAIRS_UP);
+	
+	// This returns a stair location that we want at the middle of the play area.
+	// render_world_at currently renders from the top left.  These next lines
+	// account for that by adjusting based on the player position.  
+	// TODO: update render_world_at to make the rendering player-centric instead
+	// of top left centric
+	x = stairLoc[0] - PLAYER_PLAY_AREA_X;
+	y = stairLoc[1] - PLAYER_PLAY_AREA_Y;
 	
 	while (done == false) {
 		if (update_display == true) {
@@ -76,20 +85,29 @@ int main(void) {
 			done = true;
 		}
 		if (key == KEY_LEFT) {
-			x = x -1;
-			update_display = true;
+			if (m.isCarved(x-1+ PLAYER_PLAY_AREA_X, y+ PLAYER_PLAY_AREA_Y) == true) {
+				x = x -1;
+				update_display = true;
+			}
 		}
 		if (key == KEY_RIGHT) {
-			x = x + 1;
-			update_display = true;
+			if (m.isCarved(x+1+ PLAYER_PLAY_AREA_X, y+ PLAYER_PLAY_AREA_Y) == true) {			
+				x = x + 1;
+				update_display = true;
+			}
 		}
 		if (key == KEY_UP) {
-			y = y - 1;
-			update_display = true;
+			if (m.isCarved(x+ PLAYER_PLAY_AREA_X, y-1+ PLAYER_PLAY_AREA_Y) == true) {
+				y = y - 1;
+				update_display = true;
+			}
 		}
 		if (key == KEY_DOWN) {
-			y = y + 1;
-			update_display = true;
+			if (m.isCarved(x+ PLAYER_PLAY_AREA_X, y+1+ PLAYER_PLAY_AREA_Y) == true)
+			{
+				y = y + 1;
+				update_display = true;
+			}
 		}
 		
 

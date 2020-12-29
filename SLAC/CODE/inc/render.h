@@ -34,6 +34,15 @@
 #define TEXT_AREA_EXT_X              0
 #define TEXT_AREA_EXT_Y			   160
 
+// The offset (in tiles) into the player graphic where the player is.  This will eventually
+// include different characters, but this one is a placeholder.
+#define PLAYER_TILE_OFFSET			 9
+
+// The offset (in tiles) into the play area where the player graphic is placed.  The player
+// will always be centered in the play area.
+#define PLAYER_PLAY_AREA_X			 7
+#define PLAYER_PLAY_AREA_Y			 6
+
 /* Each font has 5 different versions in different colors.  These are used to grab the correct
    color font from the bitmaps */
 enum {
@@ -79,6 +88,9 @@ class Render {
 	private:
 		/* This is filled in by a function based on prop_font_width */
 		int prop_font_offset[FONT_ENTRIES];
+		
+		void render_statics(BITMAP *destination, int x, int y);
+		void render_actors(BITMAP *destination, int x, int y);
 	
 	public:
 		Render();

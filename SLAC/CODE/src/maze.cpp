@@ -554,3 +554,18 @@ void Maze::printMemoryUsage(void) {
 	cout << "Size of square vector: " << m.size() * sizeof(Square) << " bytes" << endl;
 	cout << "Size of room vector: " << rooms.size() * sizeof(Room) << " bytes" << endl;
 }
+
+// Returns the coordinates of a random stair that goes the specified direction (up or down)
+vector<int> Maze::getRandomStair(int direction) {
+	// The vector contains an equal number of up and down stairs.  Just pick them at random
+	// until we find one that goes the correct direction.
+	while(1) {
+		Stair s = stairs[rand() % stairs.size()];
+		if (s.direction == direction) {
+			vector<int> v;
+			v.push_back(s.x);
+			v.push_back(s.y);
+			return v;
+		}
+	}
+}

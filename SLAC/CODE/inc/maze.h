@@ -90,6 +90,7 @@ public:
 	void generate(void);
 	void printMemoryUsage(void); 
 	int stairsHere(int x, int y);
+	vector<int> getRandomStair(int direction);
 
 };
 #endif
