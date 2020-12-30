@@ -76,7 +76,15 @@ int main(void) {
 	while (done == false) {
 		if (update_display == true) {
 			// Light the space around the player
-			m.changeLitStatusAround(x, y, true);
+			m.changeLitStatusAroundPlayer(x, y, true);
+			
+			// If the player is in a room and it isn't already lit, light it. 
+			int room_to_light = m.getRoomIdAt(x, y);
+			if(room_to_light != -1 && m.isRoomLit(room_to_light) == false) {
+				m.changeRoomLitStatus(room_to_light, true);
+			}
+			
+			// Draw the world display area
 			r.render_world_at_player(memBmp, m, x, y);
 			blit(memBmp, screen, 0, 0, 0, 0, 240, 208);
 			update_display = false;
@@ -90,7 +98,7 @@ int main(void) {
 		{
 			// Darken the current space around the player.  It will be lit in the player's
 			// new location later.
-			m.changeLitStatusAround(x, y, false);
+			m.changeLitStatusAroundPlayer(x, y, false);
 		}
 		if (key == KEY_LEFT) {
 			if (m.isCarved(x-1, y) == true) {
