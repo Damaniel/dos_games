@@ -87,10 +87,15 @@ public:
 	int getHeight(void) { return rows; }
 	Square getSquare(int x, int y);
 	bool isCarved(int x, int y);
+	bool isLit(int x, int y);
 	void generate(void);
 	void printMemoryUsage(void); 
+	void printRoomIds(void);
 	int stairsHere(int x, int y);
 	vector<int> getRandomStair(int direction);
+	void changeLitStatusAt(int x, int y, bool lit);
+	void changeLitStatusAround(int x, int y, bool lit);
+	void changeRoomLitStatus(int room, bool lit);	
 
 };
 #endif

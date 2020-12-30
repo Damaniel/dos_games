@@ -75,13 +75,13 @@ void Render::render_text_base(BITMAP *destination, bool extended) {
 	}
 }
 
-void Render::render_statics(BITMAP *destination, int x, int y) {
+void Render::render_statics(BITMAP *destination, int maze_x, int maze_y) {
 	
 }
 
 // Renders all non-static dungeon elements.  This includes the player and all
 // enemies.  
-void Render::render_actors(BITMAP *destination, int x, int y) {
+void Render::render_actors(BITMAP *destination, int maze_x, int maze_y) {
 	BITMAP *bpc = (BITMAP *)g_game_data[DAMRL_PLAYER_SPRITES].dat;
 	// For now, just draw the player
 	masked_blit(bpc, destination, PLAYER_TILE_OFFSET * TILE_PIXEL_WIDTH, 0, 
@@ -89,48 +89,43 @@ void Render::render_actors(BITMAP *destination, int x, int y) {
 		        TILE_PIXEL_WIDTH, TILE_PIXEL_HEIGHT);
 }
 
-void Render::render_world_at(BITMAP *destination, Maze m, int x, int y) {
+void Render::render_world_at_player(BITMAP *destination, Maze m, int maze_x, int maze_y) {
+	// Render the world with the tile at the player's position (7,6) equal to (maze_x, maze_y)
+	render_world_at(destination, m, maze_x - PLAYER_PLAY_AREA_X, maze_y - PLAYER_PLAY_AREA_Y);
+}
 
-	// Render the world with the 0,0 tile position equal to (x,y).  
-	// Negative values for x and y are allowed, as are values outside of the positive
-	// end of the range - tiles just won't be drawn for invalid locations
+void Render::render_world_at(BITMAP *destination, Maze m, int maze_x, int maze_y) {
+
+	// Render the world with the tile at screen position (0, 0) position equal to (maze_x, maze_y).  
+	// Negative values for maze_x and maze_y are allowed, as are values outside of the positive
+	// end of the range - maze tiles just won't be drawn for invalid locations
 	
 	// Also note that the code that draws the floor (that is, where isCarved == true),
 	// checks tiles to the left and above it when deciding what to draw.  There isn't 
 	// any check done to see if those tiles are valid, but the default Maze class will 
 	// always have a valid tile to the left and above any carved tile, so this shouldn't
 	// cause a problem.  If weird crashes happen, try looking here.
-	for (int i=0; i<PLAY_AREA_TILE_WIDTH; i++) {
-		for (int j=0; j<PLAY_AREA_TILE_HEIGHT; j++) {
-			int tilex = x + i;
-			int tiley = y + j;
+	for (int screen_x = 0; screen_x < PLAY_AREA_TILE_WIDTH; screen_x++) {
+		for (int screen_y = 0; screen_y < PLAY_AREA_TILE_HEIGHT; screen_y++) {
+			int tile_to_render_x = maze_x + screen_x;
+			int tile_to_render_y = maze_y + screen_y;
 			int tileToUse;
-			bool carvedLeft = m.isCarved(tilex -1, tiley);
-			bool carvedUp = m.isCarved(tilex, tiley - 1);
+			bool carvedLeft = m.isCarved(tile_to_render_x -1, tile_to_render_y);
+			bool carvedUp = m.isCarved(tile_to_render_x, tile_to_render_y - 1);
 			
-			if(tilex >=0 && tiley >=0 && tilex < m.getWidth() && tiley < m.getHeight()) {
-				int stairs = m.stairsHere(tilex, tiley);
-				if (stairs == STAIRS_UP) {
-					blit((BITMAP *)g_game_data[DAMRL_MAZE_BASE_TILES_1].dat, 
-					     destination,
-					     TILE_UP_STAIRS * TILE_PIXEL_WIDTH, 
-						 0, 
-						 i * TILE_PIXEL_WIDTH,
-						 j * TILE_PIXEL_HEIGHT,
-						 TILE_PIXEL_WIDTH,
-						 TILE_PIXEL_HEIGHT);					
+			if(tile_to_render_x >=0 && tile_to_render_y >=0 && tile_to_render_x < m.getWidth() && tile_to_render_y < m.getHeight()) {
+				int stairs = m.stairsHere(tile_to_render_x, tile_to_render_y);
+				// Before checking any other status, draw darkness if the square isn't lit
+				if (m.isLit(tile_to_render_x, tile_to_render_y) == false ) {
+					render_base_tile(destination, TILE_DARK, screen_x, screen_y);
+				}
+				else if (stairs == STAIRS_UP) {
+					render_base_tile(destination, TILE_UP_STAIRS, screen_x, screen_y);
 				}
 				else if (stairs == STAIRS_DOWN) {
-					blit((BITMAP *)g_game_data[DAMRL_MAZE_BASE_TILES_1].dat, 
-					     destination,
-					     TILE_DOWN_STAIRS * TILE_PIXEL_WIDTH, 
-						 0, 
-						 i * TILE_PIXEL_WIDTH,
-						 j * TILE_PIXEL_HEIGHT,
-						 TILE_PIXEL_WIDTH,
-						 TILE_PIXEL_HEIGHT);						
+					render_base_tile(destination, TILE_DOWN_STAIRS, screen_x, screen_y);
 				}
-				else if (m.isCarved(tilex, tiley) == true) {
+				else if (m.isCarved(tile_to_render_x, tile_to_render_y) == true) {
 					if (carvedLeft == false && carvedUp == true) {
 						tileToUse = TILE_FLOOR_LEFT_HIGHLIGHT;
 					}
@@ -143,28 +138,28 @@ void Render::render_world_at(BITMAP *destination, Maze m, int x, int y) {
 					else {
 						tileToUse = TILE_FLOOR;
 					}
-					blit((BITMAP *)g_game_data[DAMRL_MAZE_BASE_TILES_1].dat, 
-					     destination,
-					     tileToUse * TILE_PIXEL_WIDTH, 
-						 0, 
-						 i * TILE_PIXEL_WIDTH,
-						 j * TILE_PIXEL_HEIGHT,
-						 TILE_PIXEL_WIDTH,
-						 TILE_PIXEL_HEIGHT);
+					render_base_tile(destination, tileToUse, screen_x, screen_y);
 				} else {
-					blit((BITMAP *)g_game_data[DAMRL_MAZE_BASE_TILES_1].dat, 
-					     destination,
-					     TILE_WALL * TILE_PIXEL_WIDTH, 
-						 0, 
-						 i * TILE_PIXEL_WIDTH,
-						 j * TILE_PIXEL_HEIGHT,
-						 TILE_PIXEL_WIDTH,
-						 TILE_PIXEL_HEIGHT);
+					render_base_tile(destination, TILE_WALL, screen_x, screen_y);
 				}		
-			}
+			} else {
+				// Draw an empty space since it's outside of the map
+				render_base_tile(destination, TILE_DARK, screen_x, screen_y);
+			}						 
 		}
 	}
 	
-	render_statics(destination, x, y);
-	render_actors(destination, x, y);
+	render_statics(destination, maze_x, maze_y);
+	render_actors(destination, maze_x, maze_y);
+}
+
+void Render::render_base_tile(BITMAP *destination, int tileId, int x, int y) {
+	blit((BITMAP *)g_game_data[DAMRL_MAZE_BASE_TILES_1].dat, 
+	     destination,
+	     tileId * TILE_PIXEL_WIDTH, 
+		 0, 
+		 x * TILE_PIXEL_WIDTH,
+		 y * TILE_PIXEL_HEIGHT,
+		 TILE_PIXEL_WIDTH,
+		 TILE_PIXEL_HEIGHT);	
 }

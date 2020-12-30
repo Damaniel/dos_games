@@ -89,9 +89,10 @@ class Render {
 		/* This is filled in by a function based on prop_font_width */
 		int prop_font_offset[FONT_ENTRIES];
 		
-		void render_statics(BITMAP *destination, int x, int y);
-		void render_actors(BITMAP *destination, int x, int y);
-	
+		void render_statics(BITMAP *destination, int maze_x, int maze_y);
+		void render_actors(BITMAP *destination, int maze_x, int maze_y);
+		void render_base_tile(BITMAP *destination, int tileId, int x, int y);
+		
 	public:
 		Render();
 		void generate_prop_font_offsets(void);
@@ -101,7 +102,8 @@ class Render {
 	
 		/* Functions to draw various screen components */	
 		void render_map_to_screen(void);
-		void render_world_at(BITMAP *destination, Maze m, int x, int y);
+		void render_world_at_player(BITMAP *destination, Maze m, int maze_x, int maze_y);
+		void render_world_at(BITMAP *destination, Maze m, int maze_x, int maze_y);
 		void render_text_base(BITMAP *destination, bool extended);
 		void render_status_base(BITMAP *destination);
 };

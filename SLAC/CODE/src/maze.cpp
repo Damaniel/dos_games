@@ -27,7 +27,7 @@ void Maze::init(void) {
 		Square s;
 		s.tag = EMPTY;
 		s.carved = false;
-		s.isLit = true;
+		s.isLit = false;
 		m.push_back(s);
 	}
 	
@@ -212,6 +212,10 @@ void Maze::carveDirection(int x, int y, int direction, int tag) {
  */
 bool Maze::isCarved(int x, int y) {
 	return m[y*cols + x].carved;
+}
+
+bool Maze::isLit(int x, int y) {
+	return m[y*cols + x].isLit;
 }
 
 /*
@@ -555,6 +559,13 @@ void Maze::printMemoryUsage(void) {
 	cout << "Size of room vector: " << rooms.size() * sizeof(Room) << " bytes" << endl;
 }
 
+// Debug function.  Dumps list of room IDs
+void Maze::printRoomIds(void) {
+	for(vector<Room>::iterator it = rooms.begin(); it != rooms.end(); it++) {
+		cout << "Room id is " << it->id << endl;
+	}
+}
+
 // Returns the coordinates of a random stair that goes the specified direction (up or down)
 vector<int> Maze::getRandomStair(int direction) {
 	// The vector contains an equal number of up and down stairs.  Just pick them at random
@@ -568,4 +579,26 @@ vector<int> Maze::getRandomStair(int direction) {
 			return v;
 		}
 	}
+}
+
+// Changes the light state of the maze square at (x, y)
+void Maze::changeLitStatusAt(int x, int y, bool lit) {
+	m[y * cols + x].isLit = lit;
+}
+
+// Changes the light state of the maze square at (x, y), and -1/+1 x and y, for a total of 9 changed squares
+void Maze::changeLitStatusAround(int x, int y, bool lit) {
+	changeLitStatusAt(x-1, y-1, lit);
+	changeLitStatusAt(x  , y-1, lit);
+	changeLitStatusAt(x+1, y-1, lit);
+	changeLitStatusAt(x-1,   y, lit);
+	changeLitStatusAt(x  ,   y, lit);
+	changeLitStatusAt(x+1,   y, lit);
+	changeLitStatusAt(x-1, y+1, lit);
+	changeLitStatusAt(x  , y+1, lit);
+	changeLitStatusAt(x+1, y+1, lit);
+}
+
+// Lights or unlights the room specified by the room ID
+void Maze::changeRoomLitStatus(int room_id, bool lit) {
 }

@@ -70,12 +70,14 @@ int main(void) {
 	// account for that by adjusting based on the player position.  
 	// TODO: update render_world_at to make the rendering player-centric instead
 	// of top left centric
-	x = stairLoc[0] - PLAYER_PLAY_AREA_X;
-	y = stairLoc[1] - PLAYER_PLAY_AREA_Y;
+	x = stairLoc[0];
+	y = stairLoc[1];
 	
 	while (done == false) {
 		if (update_display == true) {
-			r.render_world_at(memBmp, m, x, y);
+			// Light the space around the player
+			m.changeLitStatusAround(x, y, true);
+			r.render_world_at_player(memBmp, m, x, y);
 			blit(memBmp, screen, 0, 0, 0, 0, 240, 208);
 			update_display = false;
 		}
@@ -84,33 +86,37 @@ int main(void) {
 		if (key == KEY_ESC) {
 			done = true;
 		}
+		if (key == KEY_LEFT || key == KEY_RIGHT || key == KEY_UP || key == KEY_DOWN) 
+		{
+			// Darken the current space around the player.  It will be lit in the player's
+			// new location later.
+			m.changeLitStatusAround(x, y, false);
+		}
 		if (key == KEY_LEFT) {
-			if (m.isCarved(x-1+ PLAYER_PLAY_AREA_X, y+ PLAYER_PLAY_AREA_Y) == true) {
+			if (m.isCarved(x-1, y) == true) {
 				x = x -1;
 				update_display = true;
 			}
 		}
 		if (key == KEY_RIGHT) {
-			if (m.isCarved(x+1+ PLAYER_PLAY_AREA_X, y+ PLAYER_PLAY_AREA_Y) == true) {			
+			if (m.isCarved(x+1, y) == true) {			
 				x = x + 1;
 				update_display = true;
 			}
 		}
 		if (key == KEY_UP) {
-			if (m.isCarved(x+ PLAYER_PLAY_AREA_X, y-1+ PLAYER_PLAY_AREA_Y) == true) {
+			if (m.isCarved(x, y-1) == true) {
 				y = y - 1;
 				update_display = true;
 			}
 		}
 		if (key == KEY_DOWN) {
-			if (m.isCarved(x+ PLAYER_PLAY_AREA_X, y+1+ PLAYER_PLAY_AREA_Y) == true)
+			if (m.isCarved(x, y+1) == true)
 			{
 				y = y + 1;
 				update_display = true;
 			}
 		}
-		
-
 	}
 		
 	
