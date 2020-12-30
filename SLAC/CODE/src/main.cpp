@@ -31,6 +31,7 @@ int main(void) {
 
 	int x, y, key;
 	bool done, update_display;
+	int was_in_room;
 	
 	srand(time(NULL));
 	
@@ -56,7 +57,7 @@ int main(void) {
 	
 	done = false;
 	update_display = true;
-	
+
 	BITMAP *memBmp = create_bitmap(240, 208);
 	
 	r.render_status_base(screen);
@@ -72,18 +73,26 @@ int main(void) {
 	// of top left centric
 	x = stairLoc[0];
 	y = stairLoc[1];
+	was_in_room = m.getRoomIdAt(x, y);
+	// Hack to force lighting in the initial room the player is in
+	if (was_in_room != -1) {
+		m.changeRoomLitStatus(was_in_room, true);		
+	}
 	
 	while (done == false) {
 		if (update_display == true) {
 			// Light the space around the player
-			m.changeLitStatusAroundPlayer(x, y, true);
-			
-			// If the player is in a room and it isn't already lit, light it. 
+			m.changeLitStatusAround(x, y, true);
 			int room_to_light = m.getRoomIdAt(x, y);
-			if(room_to_light != -1 && m.isRoomLit(room_to_light) == false) {
+			
+			// If the player was in a room but no longer is, then darken the room
+			if(was_in_room != -1 && room_to_light == -1) {
+				m.changeRoomLitStatus(was_in_room, false);
+			}
+			// If the player wasn't in a room but now is, then light up the room
+			if(was_in_room == -1 && room_to_light != -1) {
 				m.changeRoomLitStatus(room_to_light, true);
 			}
-			
 			// Draw the world display area
 			r.render_world_at_player(memBmp, m, x, y);
 			blit(memBmp, screen, 0, 0, 0, 0, 240, 208);
@@ -94,11 +103,16 @@ int main(void) {
 		if (key == KEY_ESC) {
 			done = true;
 		}
+
 		if (key == KEY_LEFT || key == KEY_RIGHT || key == KEY_UP || key == KEY_DOWN) 
 		{
-			// Darken the current space around the player.  It will be lit in the player's
-			// new location later.
-			m.changeLitStatusAroundPlayer(x, y, false);
+			// If the player is currently in a room, keep track of that room ID so we can darken
+			// the room if the player leaves it on move
+			was_in_room = m.getRoomIdAt(x, y);
+			// Darken the current space around the player if not in a room
+			if (was_in_room == -1) {
+				m.changeLitStatusAround(x, y, false);
+			}
 		}
 		if (key == KEY_LEFT) {
 			if (m.isCarved(x-1, y) == true) {

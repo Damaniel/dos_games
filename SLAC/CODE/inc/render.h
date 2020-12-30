@@ -56,7 +56,7 @@ enum {
 /* The base tiles that make up the fixed portions of a dungeon level */
 enum {
 	TILE_DARK,
-	TILE_BORDER_WALL,
+	TILE_DARKER_WALL,
 	TILE_WALL,
 	TILE_FLOOR,
 	TILE_FLOOR_TOP_HIGHLIGHT,

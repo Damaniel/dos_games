@@ -1,6 +1,7 @@
 #include <allegro.h>
 #include "render.h"
 #include "globals.h"
+#include <cstdio>
 
 Render::Render() {
 
@@ -114,10 +115,16 @@ void Render::render_world_at(BITMAP *destination, Maze m, int maze_x, int maze_y
 			bool carvedUp = m.isCarved(tile_to_render_x, tile_to_render_y - 1);
 			
 			if(tile_to_render_x >=0 && tile_to_render_y >=0 && tile_to_render_x < m.getWidth() && tile_to_render_y < m.getHeight()) {
-				int stairs = m.stairsHere(tile_to_render_x, tile_to_render_y);
+				int stairs = m.stairsHere(tile_to_render_x, tile_to_render_y);				
 				// Before checking any other status, draw darkness if the square isn't lit
-				if (m.isSquareLit(tile_to_render_x, tile_to_render_y) == false && m.isSquareRoomLit(tile_to_render_x, tile_to_render_y) == false) {
-					render_base_tile(destination, TILE_DARK, screen_x, screen_y);
+				if (m.isSquareLit(tile_to_render_x, tile_to_render_y) == false) { // && m.isSquareRoomLit(tile_to_render_x, tile_to_render_y) == false) {
+					// If the square has previously been seen and isn't carved, draw a darker wall
+					if (m.isCarved(tile_to_render_x, tile_to_render_y) == false && m.wasSeen(tile_to_render_x, tile_to_render_y) == true) {
+						render_base_tile(destination, TILE_DARKER_WALL, screen_x, screen_y);
+					} else {
+						// Otherwise, draw darkness
+						render_base_tile(destination, TILE_DARK, screen_x, screen_y);
+					}
 				}
 				else if (stairs == STAIRS_UP) {
 					render_base_tile(destination, TILE_UP_STAIRS, screen_x, screen_y);

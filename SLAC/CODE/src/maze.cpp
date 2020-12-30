@@ -28,7 +28,7 @@ void Maze::init(void) {
 		s.tag = EMPTY;
 		s.carved = false;
 		s.isLit = false;
-		s.isRoomLit = false;
+		s.wasSeen = false;
 		m.push_back(s);
 	}
 	
@@ -280,7 +280,7 @@ bool Maze::createRoom(int x, int y, int w, int h) {
 	}
 	
 	// Save the room information for later edge detection and wall removal
-	rooms.push_back(Room(roomId, x, y, w, h, false));
+	rooms.push_back(Room(roomId, x, y, w, h));
 	roomId++;	
 	return true;
 			
@@ -585,17 +585,7 @@ vector<int> Maze::getRandomStair(int direction) {
 // Changes the light state of the maze square at (x, y)
 void Maze::changeLitStatusAt(int x, int y, bool lit) {
 	m[y * cols + x].isLit = lit;
-}
-
-void Maze::changeLitStatusAtIfNonRoomLit(int x, int y, bool lit) {
-	if (m[y * cols + x].isRoomLit == true) {
-		return;
-	}
-	m[y * cols + x].isLit = lit;
-}
-
-void Maze::changeRoomLitStatusAt(int x, int y, bool roomLit) {
-	m[y * cols + x].isRoomLit = roomLit;
+	m[y * cols + x].wasSeen = true;
 }
 
 // Changes the light state of the maze square at (x, y), and -1/+1 x and y, for a total of 9 changed squares
@@ -611,21 +601,6 @@ void Maze::changeLitStatusAround(int x, int y, bool lit) {
 	changeLitStatusAt(x+1, y+1, lit);
 }
 
-// Changes the light state of the maze square at (x, y) and -1/+1 x and y.  
-// If a square is room lit, then don't turn it off.  This is to keep
-// the player's movement from unlighting rooms.
-void Maze::changeLitStatusAroundPlayer(int x, int y, bool lit) {
-	changeLitStatusAtIfNonRoomLit(x-1, y-1, lit);
-	changeLitStatusAtIfNonRoomLit(x  , y-1, lit);
-	changeLitStatusAtIfNonRoomLit(x+1, y-1, lit);
-	changeLitStatusAtIfNonRoomLit(x-1,   y, lit);
-	changeLitStatusAtIfNonRoomLit(x  ,   y, lit);
-	changeLitStatusAtIfNonRoomLit(x+1,   y, lit);
-	changeLitStatusAtIfNonRoomLit(x-1, y+1, lit);
-	changeLitStatusAtIfNonRoomLit(x  , y+1, lit);
-	changeLitStatusAtIfNonRoomLit(x+1, y+1, lit);
-}
-
 // Lights or unlights the room specified by the room ID
 void Maze::changeRoomLitStatus(int room_id, bool lit) {
 	int room_offset = room_id - STARTING_ROOM;
@@ -634,12 +609,11 @@ void Maze::changeRoomLitStatus(int room_id, bool lit) {
 	for(int i=r.x-1; i < r.x + r.w + 1; i++) {
 		for (int j = r.y-1; j < r.y + r.h + 1; j++) {
 			changeLitStatusAt(i, j, lit);
-			changeRoomLitStatusAt(i, j, lit); 
+			if(lit == true) {
+				m[j * cols + i].wasSeen = true;
+			}
 		}
 	}
-	
-	rooms[room_offset].isLit = lit;
-	
 }
 
 int Maze::getRoomIdAt(int x, int y) {
@@ -652,10 +626,6 @@ int Maze::getRoomIdAt(int x, int y) {
 	}
 }
 
-bool Maze::isRoomLit(int roomId) {
-	return rooms[roomId - STARTING_ROOM].isLit;
-}
-
-bool Maze::isSquareRoomLit(int x, int y) {
-	return m[y * cols + x].isRoomLit;
+bool Maze::wasSeen(int x, int y) {
+	return m[y * cols + x].wasSeen;
 }

@@ -47,15 +47,14 @@ struct Room {
 	int y;
 	int w;
 	int h;
-	bool isLit;		// Used to optimize room lighting, avoiding relighting of rooms that already are
-	Room(int id, int x, int y, int w, int h, bool isLit) : id(id), x(x), y(y), w(w), h(h), isLit(isLit) {}
+	Room(int id, int x, int y, int w, int h) : id(id), x(x), y(y), w(w), h(h) {}
 };
 
 struct Square {
-	int tag;
-	bool carved;
-	bool isLit;
-	bool isRoomLit;		// This square has been lit as part of a room, so it shouldn't be turned off by the player walking around
+	int tag;			// Contains the ID of the room it sits in, if any
+	bool carved;		// Is the square solid or has it been carved
+	bool isLit;			// Is the square currently lit?
+	bool wasSeen;		// The player has previously seen/lit this location but may or may not be in it now
 };
 
 class Maze {
@@ -81,8 +80,6 @@ private:
 	void placeStairs(int roomId, int type);
 	void markWalls(void);	
 	void changeLitStatusAt(int x, int y, bool lit);
-	void changeRoomLitStatusAt(int x, int y, bool roomLit);
-	void changeLitStatusAtIfNonRoomLit(int x, int y, bool lit);
 	
 public:
 	Maze(int x, int y);
@@ -94,7 +91,7 @@ public:
 	bool isCarved(int x, int y);
 	bool isSquareLit(int x, int y);
 	bool isSquareRoomLit(int x, int y);
-	bool isRoomLit(int roomId);
+	bool wasSeen(int x, int y);
 	int getRoomIdAt(int x, int y);
 	void generate(void);
 	void printMemoryUsage(void); 
@@ -102,7 +99,6 @@ public:
 	int stairsHere(int x, int y);
 	vector<int> getRandomStair(int direction);
 	void changeLitStatusAround(int x, int y, bool lit);	
-	void changeLitStatusAroundPlayer(int x, int y, bool lit);
 	void changeRoomLitStatus(int room, bool lit);
 
 };
