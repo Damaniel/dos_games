@@ -14,21 +14,12 @@
 # be installed.  This isn't normally a required package for a functional DJGPP
 # distribution, but the package is available in the v2gnu/ directory.
 #==================================================================================
-SRCDIR=src
-INCLUDEDIR=inc
-OBJDIR=obj
-
 CC=gpp
-CFLAGS=-O2 -I$(INCLUDEDIR)
+CFLAGS=-O2 -Iinc
 LIBS=-lalleg -lm
 
 TARGET=slac.exe
-
-_DEPS=render.h dat.h globals.h maze.h
-DEPS=$(addprefix $(INCLUDEDIR)/, $(_DEPS))
-
-_OBJS=main.o render.o maze.o
-OBJS=$(addprefix $(OBJDIR)/, $(_OBJS))
+OBJS=obj/maze.o obj/render.o obj/main.o 
 
 $(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS) $(LIBS)
@@ -37,11 +28,17 @@ prod: $(TARGET)
 	strip $(TARGET)
 	upx $(TARGET)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(DEPS)
-	$(CC) -c $(CFLAGS) -o $@ $<
+obj/maze.o: src/maze.cpp inc/maze.h
+	$(CC) -c $(CFLAGS) -o obj/maze.o src/maze.cpp
+
+obj/render.o: src/render.cpp inc/render.h inc/globals.h inc/maze.h
+	$(CC) -c $(CFLAGS) -o obj/render.o src/render.cpp
+
+obj/main.o: src/main.cpp inc/render.h inc/globals.h inc/maze.h
+	$(CC) -c $(CFLAGS) -o obj/main.o src/main.cpp
 	
 clean:
 	@echo Removing files...
-	@rm -f $(OBJDIR)/*.o
+	@rm -f obj/*.o
 	@rm -f $(TARGET)
 	
