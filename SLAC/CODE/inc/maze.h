@@ -27,24 +27,35 @@
 
 using namespace std;
 
+// Directions used by the maze generator
 const int DIRECTION_NORTH = 0;
 const int DIRECTION_SOUTH = 1;
 const int DIRECTION_EAST = 2;
 const int DIRECTION_WEST = 3;
 
+// Square types used by the maze generator
 const int EMPTY = 0;
 const int PASSAGE = 1;
 const int WALL = 2;
 
+// The starting room ID, assigned to the first room
 const int STARTING_ROOM = 100;
 
+// Number of attempts made to add valid rooms to the maze
 const int ROOM_ATTEMPTS = 200;
 
+// Stair types for the stair generator
 const int NO_STAIRS = -1;
 const int STAIRS_UP = 0;
 const int STAIRS_DOWN = 1;
 const int NUM_STAIRS = 3;
 
+//------------------------------------------------------------------------------
+// Stair struct definition
+//
+// Pretty much just the location of the stairs, the type (up or down), and the
+// room that the stairs are in.  Stairs are always generated in rooms.
+//------------------------------------------------------------------------------
 struct Stair {
     int x;
 	int y;
@@ -53,6 +64,12 @@ struct Stair {
 	Stair(int x, int y, int direction, int roomId) : x(x), y(y), direction(direction), roomId(roomId) {}
 };
 
+//------------------------------------------------------------------------------
+// WallLoc struct definition
+//
+// Used to track walls leading to rooms.  These walls can be opened, linking 
+// rooms to passageways.
+//------------------------------------------------------------------------------
 struct WallLoc {
 	int x;
 	int y;
@@ -60,6 +77,11 @@ struct WallLoc {
 	WallLoc(int x, int y, int direction) : x(x), y(y), direction(direction) {}
 };
 
+//------------------------------------------------------------------------------
+// Room struct definition
+//
+// Location and size of rooms - open areas with no internal passageways.
+//------------------------------------------------------------------------------
 struct Room {
 	int id;
 	int x;
@@ -69,6 +91,12 @@ struct Room {
 	Room(int id, int x, int y, int w, int h) : id(id), x(x), y(y), w(w), h(h) {}
 };
 
+//------------------------------------------------------------------------------
+// Square struct definition
+//
+// A square - that is, a grid location - in the maze.  It can be a wall or
+// floor, and it can also be part of a passageway or room.
+//------------------------------------------------------------------------------
 struct Square {
 	int tag;			// Contains the ID of the room it sits in, if any
 	bool carved;		// Is the square solid or has it been carved
@@ -76,6 +104,13 @@ struct Square {
 	bool wasSeen;		// The player has previously seen/lit this location but may or may not be in it now
 };
 
+//------------------------------------------------------------------------------
+// Maze class definition
+//
+// All of the information required to hold and generate a maze.  The maze 
+// generator generates a perfect maze, adds rooms, and then removes
+// unnecessary dead ends.
+//------------------------------------------------------------------------------
 class Maze {
 private:
 	vector<Square> m;
@@ -85,40 +120,39 @@ private:
 	int cols;
     int roomId;
 
-	void carve(int x, int y, int tag);
-	void uncarve(int x, int y);
-	void carveDirection(int x, int y, int direction, int tag);
-	bool createRoom(int x, int y, int w, int h);
 	void addStairs(int numUpStairs, int numDownStairs);
-	void generateRooms(int numAttempts, int minSize, int maxSize);
-	void generatePassages(int x, int y);
-	void getDirections(vector<int> & directions, int x, int y);
-	void openRoom(Room &r);
-	void removeDeadEnds(void); 
-	Room getRoom(int roomId);
-	void placeStairs(int roomId, int type);
-	void markWalls(void);	
+	void carve(int x, int y, int tag);
+	void carveDirection(int x, int y, int direction, int tag);	
 	void changeLitStatusAt(int x, int y, bool lit);
+	bool createRoom(int x, int y, int w, int h);
+	void generatePassages(int x, int y);
+	void generateRooms(int numAttempts, int minSize, int maxSize);
+	void getDirections(vector<int> & directions, int x, int y);
+	Room getRoom(int roomId);
+	void markWalls(void);	
+	void openRoom(Room &r);
+	void placeStairs(int roomId, int type);
+	void removeDeadEnds(void); 	
+	void uncarve(int x, int y);
 	
 public:
 	Maze(int x, int y);
-	void init(void);
-	void print(void);
-	int getWidth(void) { return cols; }
+	void changeLitStatusAround(int x, int y, bool lit);	
+	void changeRoomLitStatus(int room, bool lit);
+	void generate(void);
 	int getHeight(void) { return rows; }
+	vector<int> getRandomStair(int direction);
+	int getRoomIdAt(int x, int y);
 	Square getSquare(int x, int y);
+	int getWidth(void) { return cols; }
+	void init(void);
 	bool isCarved(int x, int y);
 	bool isSquareLit(int x, int y);
-	bool isSquareRoomLit(int x, int y);
-	bool wasSeen(int x, int y);
-	int getRoomIdAt(int x, int y);
-	void generate(void);
+	void print(void);
 	void printMemoryUsage(void); 
 	void printRoomIds(void);
 	int stairsHere(int x, int y);
-	vector<int> getRandomStair(int direction);
-	void changeLitStatusAround(int x, int y, bool lit);	
-	void changeRoomLitStatus(int room, bool lit);
-
+	bool wasSeen(int x, int y);
 };
+
 #endif

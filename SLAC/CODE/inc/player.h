@@ -24,6 +24,9 @@
 #ifndef __PLAYER_H__
 #define __PLAYER_H__
 
+//------------------------------------------------------------------------------
+// Player class definition
+//------------------------------------------------------------------------------
 class Player {
 private:
 	int hp;					// The player's current HP

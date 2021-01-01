@@ -27,16 +27,23 @@
 #include <vector>
 #include <allegro.h>
 
+// Game-specific include files
 #include "player.h"
 #include "maze.h"
 #include "render.h"
 #include "globals.h"
 
-
+// Globals used to hold game state.  External defines are in globals.h
 DATAFILE *g_game_data;
 BITMAP   *g_back_buffer;
 Player 	  g_player;
 
+//----------------------------------------------------------------------------------
+// load_resources
+//
+// Loads and processes all game resources.  Most are stored in the global 
+// datafile, so that's all that gets loaded right now.
+//----------------------------------------------------------------------------------
 int load_resources(void) {
 	
 	g_game_data = load_datafile("game.dat");
@@ -47,7 +54,11 @@ int load_resources(void) {
 	return 0;
 }
 
-/* Perform any initializtion tasks that need to be done with data in the datafile */
+//----------------------------------------------------------------------------------
+// init_resources
+//
+// Perform any initializtion tasks that need to be done with game data.
+//----------------------------------------------------------------------------------
 void init_resources(Render r) {
 	r.generate_prop_font_offsets();		
 	r.copy_data_to_offscreen_vram();	
@@ -55,10 +66,22 @@ void init_resources(Render r) {
 	g_back_buffer = create_bitmap(240, 208);
 }
 
+//----------------------------------------------------------------------------------
+// unload_resources
+//
+// Free up any game related resources.
+//----------------------------------------------------------------------------------
 void unload_resources(void) {
 	unload_datafile(g_game_data);
 }
 
+//----------------------------------------------------------------------------------
+// MAIN
+//
+// Notes:
+//   Most of the code in here is just testing stuff.  There's no official game
+//   loop of any kind yet, and stuff in here is subject to change and/or removal.
+//----------------------------------------------------------------------------------
 int main(void) {
 
 	int key;
