@@ -223,7 +223,7 @@ void Render::render_text_base(BITMAP *destination, bool extended) {
 // Notes:
 //   Negative values for maze_x and maze_y are allowed, as are values outside of the 
 //   positive end of the range - maze tiles just won't be drawn for invalid locations	
-//   Also note that the code that draws the floor (that is, where isCarved == true),
+//   Also note that the code that draws the floor (that is, where is_carved == true),
 //   checks tiles to the left and above it when deciding what to draw.  There isn't 
 //   any check done to see if those tiles are valid, but the default Maze class will 
 //   always have a valid tile to the left and above any carved tile, so this shouldn't
@@ -235,15 +235,15 @@ void Render::render_world_at(BITMAP *destination, Maze m, int maze_x, int maze_y
 			int tile_to_render_x = maze_x + screen_x;
 			int tile_to_render_y = maze_y + screen_y;
 			int tileToUse;
-			bool carvedLeft = m.isCarved(tile_to_render_x -1, tile_to_render_y);
-			bool carvedUp = m.isCarved(tile_to_render_x, tile_to_render_y - 1);
+			bool carvedLeft = m.is_carved(tile_to_render_x -1, tile_to_render_y);
+			bool carvedUp = m.is_carved(tile_to_render_x, tile_to_render_y - 1);
 			
-			if(tile_to_render_x >=0 && tile_to_render_y >=0 && tile_to_render_x < m.getWidth() && tile_to_render_y < m.getHeight()) {
-				int stairs = m.stairsHere(tile_to_render_x, tile_to_render_y);				
+			if(tile_to_render_x >=0 && tile_to_render_y >=0 && tile_to_render_x < m.get_width() && tile_to_render_y < m.get_height()) {
+				int stairs = m.stairs_here(tile_to_render_x, tile_to_render_y);				
 				// Before checking any other status, draw darkness if the square isn't lit
-				if (m.isSquareLit(tile_to_render_x, tile_to_render_y) == false) { 
+				if (m.is_square_lit(tile_to_render_x, tile_to_render_y) == false) { 
 					// If the square has previously been seen and isn't carved, draw a darker wall
-					if (m.isCarved(tile_to_render_x, tile_to_render_y) == false && m.wasSeen(tile_to_render_x, tile_to_render_y) == true) {
+					if (m.is_carved(tile_to_render_x, tile_to_render_y) == false && m.was_seen(tile_to_render_x, tile_to_render_y) == true) {
 						render_base_tile(destination, TILE_DARKER_WALL, screen_x, screen_y);
 					} else {
 						// Otherwise, draw darkness
@@ -260,7 +260,7 @@ void Render::render_world_at(BITMAP *destination, Maze m, int maze_x, int maze_y
 				// Render floor if present.  There are 4 different floor tiles - one with no
 				// highlighting and 3 with different types of highlighting
 				// If the location is a wall, render that instead.
-				else if (m.isCarved(tile_to_render_x, tile_to_render_y) == true) {
+				else if (m.is_carved(tile_to_render_x, tile_to_render_y) == true) {
 					if (carvedLeft == false && carvedUp == true) {
 						tileToUse = TILE_FLOOR_LEFT_HIGHLIGHT;
 					}

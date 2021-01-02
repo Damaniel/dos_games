@@ -112,16 +112,16 @@ int main(void) {
 	r.render_text_base(screen, false);
 	
 	// Place the player on a random set of up stairs
-	vector<int> stairLoc = m.getRandomStair(STAIRS_UP);
+	vector<int> stairLoc = m.get_random_stair(STAIRS_UP);
 
 	// Create a new player at the stair location
 	g_player = Player(stairLoc[0], stairLoc[1]);
 	
 	// Hack to force lighting in the initial room the player is in
-	int initial_room = m.getRoomIdAt(g_player.x_pos, g_player.y_pos);
+	int initial_room = m.get_room_id_at(g_player.x_pos, g_player.y_pos);
 	if (initial_room != -1) {
 		was_in_room = initial_room;
-		m.changeRoomLitStatus(initial_room, true);		
+		m.change_room_lit_status(initial_room, true);		
 	}
 	
 	// Loop until done.  Right now, 'done' = pressing Esc
@@ -134,18 +134,18 @@ int main(void) {
 		// Things to do when the display needs updating
 		if (update_display == true) {
 			// Light the space around the player
-			m.changeLitStatusAround(g_player.x_pos, g_player.y_pos, true);
+			m.change_lit_status_around(g_player.x_pos, g_player.y_pos, true);
 			
 			// Check what room the player is in, if any
-			int room_to_light = m.getRoomIdAt(g_player.x_pos, g_player.y_pos);
+			int room_to_light = m.get_room_id_at(g_player.x_pos, g_player.y_pos);
 			
 			// If the player was in a room but no longer is, then darken the room
 			if(was_in_room != -1 && room_to_light == -1) {
-				m.changeRoomLitStatus(was_in_room, false);
+				m.change_room_lit_status(was_in_room, false);
 			}
 			// If the player wasn't in a room but now is, then light up the room
 			if(was_in_room == -1 && room_to_light != -1) {
-				m.changeRoomLitStatus(room_to_light, true);
+				m.change_room_lit_status(room_to_light, true);
 			}
 			
 			// Draw the world display area
@@ -165,32 +165,32 @@ int main(void) {
 		{
 			// If the player is currently in a room, keep track of that room ID so we can darken
 			// the room if the player leaves it on move
-			was_in_room = m.getRoomIdAt(g_player.x_pos, g_player.y_pos);
+			was_in_room = m.get_room_id_at(g_player.x_pos, g_player.y_pos);
 			// Darken the current space around the player if not in a room
 			if (was_in_room == -1) {
-				m.changeLitStatusAround(g_player.x_pos, g_player.y_pos, false);
+				m.change_lit_status_around(g_player.x_pos, g_player.y_pos, false);
 			}
 		}
 		if (key == KEY_LEFT) {
-			if (m.isCarved(g_player.x_pos-1, g_player.y_pos) == true) {
+			if (m.is_carved(g_player.x_pos-1, g_player.y_pos) == true) {
 				g_player.x_pos = g_player.x_pos -1;
 				update_display = true;
 			}
 		}
 		if (key == KEY_RIGHT) {
-			if (m.isCarved(g_player.x_pos+1, g_player.y_pos) == true) {			
+			if (m.is_carved(g_player.x_pos+1, g_player.y_pos) == true) {			
 				g_player.x_pos = g_player.x_pos + 1;
 				update_display = true;
 			}
 		}
 		if (key == KEY_UP) {
-			if (m.isCarved(g_player.x_pos, g_player.y_pos-1) == true) {
+			if (m.is_carved(g_player.x_pos, g_player.y_pos-1) == true) {
 				g_player.y_pos = g_player.y_pos - 1;
 				update_display = true;
 			}
 		}
 		if (key == KEY_DOWN) {
-			if (m.isCarved(g_player.x_pos, g_player.y_pos+1) == true)
+			if (m.is_carved(g_player.x_pos, g_player.y_pos+1) == true)
 			{
 				g_player.y_pos = g_player.y_pos + 1;
 				update_display = true;

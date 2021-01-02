@@ -120,39 +120,39 @@ private:
 	int cols;
     int roomId;
 
-	void addStairs(int numUpStairs, int numDownStairs);
+	void add_stairs(int numUpStairs, int numDownStairs);
 	void carve(int x, int y, int tag);
-	void carveDirection(int x, int y, int direction, int tag);	
-	void changeLitStatusAt(int x, int y, bool lit);
-	bool createRoom(int x, int y, int w, int h);
-	void generatePassages(int x, int y);
-	void generateRooms(int numAttempts, int minSize, int maxSize);
-	void getDirections(vector<int> & directions, int x, int y);
-	Room getRoom(int roomId);
-	void markWalls(void);	
-	void openRoom(Room &r);
-	void placeStairs(int roomId, int type);
-	void removeDeadEnds(void); 	
+	void carve_direction(int x, int y, int direction, int tag);	
+	void change_lit_status_at(int x, int y, bool lit);
+	bool create_room(int x, int y, int w, int h);
+	void generate_passages(int x, int y);
+	void generate_rooms(int numAttempts, int minSize, int maxSize);
+	void get_directions(vector<int> & directions, int x, int y);
+	Room get_room(int roomId);
+	void mark_walls(void);	
+	void open_room(Room &r);
+	void place_stairs(int roomId, int type);
+	void remove_dead_ends(void); 	
 	void uncarve(int x, int y);
 	
 public:
 	Maze(int x, int y);
-	void changeLitStatusAround(int x, int y, bool lit);	
-	void changeRoomLitStatus(int room, bool lit);
+	void change_lit_status_around(int x, int y, bool lit);	
+	void change_room_lit_status(int room, bool lit);
 	void generate(void);
-	int getHeight(void) { return rows; }
-	vector<int> getRandomStair(int direction);
-	int getRoomIdAt(int x, int y);
-	Square getSquare(int x, int y);
-	int getWidth(void) { return cols; }
+	int get_height(void) { return rows; }
+	vector<int> get_random_stair(int direction);
+	int get_room_id_at(int x, int y);
+	Square get_square(int x, int y);
+	int get_width(void) { return cols; }
 	void init(void);
-	bool isCarved(int x, int y);
-	bool isSquareLit(int x, int y);
+	bool is_carved(int x, int y);
+	bool is_square_lit(int x, int y);
 	void print(void);
-	void printMemoryUsage(void); 
-	void printRoomIds(void);
-	int stairsHere(int x, int y);
-	bool wasSeen(int x, int y);
+	void print_memory_usage(void); 
+	void print_room_ids(void);
+	int stairs_here(int x, int y);
+	bool was_seen(int x, int y);
 };
 
 #endif
