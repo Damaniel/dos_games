@@ -22,6 +22,8 @@
 //   SOFTWARE.
 //==========================================================================================
 #include <allegro.h>
+#include <vector>
+#include <cstdio>
 #include "globals.h"
 #include "render.h"
 
@@ -91,6 +93,61 @@ void Render::render_statics(BITMAP *destination, int maze_x, int maze_y) {
 //==================================================================================
 
 //----------------------------------------------------------------------------------
+// add_area_to_map_bitmap
+//
+// Debug function.
+//
+// Adds small squares to the map bitmap corresponding to the area in the 
+// immediate vicinity of the location specified by (x, y)
+//
+// Notes:
+//   This method will probably change dramatically.  It doesn't account for 
+//   already visited squares, does minimal bounds checking, and assumes
+//   a 3x3 square centered on the (x, y) location.  It also only adds walls and
+//   floors - not even the player.  It's mainly to test the validity 
+//   of using an off-screen VRAM bitmap to hold map status
+//----------------------------------------------------------------------------------
+void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
+	for(int i=x-1; i<=x+1; i++) {
+		for(int j=y-1; j<=y+1; j++) {
+			if(i >=0 && i < m.get_width() && j >=0 && j < m.get_height()) {
+				if (m.is_carved(i, j) == false) {
+					blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat,
+				     	screen,
+					 	MAP_DOT_WALL * MAP_DOT_WIDTH,
+					 	0,
+					 	MAP_AREA_VMEM_X + (i * MAP_DOT_WIDTH),
+					 	MAP_AREA_VMEM_Y + (j * MAP_DOT_HEIGHT),
+					 	MAP_DOT_WIDTH,
+					 	MAP_DOT_HEIGHT);
+				}
+			}
+		}
+	}
+
+	// If the player is in a room and hasn't been in the room before, 
+	// draw the room to the map area
+	int room = m.get_room_id_at(x, y);
+	if(room != -1 ) {
+		vector<int> rd = m.get_room_dimensions(room);
+		for(int i = rd[0] - 1; i < rd[0] + rd[2] + 1; i++) {
+			for (int j = rd[1] - 1; j < rd[1] + rd[3] + 1; j++) {
+				if(m.is_carved(i, j) == false) {
+					blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat,
+				     	screen,
+					 	MAP_DOT_WALL * MAP_DOT_WIDTH,
+					 	0,
+					 	MAP_AREA_VMEM_X + (i * MAP_DOT_WIDTH),
+					 	MAP_AREA_VMEM_Y + (j * MAP_DOT_HEIGHT),
+					 	MAP_DOT_WIDTH,
+					 	MAP_DOT_HEIGHT);
+				}
+			}
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------
 // copy_data_to_offscreen_vram
 //
 // Takes any bitmap data that we plan to stuff in unused video RAM and load it
@@ -158,7 +215,8 @@ void Render::render_fixed_text(BITMAP *destination, char *text, int x_pos, int y
 //   The map dialog is stored in otherwise unused VGA memory.
 //----------------------------------------------------------------------------------
 void Render::render_map_to_screen(void) {
-	blit(screen, screen, MAP_VMEM_X, MAP_VMEM_Y, 0, 0, MAP_VMEM_WIDTH, MAP_VMEM_HEIGHT);
+	blit(screen, screen, MAP_VMEM_X, MAP_VMEM_Y, MAP_X_POS, MAP_Y_POS, 
+	     MAP_VMEM_WIDTH, MAP_VMEM_HEIGHT);
 }
 
 //----------------------------------------------------------------------------------

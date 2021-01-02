@@ -38,6 +38,10 @@ DATAFILE *g_game_data;
 BITMAP   *g_back_buffer;
 Player 	  g_player;
 
+// The current maze.
+// TODO: This will be part of a larger dungeon state object later on.
+Maze      g_maze;
+
 //----------------------------------------------------------------------------------
 // load_resources
 //
@@ -105,23 +109,23 @@ int main(void) {
 	}
 	init_resources(r);
 
-	Maze m = Maze(64, 64);
-	m.generate();
+	g_maze = Maze(64, 64);
+	g_maze.generate();
 
 	r.render_status_base(screen);
 	r.render_text_base(screen, false);
 	
 	// Place the player on a random set of up stairs
-	vector<int> stairLoc = m.get_random_stair(STAIRS_UP);
+	vector<int> stairLoc = g_maze.get_random_stair(STAIRS_UP);
 
 	// Create a new player at the stair location
 	g_player = Player(stairLoc[0], stairLoc[1]);
 	
 	// Hack to force lighting in the initial room the player is in
-	int initial_room = m.get_room_id_at(g_player.x_pos, g_player.y_pos);
+	int initial_room = g_maze.get_room_id_at(g_player.x_pos, g_player.y_pos);
 	if (initial_room != -1) {
 		was_in_room = initial_room;
-		m.change_room_lit_status(initial_room, true);		
+		g_maze.change_room_lit_status(initial_room, true);		
 	}
 	
 	// Loop until done.  Right now, 'done' = pressing Esc
@@ -129,29 +133,44 @@ int main(void) {
 	// Does the display need to be refreshed?
 	bool update_display = true;
 	
+	// Is the player locked out from keypresses due to a dialog being displayed?
+	bool key_lockout = false;
+	// Is the map currently displayed?
+	bool map_displayed = false;
+
 	// Main game loop
 	while (done == false) {
 		// Things to do when the display needs updating
 		if (update_display == true) {
-			// Light the space around the player
-			m.change_lit_status_around(g_player.x_pos, g_player.y_pos, true);
-			
-			// Check what room the player is in, if any
-			int room_to_light = m.get_room_id_at(g_player.x_pos, g_player.y_pos);
-			
-			// If the player was in a room but no longer is, then darken the room
-			if(was_in_room != -1 && room_to_light == -1) {
-				m.change_room_lit_status(was_in_room, false);
+
+			if (map_displayed == true) {
+				r.render_map_to_screen();
 			}
-			// If the player wasn't in a room but now is, then light up the room
-			if(was_in_room == -1 && room_to_light != -1) {
-				m.change_room_lit_status(room_to_light, true);
+			else {
+				// TODO: move elsewhere
+				// Add the areas around the player to the map bitmap
+				r.add_area_to_map_bitmap(g_maze, g_player.x_pos, g_player.y_pos);
+
+				// Light the space around the player
+				g_maze.change_lit_status_around(g_player.x_pos, g_player.y_pos, true);
+
+				// Check what room the player is in, if any
+				int room_to_light = g_maze.get_room_id_at(g_player.x_pos, g_player.y_pos);
+			
+				// If the player was in a room but no longer is, then darken the room
+				if(was_in_room != -1 && room_to_light == -1) {
+					g_maze.change_room_lit_status(was_in_room, false);
+				}
+				// If the player wasn't in a room but now is, then light up the room
+				if(was_in_room == -1 && room_to_light != -1) {
+					g_maze.change_room_lit_status(room_to_light, true);
+				}
+			
+				// Draw the world display area
+				r.render_world_at_player(g_back_buffer, g_maze, g_player.x_pos, g_player.y_pos);
+				blit(g_back_buffer, screen, 0, 0, 0, 0, 240, 208);
 			}
-			
-			// Draw the world display area
-			r.render_world_at_player(g_back_buffer, m, g_player.x_pos, g_player.y_pos);
-			blit(g_back_buffer, screen, 0, 0, 0, 0, 240, 208);
-			
+				
 			// Update is finished, make sure it's not done again until necessary
 			update_display = false;
 		}
@@ -165,36 +184,46 @@ int main(void) {
 		{
 			// If the player is currently in a room, keep track of that room ID so we can darken
 			// the room if the player leaves it on move
-			was_in_room = m.get_room_id_at(g_player.x_pos, g_player.y_pos);
+			was_in_room = g_maze.get_room_id_at(g_player.x_pos, g_player.y_pos);
 			// Darken the current space around the player if not in a room
 			if (was_in_room == -1) {
-				m.change_lit_status_around(g_player.x_pos, g_player.y_pos, false);
+				g_maze.change_lit_status_around(g_player.x_pos, g_player.y_pos, false);
 			}
 		}
-		if (key == KEY_LEFT) {
-			if (m.is_carved(g_player.x_pos-1, g_player.y_pos) == true) {
+		if (key == KEY_LEFT && key_lockout == false) {
+			if (g_maze.is_carved(g_player.x_pos-1, g_player.y_pos) == true) {
 				g_player.x_pos = g_player.x_pos -1;
 				update_display = true;
 			}
 		}
-		if (key == KEY_RIGHT) {
-			if (m.is_carved(g_player.x_pos+1, g_player.y_pos) == true) {			
+		if (key == KEY_RIGHT && key_lockout == false) {
+			if (g_maze.is_carved(g_player.x_pos+1, g_player.y_pos) == true) {			
 				g_player.x_pos = g_player.x_pos + 1;
 				update_display = true;
 			}
 		}
-		if (key == KEY_UP) {
-			if (m.is_carved(g_player.x_pos, g_player.y_pos-1) == true) {
+		if (key == KEY_UP && key_lockout == false) {
+			if (g_maze.is_carved(g_player.x_pos, g_player.y_pos-1) == true) {
 				g_player.y_pos = g_player.y_pos - 1;
 				update_display = true;
 			}
 		}
-		if (key == KEY_DOWN) {
-			if (m.is_carved(g_player.x_pos, g_player.y_pos+1) == true)
+		if (key == KEY_DOWN && key_lockout == false) {
+			if (g_maze.is_carved(g_player.x_pos, g_player.y_pos+1) == true)
 			{
 				g_player.y_pos = g_player.y_pos + 1;
 				update_display = true;
 			}
+		}
+		if (key == KEY_M) {
+			if (map_displayed == true) {
+				map_displayed = false;
+				key_lockout = false;
+			} else {
+				map_displayed = true;
+				key_lockout = true;
+			}
+			update_display = true;
 		}
 	}
 		

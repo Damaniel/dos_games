@@ -136,12 +136,14 @@ private:
 	void uncarve(int x, int y);
 	
 public:
+	Maze();
 	Maze(int x, int y);
 	void change_lit_status_around(int x, int y, bool lit);	
 	void change_room_lit_status(int room, bool lit);
 	void generate(void);
 	int get_height(void) { return rows; }
 	vector<int> get_random_stair(int direction);
+	vector<int> get_room_dimensions(int roomId);	
 	int get_room_id_at(int x, int y);
 	Square get_square(int x, int y);
 	int get_width(void) { return cols; }

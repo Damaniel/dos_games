@@ -34,6 +34,13 @@
 //------------------------------------------------------------------------------
 // Maze constructor
 //------------------------------------------------------------------------------
+Maze::Maze() {
+
+}
+
+//------------------------------------------------------------------------------
+// Maze constructor
+//------------------------------------------------------------------------------
 Maze::Maze(int x, int y) {
 	/* If the maze is of even size, add an additional row/column to ensure 
 	 * a border surrounds the entire maze. */
@@ -695,6 +702,21 @@ vector<int> Maze::get_random_stair(int direction) {
 			return v;
 		}
 	}
+}
+
+//------------------------------------------------------------------------------
+// get_room_dimensions
+// 
+// Returns the position and dimensions of the specified room.
+//------------------------------------------------------------------------------
+vector<int> Maze::get_room_dimensions(int roomId) {
+	Room r = get_room(roomId);
+	vector<int> rd;
+	rd.push_back(r.x);
+	rd.push_back(r.y);
+	rd.push_back(r.w);
+	rd.push_back(r.h);
+	return rd;
 }
 
 //------------------------------------------------------------------------------

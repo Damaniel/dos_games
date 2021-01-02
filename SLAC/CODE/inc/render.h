@@ -42,6 +42,14 @@
 #define MAP_VMEM_WIDTH   144
 #define MAP_VMEM_HEIGHT  160
 
+#define MAP_X_POS		  48
+#define MAP_Y_POS		  24
+
+// The offset of the actual map portion of the map screen stored in offscreen
+// memory
+#define MAP_AREA_VMEM_X  (MAP_VMEM_X + 7)
+#define MAP_AREA_VMEM_Y  (MAP_VMEM_Y + 16)
+
 //  The size of a dungeon tile in pixels
 #define TILE_PIXEL_WIDTH		  16
 #define TILE_PIXEL_HEIGHT	      16
@@ -74,6 +82,10 @@
 #define PLAYER_PLAY_AREA_X			 7
 #define PLAYER_PLAY_AREA_Y			 6
 
+// The size (in pixels) of a single map dot.
+#define MAP_DOT_WIDTH				 2
+#define MAP_DOT_HEIGHT				 2
+
 // Each font has 5 different versions in different colors.  These are used to grab the correct
 // color font from the bitmaps
 enum {
@@ -98,7 +110,30 @@ enum {
 	TILE_DOWN_STAIRS,
 	TILE_DOOR
 };
-	
+
+// An enum containing entries for each of the 16 colors of 'map dots' sitting
+// in the datafile.  Some of them aren't used on the minimap, but those that
+// are will have a name describing what they're used for (for example, 
+// MAP_DOT_FLOOR is used for unoccupied floor spaces)
+enum {
+	MAP_DOT_FLOOR,
+	MAP_DOT_1,
+	MAP_DOT_2,
+	MAP_DOT_3,
+	MAP_DOT_4,
+	MAP_DOT_UP_STAIRS,
+	MAP_DOT_DOWN_STAIRS,
+	MAP_DOT_7,
+	MAP_DOT_8,
+	MAP_DOT_9,
+	MAP_DOT_10,
+	MAP_DOT_11,
+	MAP_DOT_12,
+	MAP_DOT_13,
+	MAP_DOT_14,
+	MAP_DOT_WALL
+};
+
 // Width and height of all characters from ASCII values 32 to 127 in the standard 
 // proportional font
 const int prop_font_width[FONT_ENTRIES] = {
@@ -129,6 +164,7 @@ class Render {
 		
 	public:
 		Render();
+		void add_area_to_map_bitmap(Maze m, int x, int y);
 		void copy_data_to_offscreen_vram(void);		
 		void generate_prop_font_offsets(void);
 		void render_fixed_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);		
