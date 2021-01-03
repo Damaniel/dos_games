@@ -81,6 +81,9 @@ struct WallLoc {
 // Room struct definition
 //
 // Location and size of rooms - open areas with no internal passageways.
+//
+// Note: hasBeenEntered is used to mark a room as having been visited by the 
+// player.  This information may be of use to the renderer.
 //------------------------------------------------------------------------------
 struct Room {
 	int id;
@@ -88,7 +91,10 @@ struct Room {
 	int y;
 	int w;
 	int h;
-	Room(int id, int x, int y, int w, int h) : id(id), x(x), y(y), w(w), h(h) {}
+	bool hasBeenEntered;
+	Room(int id, int x, int y, int w, int h) : id(id), x(x), y(y), w(w), h(h) {
+		hasBeenEntered = false;
+	}
 };
 
 //------------------------------------------------------------------------------
@@ -128,7 +134,6 @@ private:
 	void generate_passages(int x, int y);
 	void generate_rooms(int numAttempts, int minSize, int maxSize);
 	void get_directions(vector<int> & directions, int x, int y);
-	Room get_room(int roomId);
 	void mark_walls(void);	
 	void open_room(Room &r);
 	void place_stairs(int roomId, int type);
@@ -143,7 +148,7 @@ public:
 	void generate(void);
 	int get_height(void) { return rows; }
 	vector<int> get_random_stair(int direction);
-	vector<int> get_room_dimensions(int roomId);	
+	Room get_room(int roomId);	
 	int get_room_id_at(int x, int y);
 	Square get_square(int x, int y);
 	int get_width(void) { return cols; }
@@ -153,6 +158,7 @@ public:
 	void print(void);
 	void print_memory_usage(void); 
 	void print_room_ids(void);
+	void set_room_as_entered(int roomID);
 	int stairs_here(int x, int y);
 	bool was_seen(int x, int y);
 };

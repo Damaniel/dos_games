@@ -125,7 +125,10 @@ int main(void) {
 	int initial_room = g_maze.get_room_id_at(g_player.x_pos, g_player.y_pos);
 	if (initial_room != -1) {
 		was_in_room = initial_room;
-		g_maze.change_room_lit_status(initial_room, true);		
+		// double hack to mark the room as seen so that the map renderer can
+		// display it
+		g_maze.change_room_lit_status(initial_room, false);		
+		g_maze.change_room_lit_status(initial_room, true);			
 	}
 	
 	// Loop until done.  Right now, 'done' = pressing Esc
@@ -156,6 +159,7 @@ int main(void) {
 
 				// Check what room the player is in, if any
 				int room_to_light = g_maze.get_room_id_at(g_player.x_pos, g_player.y_pos);
+
 			
 				// If the player was in a room but no longer is, then darken the room
 				if(was_in_room != -1 && room_to_light == -1) {
@@ -164,13 +168,17 @@ int main(void) {
 				// If the player wasn't in a room but now is, then light up the room
 				if(was_in_room == -1 && room_to_light != -1) {
 					g_maze.change_room_lit_status(room_to_light, true);
+					// TODO: restructure this!
+					// Mark the room itself as visited so rendering the map will
+					// show the room even at the start of the game
+					g_maze.set_room_as_entered(room_to_light);
 				}
 			
 				// Draw the world display area
 				r.render_world_at_player(g_back_buffer, g_maze, g_player.x_pos, g_player.y_pos);
 				blit(g_back_buffer, screen, 0, 0, 0, 0, 240, 208);
 			}
-				
+
 			// Update is finished, make sure it's not done again until necessary
 			update_display = false;
 		}

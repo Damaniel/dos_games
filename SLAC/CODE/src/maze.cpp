@@ -346,23 +346,6 @@ void Maze::get_directions(vector<int> & directions, int x, int y) {
 }
 
 //------------------------------------------------------------------------------
-// get_room
-//
-// Returns the Room specified by the room id.
-//------------------------------------------------------------------------------
-Room Maze::get_room(int roomId) {
-	for (vector<Room>::iterator it = rooms.begin(); it != rooms.end(); it++) {
-		if (it->id == roomId) {
-			return *it;
-		}
-	}
-	
-	// Just return the last room for now.  Should throw something.
-	cout << "Warning - room not found!" << endl;
-	return *(rooms.end());
-}
-
-//------------------------------------------------------------------------------
 // mark_walls
 //
 // Find 'walls' in the maze and mark them as such.
@@ -705,18 +688,20 @@ vector<int> Maze::get_random_stair(int direction) {
 }
 
 //------------------------------------------------------------------------------
-// get_room_dimensions
-// 
-// Returns the position and dimensions of the specified room.
+// get_room
+//
+// Returns the Room specified by the room id.
 //------------------------------------------------------------------------------
-vector<int> Maze::get_room_dimensions(int roomId) {
-	Room r = get_room(roomId);
-	vector<int> rd;
-	rd.push_back(r.x);
-	rd.push_back(r.y);
-	rd.push_back(r.w);
-	rd.push_back(r.h);
-	return rd;
+Room Maze::get_room(int roomId) {
+	for (vector<Room>::iterator it = rooms.begin(); it != rooms.end(); it++) {
+		if (it->id == roomId) {
+			return *it;
+		}
+	}
+	
+	// Just return the last room for now.  Should throw something.
+	cout << "Warning - room not found!" << endl;
+	return *(rooms.end());
 }
 
 //------------------------------------------------------------------------------
@@ -832,6 +817,16 @@ void Maze::print_room_ids(void) {
 	for(vector<Room>::iterator it = rooms.begin(); it != rooms.end(); it++) {
 		cout << "Room id is " << it->id << endl;
 	}
+}
+
+//------------------------------------------------------------------------------
+// set_room_as_entered
+//
+// Flags the room as a whole as having been entered.  This is used for
+// optimizing map rendering, as well as future to be determined development.
+//------------------------------------------------------------------------------
+void Maze::set_room_as_entered(int roomId) {
+	rooms[roomId - STARTING_ROOM].hasBeenEntered = true;
 }
 
 //------------------------------------------------------------------------------

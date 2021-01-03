@@ -106,6 +106,8 @@ void Render::render_statics(BITMAP *destination, int maze_x, int maze_y) {
 //   a 3x3 square centered on the (x, y) location.  It also only adds walls and
 //   floors - not even the player.  It's mainly to test the validity 
 //   of using an off-screen VRAM bitmap to hold map status
+//
+// TODO: Figure out another way to do this.
 //----------------------------------------------------------------------------------
 void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 	for(int i=x-1; i<=x+1; i++) {
@@ -128,22 +130,24 @@ void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 	// If the player is in a room and hasn't been in the room before, 
 	// draw the room to the map area
 	int room = m.get_room_id_at(x, y);
-	if(room != -1 ) {
-		vector<int> rd = m.get_room_dimensions(room);
-		for(int i = rd[0] - 1; i < rd[0] + rd[2] + 1; i++) {
-			for (int j = rd[1] - 1; j < rd[1] + rd[3] + 1; j++) {
-				if(m.is_carved(i, j) == false) {
-					blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat,
-				     	screen,
-					 	MAP_DOT_WALL * MAP_DOT_WIDTH,
-					 	0,
-					 	MAP_AREA_VMEM_X + (i * MAP_DOT_WIDTH),
-					 	MAP_AREA_VMEM_Y + (j * MAP_DOT_HEIGHT),
-					 	MAP_DOT_WIDTH,
-					 	MAP_DOT_HEIGHT);
-				}
+	if(room != -1) {
+		Room r = m.get_room(room);
+		if (r.hasBeenEntered == false) {
+			for(int i = r.x - 1; i < r.x + r.w + 1; i++) {
+				for (int j = r.y - 1; j < r.y + r.h + 1; j++) {
+					if(m.is_carved(i, j) == false) {
+						blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat,
+					     	screen,
+					 		MAP_DOT_WALL * MAP_DOT_WIDTH,
+					 		0,
+					 		MAP_AREA_VMEM_X + (i * MAP_DOT_WIDTH),
+					 		MAP_AREA_VMEM_Y + (j * MAP_DOT_HEIGHT),
+					 		MAP_DOT_WIDTH,
+					 		MAP_DOT_HEIGHT);
+					}
+				}	
 			}
-		}
+		}	
 	}
 }
 
