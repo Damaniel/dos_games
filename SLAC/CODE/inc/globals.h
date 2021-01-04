@@ -32,6 +32,9 @@
 
 // Other includes
 #include "player.h"
+#include "main.h"
+#include "render.h"
+#include "maze.h"
 
 // The datafile - contains all sprite, font and sound data.  
 // -- Defined in main.cpp
@@ -44,5 +47,12 @@ extern BITMAP   *g_back_buffer;
 // The player.  TODO: Eventually should be a component of an Actors object of some kind
 // -- Defined in main.cpp
 extern Player 	  g_player;
+
+// Flags that hold state of interest to the game loop.  Other objects exist to
+// hold the state of things like the current maze, enemies, and such - these flags
+// are used to track what elements to render on the current iteration of the game
+// loop, what menus or screens should be displayed, whether keyboard input should
+// be disabled by a dialog, and so on.
+extern StateFlags   g_state_flags;
 
 #endif

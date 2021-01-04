@@ -37,7 +37,7 @@ obj/render.o: src/render.cpp inc/render.h inc/globals.h inc/maze.h
 obj/player.o: src/player.cpp inc/globals.h
 	$(CC) -c $(CFLAGS) -o obj/player.o src/player.cpp
 	
-obj/main.o: src/main.cpp inc/render.h inc/globals.h inc/maze.h
+obj/main.o: src/main.cpp inc/main.h inc/render.h inc/globals.h inc/maze.h
 	$(CC) -c $(CFLAGS) -o obj/main.o src/main.cpp
 	
 clean:

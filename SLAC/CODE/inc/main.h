@@ -21,33 +21,38 @@
 //   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //   SOFTWARE.
 //==========================================================================================
-#ifndef __PLAYER_H__
-#define __PLAYER_H__
+#ifndef __MAIN_H__
+#define __MAIN_H__
 
-//------------------------------------------------------------------------------
-// Player class definition
-//------------------------------------------------------------------------------
-class Player {
-private:
-	int hp;					// The player's current HP
-	int max_hp;				// The player's max HP
-	int mp;					// The player's current MP
-	int max_mp;				// The player's max HP
-	int level;				// The player's current level 
-	int exp;				// The player's current number of experience points
-	int character_class;	// What characer class is the player
-	int dungeon;			// What dungeon is the player in
-	int dungeon_floor;		// What floor of the dungeon the player is in
-	int last_room_entered;  // What room was the player last in?
-	
-public:
-	int x_pos;				// They're constantly set and read, so we'll skip the setter/getter for now
-	int y_pos;				// (The compiler is probably smart, but I can understand this, at least)
-	
-	Player();
-	Player(int x, int y);
-	int get_last_room_entered() { return last_room_entered; }
-	void set_last_room_entered(int room) { last_room_entered = room; }
+// States for the state machine god.  This is a first shot at some; there will
+// be more.  He must feed.
+enum {
+    STATE_LOGO_SCREEN,
+    STATE_TITLE_SCREEN,
+    STATE_NEW_GAME,
+    STATE_CONTINUE_GAME,
+    STATE_MAIN_GAME,
+    STATE_DEAD,
+    STATE_EXIT
+};
+
+// A collection of flags relevant to the game loop.  The game loop will want
+// to farm tasks out to other functions; this provides a way to have them all
+// in one place to make them easy to query, while keeping things manageable. 
+struct StateFlags {
+    // Graphics state
+    bool update_display;        // Is the screen ready to be redrawn?
+    bool map_displayed;         // Is the map currently on the screen?
+    bool update_text_dialog;    // Should the text dialog be redrawn?
+    bool update_status_dialog;  // Should the status display be redrawn?
+    bool update_map_dialog;     // Should the map screen be redrawn?
+    bool update_maze_area;      // Should the maze area be redrawn?
+    
+    // Input state
+    bool input_disabled;      // Is keyboard input currently disabled?
+
+    // Miscellaneous state
+    bool exit_game;           // Did the player choose to exit the game?
 };
 
 #endif
