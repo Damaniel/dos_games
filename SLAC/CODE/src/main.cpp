@@ -128,7 +128,10 @@ void update_display(void) {
 		g_state_flags.update_text_dialog = false;
 	}
 
-	blit(g_back_buffer, screen, 0, 0, 0, 0, 320, 240);
+	// Now actually put the image on the visible part of the screen
+	vsync();
+	blit(g_back_buffer, screen, 0, 0, 0, 0, 320, 240);	
+	
 	// Display is updated - we don't want to do it again right now.
 	g_state_flags.update_display = false;
 }
@@ -277,8 +280,7 @@ int main(void) {
 
 		// update the display
 		if (g_state_flags.update_display == true) {
-			vsync();
-			update_display();
+			update_display();					
 		}
 	} while (g_state_flags.exit_game == false);
 
