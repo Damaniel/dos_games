@@ -211,15 +211,15 @@ void Render::render_fixed_text(BITMAP *destination, char *text, int x_pos, int y
 }
 
 //----------------------------------------------------------------------------------
-// render_map_to_screen
+// render_map
 //
 // Displays the map dialog in the play area.
 //
 // Notes: 
 //   The map dialog is stored in otherwise unused VGA memory.
 //----------------------------------------------------------------------------------
-void Render::render_map_to_screen(void) {
-	blit(screen, screen, MAP_VMEM_X, MAP_VMEM_Y, MAP_X_POS, MAP_Y_POS, 
+void Render::render_map(BITMAP *destination) {
+	blit(screen, destination, MAP_VMEM_X, MAP_VMEM_Y, MAP_X_POS, MAP_Y_POS, 
 	     MAP_VMEM_WIDTH, MAP_VMEM_HEIGHT);
 }
 

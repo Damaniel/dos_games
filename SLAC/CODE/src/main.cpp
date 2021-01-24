@@ -70,7 +70,7 @@ void init_resources(Render r) {
 	r.generate_prop_font_offsets();		
 	r.copy_data_to_offscreen_vram();	
 	set_palette((PALETTE)g_game_data[DAMRL_DB16].dat);		
-	g_back_buffer = create_bitmap(320, 240);
+	g_back_buffer = create_sub_bitmap(screen, 0, 240, 320, 240);
 }
 
 //----------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ void unload_resources(void) {
 
 void update_display(void) {
 	if (g_state_flags.map_displayed == true) {
-		g_render.render_map_to_screen();
+		g_render.render_map(g_back_buffer);
 	}
 	else {		
 		if (g_state_flags.update_maze_area == true) {
@@ -246,11 +246,16 @@ int main(void) {
 	install_timer();
 	install_keyboard();
 
-	set_gfx_mode(GFX_MODEX, 320, 240, 320, 720);
+	int mode_result = set_gfx_mode(GFX_MODEX, 320, 240, 320, 640);
+	if (mode_result != 0) {
+		set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);
+		printf("Unable to set graphics mode!\n");
+	}
+
 	clear(screen);
 	
-	int result = load_resources();
-	if(result != 0) {
+	int res_result = load_resources();
+	if(res_result != 0) {
 		printf("Failure while loading resources!\n");
 		return 1;
 	}
@@ -272,6 +277,7 @@ int main(void) {
 
 		// update the display
 		if (g_state_flags.update_display == true) {
+			vsync();
 			update_display();
 		}
 	} while (g_state_flags.exit_game == false);

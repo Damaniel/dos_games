@@ -36,7 +36,7 @@
 
 // A copy of the map bitmap is stored at this location in video memory.
 #define MAP_VMEM_X	0
-#define MAP_VMEM_Y	280
+#define MAP_VMEM_Y	480
 
 // The size of the map bitmap in offscreen memory
 #define MAP_VMEM_WIDTH   144
@@ -168,7 +168,7 @@ class Render {
 		void copy_data_to_offscreen_vram(void);		
 		void generate_prop_font_offsets(void);
 		void render_fixed_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);		
-		void render_map_to_screen(void);		
+		void render_map(BITMAP *destination);		
 		void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);
 		void render_status_base(BITMAP *destination);		
 		void render_text_base(BITMAP *destination, bool extended);		
