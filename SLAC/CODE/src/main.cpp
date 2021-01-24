@@ -70,7 +70,7 @@ void init_resources(Render r) {
 	r.generate_prop_font_offsets();		
 	r.copy_data_to_offscreen_vram();	
 	set_palette((PALETTE)g_game_data[DAMRL_DB16].dat);		
-	g_back_buffer = create_bitmap(240, 208);
+	g_back_buffer = create_bitmap(320, 240);
 }
 
 //----------------------------------------------------------------------------------
@@ -114,23 +114,21 @@ void update_display(void) {
 			
 			// Draw the world display area
 			g_render.render_world_at_player(g_back_buffer, g_maze, g_player.x_pos, g_player.y_pos);
-			blit(g_back_buffer, screen, 0, 0, 0, 0, 240, 208);
-
 			g_state_flags.update_maze_area = false;
 		}
-
 	}
 
 	if(g_state_flags.update_status_dialog == true) {
-		g_render.render_status_base(screen);
+		g_render.render_status_base(g_back_buffer);
 		g_state_flags.update_status_dialog = false;
 	}
-	
+
 	if(g_state_flags.update_text_dialog == true) {
-		g_render.render_text_base(screen, false);
+		g_render.render_text_base(g_back_buffer, false);
 		g_state_flags.update_text_dialog = false;
 	}
 
+	blit(g_back_buffer, screen, 0, 0, 0, 0, 320, 240);
 	// Display is updated - we don't want to do it again right now.
 	g_state_flags.update_display = false;
 }
@@ -194,18 +192,21 @@ void process_input(void) {
 	if (key == KEY_LEFT && g_state_flags.input_disabled == false) {
 		if (g_maze.is_carved(g_player.x_pos-1, g_player.y_pos) == true) {
 			g_player.x_pos = g_player.x_pos -1;
+			g_state_flags.update_maze_area = true;
 			g_state_flags.update_display = true;
 		}
 	}
 	if (key == KEY_RIGHT && g_state_flags.input_disabled == false) {
 		if (g_maze.is_carved(g_player.x_pos+1, g_player.y_pos) == true) {			
 			g_player.x_pos = g_player.x_pos + 1;
+			g_state_flags.update_maze_area = true;
 			g_state_flags.update_display = true;
 		}
 	}
 	if (key == KEY_UP && g_state_flags.input_disabled == false) {
 		if (g_maze.is_carved(g_player.x_pos, g_player.y_pos-1) == true) {
 			g_player.y_pos = g_player.y_pos - 1;
+			g_state_flags.update_maze_area = true;
 			g_state_flags.update_display = true;
 		}
 	}
@@ -213,12 +214,14 @@ void process_input(void) {
 		if (g_maze.is_carved(g_player.x_pos, g_player.y_pos+1) == true)
 		{
 			g_player.y_pos = g_player.y_pos + 1;
+			g_state_flags.update_maze_area = true;
 			g_state_flags.update_display = true;
 		}
 	}
 	if (key == KEY_M) {
 		if (g_state_flags.map_displayed == true) {
 			g_state_flags.map_displayed = false;
+			g_state_flags.update_maze_area = true;
 			g_state_flags.input_disabled = false;
 		} else {
 			g_state_flags.map_displayed = true;
@@ -271,7 +274,6 @@ int main(void) {
 		if (g_state_flags.update_display == true) {
 			update_display();
 		}
-
 	} while (g_state_flags.exit_game == false);
 
 	unload_resources();
