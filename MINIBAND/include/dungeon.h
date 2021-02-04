@@ -79,16 +79,21 @@ typedef struct {
 	unsigned tileId    : 3;		// An index into a tile array
 } DungeonSquare;
 
+// Since DungeonSquares are almost used in the context of a list of them,
+// we'll call DungeonSquare * 'Dungeon' since it better represents what a 
+// array of DungeonSquares are.
+typedef DungeonSquare* Dungeon;
+
 // Prototypes
-void link_segments(DungeonSquare *dungeon, int seg1x, int seg1y, int seg2x, int seg2y);
+void link_segments(Dungeon dungeon, int seg1x, int seg1y, int seg2x, int seg2y);
 void destroy_tree(TreeNode *node);
 void perform_random_split(Partition *p, Partition *p1, Partition *p2, int depth);
 void create_rooms(TreeNode *n);
-void connect_rooms(TreeNode *n, DungeonSquare *dungeon);
-void initialize_dungeon(DungeonSquare *dungeon);
-void carve_at(DungeonSquare *dungeon, int x, int y);
-void populate_dungeon(TreeNode *n, DungeonSquare *dungeon);
-void print_dungeon(DungeonSquare *dungeon);
+void connect_rooms(TreeNode *n, Dungeon dungeon);
+void initialize_dungeon(Dungeon dungeon);
+void carve_at(Dungeon dungeon, int x, int y);
+void populate_dungeon(TreeNode *n, Dungeon dungeon);
+void print_dungeon(Dungeon dungeon);
 TreeNode * create_split_node(Partition *p, int iter);
 
 #endif

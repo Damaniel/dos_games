@@ -29,14 +29,14 @@
 #include <conio.h>
 
 // The dungeon.
-DungeonSquare *g_dungeon;
+Dungeon g_dungeon;
 
 //------------------------------------------------------------------------------
 // draw_dungeon
 //
 // Debug function.  Draws (very slowly) a representation of the dungeon.
 //------------------------------------------------------------------------------
-void draw_dungeon(DungeonSquare *dungeon)
+void draw_dungeon(Dungeon dungeon)
 {
 	for (int j = 0; j < DUNGEON_HEIGHT; j++) {
 		for (int i=0; i < DUNGEON_WIDTH; i++) {
@@ -53,7 +53,7 @@ int main(void)
 	TreeNode *root = NULL;
 	Partition *p = NULL;
 
-	g_dungeon = (DungeonSquare *)malloc(DUNGEON_WIDTH * DUNGEON_HEIGHT * sizeof(DungeonSquare));
+	g_dungeon = (Dungeon)malloc(DUNGEON_WIDTH * DUNGEON_HEIGHT * sizeof(DungeonSquare));
 
 	srand(time(NULL));
 

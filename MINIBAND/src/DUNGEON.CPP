@@ -37,7 +37,7 @@
 // sizes.  It should be good enough for a tiny roguelike.
 //===========================================================================
 
-extern DungeonSquare *g_dungeon;
+extern Dungeon g_dungeon;
 
 //-----------------------------------------------------------------------------
 // destroy_tree
@@ -268,7 +268,7 @@ void create_rooms(TreeNode *n) {
 // that part of them always pass through the center, this will always link all
 // rooms together with no unlinked passages.
 //------------------------------------------------------------------------------
-void connect_rooms(TreeNode *n, DungeonSquare *dungeon) {
+void connect_rooms(TreeNode *n, Dungeon dungeon) {
 	int seg1x, seg1y;
 	int seg2x, seg2y;
 
@@ -292,7 +292,7 @@ void connect_rooms(TreeNode *n, DungeonSquare *dungeon) {
 //
 // Clears out an instance of a dungeon.
 //-----------------------------------------------------------------------------
-void initialize_dungeon(DungeonSquare *dungeon) {
+void initialize_dungeon(Dungeon dungeon) {
 	int offset;
 	for(int i=0; i < DUNGEON_WIDTH; i++) {
 		for(int j = 0; j < DUNGEON_HEIGHT; j++) {
@@ -311,7 +311,7 @@ void initialize_dungeon(DungeonSquare *dungeon) {
 //
 // Marks the specific dungeon location as carved.
 //------------------------------------------------------------------------------
-void carve_at(DungeonSquare *dungeon, int x, int y) {
+void carve_at(Dungeon dungeon, int x, int y) {
 	if (x >=0 && x < DUNGEON_WIDTH && y >=0 && y < DUNGEON_HEIGHT) {
 		dungeon[y * DUNGEON_WIDTH + x].carved = CARVED;
 	}
@@ -323,7 +323,7 @@ void carve_at(DungeonSquare *dungeon, int x, int y) {
 // Takes the rooms defined in the BSP tree and carves them into the dungeon
 // structure.
 //-----------------------------------------------------------------------------
-void populate_dungeon(TreeNode *n, DungeonSquare *dungeon) {
+void populate_dungeon(TreeNode *n, Dungeon dungeon) {
 	if (n->left == NULL && n->right == NULL) {
 		for (int i = n->r->x; i < n->r->x + n->r->w; i++) {
 			for (int j = n->r->y; j < n->r->y + n->r->h; j++) {
@@ -342,7 +342,7 @@ void populate_dungeon(TreeNode *n, DungeonSquare *dungeon) {
 //
 // Debug function - prints an ASCII copy of the dungeon to the screen.
 //-----------------------------------------------------------------------------
-void print_dungeon(DungeonSquare *dungeon) {
+void print_dungeon(Dungeon dungeon) {
 	for (int i = 0; i < DUNGEON_HEIGHT; i++) {
 		for (int j = 0; j < DUNGEON_WIDTH; j++) {
 			if (dungeon[i*DUNGEON_WIDTH + j].carved == UNCARVED) {
@@ -365,7 +365,7 @@ void print_dungeon(DungeonSquare *dungeon) {
 //   Draw a line from (seg1x, seg1y) to (seg2x, seg1y)
 //   Draw a line from (seg2x, seg1y) to (seg2x, seg2y)
 //--------------------------------------------------------------------------------------------
-void link_segments(DungeonSquare *dungeon, int seg1x, int seg1y, int seg2x, int seg2y) {
+void link_segments(Dungeon dungeon, int seg1x, int seg1y, int seg2x, int seg2y) {
 	for (int i = seg1x ; i < seg2x; i++) {
 		carve_at(dungeon, i, seg1y);
 	}
