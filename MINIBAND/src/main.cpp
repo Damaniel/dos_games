@@ -28,14 +28,20 @@
 #include <graphics.h>
 #include <conio.h>
 
+// The dungeon.
 DungeonSquare *g_dungeon;
 
+//------------------------------------------------------------------------------
+// draw_dungeon
+//
+// Debug function.  Draws (very slowly) a representation of the dungeon.
+//------------------------------------------------------------------------------
 void draw_dungeon(DungeonSquare *dungeon)
 {
 	for (int j = 0; j < DUNGEON_HEIGHT; j++) {
 		for (int i=0; i < DUNGEON_WIDTH; i++) {
 			if (dungeon[j*DUNGEON_WIDTH + i].carved == 0) {
-				bar(i*4, j*4, i*4+4, j*4+4);
+				bar(i*6, j*6, i*6+6, j*6+6);
 			}
 		}
 	}
@@ -66,7 +72,9 @@ int main(void)
 	populate_dungeon(root, g_dungeon);
 	connect_rooms(root, g_dungeon);
 
-	//print_dungeon(g_dungeon);
+	// We're done with the BSP tree now, so delete it.
+	destroy_tree(root);
+	root = NULL;
 
 	int gdriver = DETECT, gmode, errorcode;
 	initgraph(&gdriver, &gmode, "");
@@ -76,8 +84,6 @@ int main(void)
 	getch();
 	closegraph();
 
-	destroy_tree(root);
-	root = NULL;
 	free(g_dungeon);
 
 	return 0;

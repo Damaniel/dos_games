@@ -33,12 +33,18 @@
 // between horizontal and vertical splits.  A better way to do it would
 // be to pick a random split direction and position, and if the split
 // results in two regions with unappealing aspect ratios, try splitting
-// again.
+// again.  I've tried to mitigate this by creating a larger variety of room
+// sizes.  It should be good enough for a tiny roguelike.
 //===========================================================================
 
 extern DungeonSquare *g_dungeon;
 
-// Deallocate all memory for the entire tree
+//-----------------------------------------------------------------------------
+// destroy_tree
+//
+// Deallocate all memory for the entire tree, including the Partition and
+// the Room.
+//------------------------------------------------------------------------------
 void destroy_tree(TreeNode *node) {
 	if (node->left != NULL) {
 		destroy_tree(node->left);
@@ -71,6 +77,10 @@ void destroy_tree(TreeNode *node) {
 void perform_random_split(Partition *p, Partition *p1, Partition *p2, int depth)
 {
 	int sx, sy;
+
+	// The split line should sit between 35% and 65% (35%+30%) of the total
+	// width or height of the partition.  This prevents the creation of 
+	// extremely narrow partitions that aren't suitable for rooms.
 	float minSplit = 0.35;
 	float splitSize = 0.30;
 
@@ -102,6 +112,12 @@ void perform_random_split(Partition *p, Partition *p1, Partition *p2, int depth)
 	}
 }
 
+//-----------------------------------------------------------------------------
+// create_split_node
+//
+// Splits a Partition into 2 new ones, assigning the sub-partitions to the
+// child nodes of the BSP tree.
+//
 // Relevant variables
 //
 // p - The Partition associated with a node.  Contains the position
@@ -111,7 +127,7 @@ void perform_random_split(Partition *p, Partition *p1, Partition *p2, int depth)
 // iter - specifies the current depth.  Each depth reduces the value gy 1.
 //        When iter is 0, the tree won't be generated any deeper.
 // n - the new tree node that will contain the passed in partition p.
-//
+//-----------------------------------------------------------------------------
 TreeNode * create_split_node(Partition *p, int iter) {
 	// Create a new node
 	TreeNode *n = (TreeNode *)malloc(sizeof(TreeNode));
@@ -142,8 +158,13 @@ TreeNode * create_split_node(Partition *p, int iter) {
 	return n;
 }
 
+//-----------------------------------------------------------------------------
+// create_rooms 
+//
 // Create rooms based on the partitions at the bottom leaves of the tree
-
+//
+// Notes:
+//
 // A room is made by placing padding randomly around each of the 4 sides of
 // the partition.  The amount of padding varies depending on the size of the
 // room, and a minimum / maximum room size is specified.
@@ -162,9 +183,14 @@ TreeNode * create_split_node(Partition *p, int iter) {
 //   - The remainder is the amount of extra padding that's needed.
 //   - Pick a random number between 0 and that padding, and set the top or
 //     left dimension to it + the minimum padding
+//-----------------------------------------------------------------------------
 void create_rooms(TreeNode *n) {
 
+	// Only attempt to create rooms at the leaves of the tree
 	if (n->left == NULL && n->right == NULL) {
+		// Ensure that the partition can hold the smallest possible room
+		// (a room of MIN_ROOM_SIZExMIN_ROOM_SIZE with MIN_PADDING all around
+		// it)
 		int requiredW = MIN_ROOM_SIZE + 2 * MIN_PADDING;
 		int requiredH = MIN_ROOM_SIZE + 2 * MIN_PADDING;
 		if (n->p->w < requiredW || n->p->h < requiredH) {
@@ -180,11 +206,15 @@ void create_rooms(TreeNode *n) {
 		int leftPadding = MIN_PADDING;
 		int topPadding = MIN_PADDING;
 
+		// If the room width is bigger than the partition, shrink it
 		if (xSize > n->p->w - (2 * MIN_PADDING)) {
 			xSize = n->p->w - (2 * MIN_PADDING);
 			leftPadding = MIN_PADDING;
 		}
 		else {
+			// Otherwise, determine how much padding is left, and apply it
+			// to the left side until at least some part of the room crosses
+			// through the center.
 			int excessPadding = n->p->w - xSize - (2 * MIN_PADDING);
 			if (excessPadding > 0 ) {
 				do {
@@ -197,11 +227,15 @@ void create_rooms(TreeNode *n) {
 			}
 		}
 
+		// If the room height is bigger than the partition, shrink it
 		if (ySize > n->p->h - (2 * MIN_PADDING)) {
 			ySize = n->p->h - (2 * MIN_PADDING);
 			topPadding = MIN_PADDING;
 		}
 		else {
+			// Otherwise, determine how much padding is left, and apply it
+			// to the top side until at least some part of the room crosses
+			// through the center
 			int excessPadding = n->p->h - ySize - (2 * MIN_PADDING);
 			if (excessPadding > 0 ) {
 				do {
@@ -213,25 +247,33 @@ void create_rooms(TreeNode *n) {
 			}
 		}
 
+		// Set the room dimensions
 		n->r->x = n->p->x + leftPadding;
 		n->r->y = n->p->y + topPadding;
 		n->r->w = xSize;
 		n->r->h = ySize;
 	}
 	else {
+		// Run create_rooms on the child nodes
 		create_rooms(n->left);
 		create_rooms(n->right);
 	}
 }
 
+//------------------------------------------------------------------------------
+// connect_rooms
+//
+// Links the two child nodes of a parent by carving from the center of 
+// one of the children to the other.  Since the rooms were created in a way
+// that part of them always pass through the center, this will always link all
+// rooms together with no unlinked passages.
+//------------------------------------------------------------------------------
 void connect_rooms(TreeNode *n, DungeonSquare *dungeon) {
-	// Quick and dirty since our trees aren't two way -
-	// just link the centers of the children together.  The
-	// rooms are guaranteed to contain the center of the
-	// region, so this will always link rooms.
 	int seg1x, seg1y;
 	int seg2x, seg2y;
 
+	// If we're not at a leaf node, get the centers of the 2 children and
+	// link them together
 	if (n->left != NULL && n->right != NULL) {
 		seg1x = n->left->p->x + (n->left->p->w / 2);
 		seg1y = n->left->p->y + (n->left->p->h / 2);
@@ -239,11 +281,17 @@ void connect_rooms(TreeNode *n, DungeonSquare *dungeon) {
 		seg2y = n->right->p->y + (n->right->p->h / 2);
 		link_segments(dungeon, seg1x, seg1y, seg2x, seg2y);
 
+		// Call it on the children to link any children they have
 		connect_rooms(n->left, dungeon);
 		connect_rooms(n->right, dungeon);
 	}
 }
 
+//-----------------------------------------------------------------------------
+// initialize_dungeon
+//
+// Clears out an instance of a dungeon.
+//-----------------------------------------------------------------------------
 void initialize_dungeon(DungeonSquare *dungeon) {
 	int offset;
 	for(int i=0; i < DUNGEON_WIDTH; i++) {
@@ -258,12 +306,23 @@ void initialize_dungeon(DungeonSquare *dungeon) {
 	}
 }
 
+//------------------------------------------------------------------------------
+// carve_at
+//
+// Marks the specific dungeon location as carved.
+//------------------------------------------------------------------------------
 void carve_at(DungeonSquare *dungeon, int x, int y) {
 	if (x >=0 && x < DUNGEON_WIDTH && y >=0 && y < DUNGEON_HEIGHT) {
 		dungeon[y * DUNGEON_WIDTH + x].carved = CARVED;
 	}
 }
 
+//-----------------------------------------------------------------------------
+// populate_dungeon
+//
+// Takes the rooms defined in the BSP tree and carves them into the dungeon
+// structure.
+//-----------------------------------------------------------------------------
 void populate_dungeon(TreeNode *n, DungeonSquare *dungeon) {
 	if (n->left == NULL && n->right == NULL) {
 		for (int i = n->r->x; i < n->r->x + n->r->w; i++) {
@@ -278,6 +337,11 @@ void populate_dungeon(TreeNode *n, DungeonSquare *dungeon) {
 	}
 }
 
+//-----------------------------------------------------------------------------
+// print_dungeon
+//
+// Debug function - prints an ASCII copy of the dungeon to the screen.
+//-----------------------------------------------------------------------------
 void print_dungeon(DungeonSquare *dungeon) {
 	for (int i = 0; i < DUNGEON_HEIGHT; i++) {
 		for (int j = 0; j < DUNGEON_WIDTH; j++) {

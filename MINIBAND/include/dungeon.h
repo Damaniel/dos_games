@@ -27,18 +27,27 @@
 #define LEFT	0
 #define RIGHT	1
 
+// The minimum border around a partition that an embedded room can't encroach
+// in.
 #define MIN_PADDING	     2
+
+// Room size ranges.  
 #define MIN_ROOM_SIZE    5
 #define MAX_ROOM_SIZE   16
 
+// The size of the dungeon.  
 #define DUNGEON_WIDTH   64
 #define DUNGEON_HEIGHT  64
 
+// Used to specify that a room can't be created in a partition
 #define INVALID_ROOM    -1
 
+// The carved status of a dungeon square
 #define UNCARVED	     0
 #define CARVED	 	     1
 
+// A basic 'position'/'dimension' structure.  It's used for both partitions
+// and the rooms defined inside of them
 typedef struct {
 	int x;
 	int y;
@@ -51,6 +60,9 @@ typedef struct {
 typedef Box Partition;
 typedef Box Room;
 
+// A basic tree node.  A node contains a partition, which is a subset of the
+// total area of the dungeon, and a room, which is a carved area which is a
+// subset of the partition.
 typedef struct node {
 	Partition *p;
 	Room      *r;
@@ -60,23 +72,23 @@ typedef struct node {
 
 // A bitfield that contains basic structural info about the dungeon
 typedef struct {
-	unsigned carved    : 1;
-	unsigned upStair   : 1;
-	unsigned downStair : 1;
-	unsigned reserved  : 2;
-	unsigned tileId    : 3;
+	unsigned carved    : 1;		// has this square been carved
+	unsigned upStair   : 1;		// are there up stairs here?
+	unsigned downStair : 1;		// are there down stairs here?
+	unsigned reserved  : 2;		// Nothing yet
+	unsigned tileId    : 3;		// An index into a tile array
 } DungeonSquare;
 
 // Prototypes
 void link_segments(DungeonSquare *dungeon, int seg1x, int seg1y, int seg2x, int seg2y);
 void destroy_tree(TreeNode *node);
 void perform_random_split(Partition *p, Partition *p1, Partition *p2, int depth);
-TreeNode * create_split_node(Partition *p, int iter);
 void create_rooms(TreeNode *n);
 void connect_rooms(TreeNode *n, DungeonSquare *dungeon);
 void initialize_dungeon(DungeonSquare *dungeon);
 void carve_at(DungeonSquare *dungeon, int x, int y);
 void populate_dungeon(TreeNode *n, DungeonSquare *dungeon);
 void print_dungeon(DungeonSquare *dungeon);
+TreeNode * create_split_node(Partition *p, int iter);
 
 #endif
