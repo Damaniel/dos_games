@@ -28,8 +28,8 @@
 #define RIGHT	1
 
 #define MIN_PADDING	     2
-#define MIN_ROOM_SIZE    3
-#define MAX_ROOM_SIZE   12
+#define MIN_ROOM_SIZE    5
+#define MAX_ROOM_SIZE   16
 
 #define DUNGEON_WIDTH   64
 #define DUNGEON_HEIGHT  64

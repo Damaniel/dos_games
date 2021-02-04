@@ -71,8 +71,8 @@ void destroy_tree(TreeNode *node) {
 void perform_random_split(Partition *p, Partition *p1, Partition *p2, int depth)
 {
 	int sx, sy;
-	float minSplit = 0.3;
-	float splitSize = 0.35;
+	float minSplit = 0.35;
+	float splitSize = 0.30;
 
 	if (depth % 2 == 0) {		// Vertical split
 		int min = (int)(minSplit * p->w);

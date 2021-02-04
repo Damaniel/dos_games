@@ -25,8 +25,21 @@
 #include <time.h>
 #include <alloc.h>
 #include "dungeon.h"
+#include <graphics.h>
+#include <conio.h>
 
 DungeonSquare *g_dungeon;
+
+void draw_dungeon(DungeonSquare *dungeon)
+{
+	for (int j = 0; j < DUNGEON_HEIGHT; j++) {
+		for (int i=0; i < DUNGEON_WIDTH; i++) {
+			if (dungeon[j*DUNGEON_WIDTH + i].carved == 0) {
+				bar(i*4, j*4, i*4+4, j*4+4);
+			}
+		}
+	}
+}
 
 int main(void) 
 {
@@ -53,7 +66,15 @@ int main(void)
 	populate_dungeon(root, g_dungeon);
 	connect_rooms(root, g_dungeon);
 
-	print_dungeon(g_dungeon);
+	//print_dungeon(g_dungeon);
+
+	int gdriver = DETECT, gmode, errorcode;
+	initgraph(&gdriver, &gmode, "");
+	
+	draw_dungeon(g_dungeon);
+	
+	getch();
+	closegraph();
 
 	destroy_tree(root);
 	root = NULL;
