@@ -25,17 +25,22 @@
 #include <time.h>
 #include <alloc.h>
 #include "dungeon.h"
-#include <graphics.h>
+#include "player.h"
 #include <conio.h>
+#include <stdio.h>
 
 // The dungeon.
 Dungeon g_dungeon;
+
+// The player
+Player *g_player;
 
 //------------------------------------------------------------------------------
 // draw_dungeon
 //
 // Debug function.  Draws (very slowly) a representation of the dungeon.
 //------------------------------------------------------------------------------
+/*
 void draw_dungeon(Dungeon dungeon)
 {
 	for (int j = 0; j < DUNGEON_HEIGHT; j++) {
@@ -46,6 +51,24 @@ void draw_dungeon(Dungeon dungeon)
 		}
 	}
 }
+*/
+
+//------------------------------------------------------------------------------
+// print_player_status_effects
+//
+// Debug function.  Lists any active status effects, strength and remaining
+// duration.
+//------------------------------------------------------------------------------
+void print_player_status_effects(Player *p) {
+	if (p->effects.poison != NO_EFFECT) {
+		printf("Player is poisoned!  Damage is %d%% HP per turn, %d turns remaining\n",
+				p->effects.poison, p->effects.poison_turns);
+	}
+	if (p->effects.disease != NO_EFFECT) {
+		printf("Player is diseased!  Damage is %d%% HP per turn, until healed\n",
+				p->effects.disease);
+	}
+}
 
 int main(void) 
 {
@@ -53,7 +76,10 @@ int main(void)
 	TreeNode *root = NULL;
 	Partition *p = NULL;
 
+	printf("At start: %ld\n", coreleft());
+
 	g_dungeon = (Dungeon)malloc(DUNGEON_WIDTH * DUNGEON_HEIGHT * sizeof(DungeonSquare));
+	g_player =  (Player *)malloc(sizeof(Player));
 
 	srand(time(NULL));
 
@@ -72,19 +98,23 @@ int main(void)
 	populate_dungeon(root, g_dungeon);
 	connect_rooms(root, g_dungeon);
 
+	apply_status_to_player(g_player, EFFECT_POISON, MEDIUM_EFFECT);
+	print_player_status_effects(g_player);
+
+	printf("Low point: %ld\n", coreleft());
+
 	// We're done with the BSP tree now, so delete it.
 	destroy_tree(root);
 	root = NULL;
 
-	int gdriver = DETECT, gmode, errorcode;
-	initgraph(&gdriver, &gmode, "");
-	
-	draw_dungeon(g_dungeon);
-	
-	getch();
-	closegraph();
+	// Same with the player
+	free(g_player);
+	g_player = NULL;
 
+	// Same with the dungeon
 	free(g_dungeon);
+	g_dungeon = NULL;
 
+	printf("After freeing: %ld\n", coreleft());
 	return 0;
 }
