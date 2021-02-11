@@ -26,6 +26,7 @@
 #include <alloc.h>
 #include "dungeon.h"
 #include "player.h"
+#include "stateffs.h"
 #include <conio.h>
 #include <stdio.h>
 
