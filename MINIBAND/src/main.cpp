@@ -37,24 +37,6 @@ Dungeon g_dungeon;
 Player *g_player;
 
 //------------------------------------------------------------------------------
-// draw_dungeon
-//
-// Debug function.  Draws (very slowly) a representation of the dungeon.
-//------------------------------------------------------------------------------
-/*
-void draw_dungeon(Dungeon dungeon)
-{
-	for (int j = 0; j < DUNGEON_HEIGHT; j++) {
-		for (int i=0; i < DUNGEON_WIDTH; i++) {
-			if (dungeon[j*DUNGEON_WIDTH + i].carved == 0) {
-				bar(i*6, j*6, i*6+6, j*6+6);
-			}
-		}
-	}
-}
-*/
-
-//------------------------------------------------------------------------------
 // print_player_status_effects
 //
 // Debug function.  Lists any active status effects, strength and remaining
@@ -69,6 +51,27 @@ void print_player_status_effects(Player *p) {
 		printf("Player is diseased!  Damage is %d%% HP per turn, until healed\n",
 				p->effects.disease);
 	}
+	if (p->effects.confusion != NO_EFFECT) {
+		printf("Player is confused -  %d turns remaining\n", 
+				p->effects.confusion_turns);
+	}
+	if (p->effects.blind != NO_EFFECT) {
+		printf("Player is blind!  Severity is %d, %d turns remaining\n",
+				p->effects.blind, p->effects.blind_turns);
+	}
+	if (p->effects.weak != NO_EFFECT) {
+		printf("Player is weak!  Severity is %d, %d turns remaining\n",
+				p->effects.weak, p->effects.weak_turns);
+	}
+	if (p->effects.slow != NO_EFFECT) {
+		printf("Player is slow!  Severity is %d, %d turns remaining\n",
+				p->effects.slow, p->effects.slow_turns);
+	}
+	if (p->effects.burning != NO_EFFECT) {
+		printf("Player is burning! Severity is %d, %d turns remaining\n",
+				p->effects.burning, p->effects.burning_turns);
+	}
+
 }
 
 int main(void) 

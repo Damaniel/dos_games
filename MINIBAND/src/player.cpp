@@ -24,6 +24,10 @@
 #include "player.h"
 #include "stateffs.h"
 
+void init_player(Player *p) {
+
+}
+
 void remove_status_from_player(Player *p, int status) {
     return;
 }
@@ -76,6 +80,10 @@ void apply_status_to_player(Player *p, int status, int strength) {
             break;
         case EFFECT_DISEASE:
             p->effects.disease = g_disease_table[table_offset];
+            break;
+        case EFFECT_CONFUSE:
+            p->effects.confusion = 1;       // Turn confusion on
+            p->effects.confusion_turns = g_confuse_duration;
             break;
         case EFFECT_BLIND:
             p->effects.blind = g_blind_table[table_offset];

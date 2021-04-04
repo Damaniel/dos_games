@@ -29,6 +29,7 @@ unsigned char g_disease_table[4] = {0, 1, 2, 3};
 unsigned char g_blind_table[6] = {0, 0, 50, 10, 90, 20};
 unsigned char g_weak_table[8] = {0, 0, 15, 10, 25, 15, 50, 20};
 unsigned char g_slow_table[8] = {0, 0, 25, 10, 50, 5, 80, 20};
+unsigned char g_confuse_duration = 10;
 
 unsigned char g_burn_table[9] = {0, 1, 2, 4, 6, 8, 10, 12, 15};
 unsigned char g_freeze_table[9] = {0, 1, 2, 3, 4, 5, 6, 7, 8};

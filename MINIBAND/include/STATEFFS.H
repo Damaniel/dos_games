@@ -23,6 +23,7 @@
 //==========================================================================================
 #ifndef __STATEFFS_H__
 #define __STATEFFS_H__
+
 // The maximum amount of resist that the player can have (representing 90%
 // resistance).
 #define MAX_RESIST      90
@@ -31,12 +32,13 @@
 #define EFFECT_NONE      0
 #define EFFECT_POISON    1
 #define EFFECT_DISEASE   2
-#define EFFECT_BLIND     3
-#define EFFECT_WEAK      4
-#define EFFECT_SLOW      5
-#define EFFECT_BURN      6
-#define EFFECT_FREEZE    7
-#define EFFECT_SHOCK     8
+#define EFFECT_CONFUSE   3
+#define EFFECT_BLIND     4
+#define EFFECT_WEAK      5
+#define EFFECT_SLOW      6
+#define EFFECT_BURN      7
+#define EFFECT_FREEZE    8
+#define EFFECT_SHOCK     9
 
 // Strengths of non-elemental effects
 #define NO_EFFECT        0
@@ -64,6 +66,9 @@ extern unsigned char g_blind_table[6];
 extern unsigned char g_weak_table[8];
 // 4 entries of <percent spd lost, number of turns>
 extern unsigned char g_slow_table[8];
+
+// Confusion has only one effect and a fixed duration
+extern unsigned char g_confuse_duration;
 
 // Burning, freezing and shocking effects do a wider range of damage.  Its base
 // value is still a percentage of the player's health, but can be modified

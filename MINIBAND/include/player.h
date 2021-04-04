@@ -61,6 +61,7 @@ typedef struct {
 
 } Player;
 
+void init_player(Player *p);
 void apply_status_to_player(Player *p, int effect, int strength);
 void remove_status_from_player(Player *p, int effect);
 
