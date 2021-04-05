@@ -27,7 +27,6 @@
 #include "globals.h"
 #include "render.h"
 
-
 //==================================================================================
 // Constructors
 //==================================================================================
@@ -114,6 +113,11 @@ void Render::initialize_map_bitmap(Maze m) {
 			MAP_DOT_HEIGHT);			
 		}
 	}	
+
+	// Calculate the center point for the maze on the map (so everything is
+	// nice and centered)
+    map_maze_xoffset = MAP_AREA_VMEM_X + ((m.get_width() / 2) + 1) * MAP_DOT_WIDTH;
+	map_maze_yoffset = MAP_AREA_VMEM_Y + ((m.get_height() / 2) + 1) * MAP_DOT_HEIGHT;
 }
 
 //----------------------------------------------------------------------------------
@@ -138,11 +142,6 @@ void Render::initialize_map_bitmap(Maze m) {
 //
 //----------------------------------------------------------------------------------
 void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
-
-	// xOff and yOff are used to center the map in the entire map region.
-	int xOff = MAP_AREA_VMEM_X + ((m.get_width() / 2) + 1) * MAP_DOT_WIDTH;
-	int yOff = MAP_AREA_VMEM_Y + ((m.get_height() / 2) + 1) * MAP_DOT_HEIGHT;
-
 	for(int i=x-1; i<=x+1; i++) {
 		for(int j=y-1; j<=y+1; j++) {
 			if(i >=0 && i < m.get_width() && j >=0 && j < m.get_height()) {
@@ -151,8 +150,8 @@ void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 				     	screen,
 					 	MAP_DOT_WALL * MAP_DOT_WIDTH,
 					 	0,
-					 	xOff + (i * MAP_DOT_WIDTH),
-					 	yOff + (j * MAP_DOT_HEIGHT),
+					 	map_maze_xoffset + (i * MAP_DOT_WIDTH),
+					 	map_maze_yoffset + (j * MAP_DOT_HEIGHT),
 					 	MAP_DOT_WIDTH,
 					 	MAP_DOT_HEIGHT);
 				} else {
@@ -160,8 +159,8 @@ void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 				     	screen,
 					 	MAP_DOT_FLOOR * MAP_DOT_WIDTH,
 					 	0,
-					 	xOff + (i * MAP_DOT_WIDTH),
-					 	yOff + (j * MAP_DOT_HEIGHT),
+					 	map_maze_xoffset + (i * MAP_DOT_WIDTH),
+					 	map_maze_yoffset + (j * MAP_DOT_HEIGHT),
 					 	MAP_DOT_WIDTH,
 					 	MAP_DOT_HEIGHT);			
 				}
@@ -182,8 +181,8 @@ void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 					     	screen,
 					 		MAP_DOT_WALL * MAP_DOT_WIDTH,
 					 		0,
-					 		xOff + (i * MAP_DOT_WIDTH),
-					 		yOff + (j * MAP_DOT_HEIGHT),
+					 		map_maze_xoffset + (i * MAP_DOT_WIDTH),
+					 		map_maze_yoffset + (j * MAP_DOT_HEIGHT),
 					 		MAP_DOT_WIDTH,
 					 		MAP_DOT_HEIGHT);
 					} else {
@@ -191,8 +190,8 @@ void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 					     	screen,
 					 		MAP_DOT_FLOOR * MAP_DOT_WIDTH,
 					 		0,
-					 		xOff + (i * MAP_DOT_WIDTH),
-					 		yOff + (j * MAP_DOT_HEIGHT),
+					 		map_maze_xoffset + (i * MAP_DOT_WIDTH),
+					 		map_maze_yoffset + (j * MAP_DOT_HEIGHT),
 					 		MAP_DOT_WIDTH,
 					 		MAP_DOT_HEIGHT);
 					}
@@ -217,22 +216,6 @@ void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 void Render::copy_data_to_offscreen_vram(void) {
 	BITMAP *b = (BITMAP *)g_game_data[DAMRL_MAIN_MAP].dat;	
 	blit(b, screen, 0, 0, MAP_VMEM_X, MAP_VMEM_Y, MAP_VMEM_WIDTH, MAP_VMEM_HEIGHT);
-}
-
-//----------------------------------------------------------------------------------
-// generate_prop_font_offsets
-//
-// Calculates the offsets into the proportional font bitmap based on the width of 
-// each character.  By precomputing this, text glyphs can be rendered more quickly.
-//----------------------------------------------------------------------------------
-void Render::generate_prop_font_offsets(void) {
-	int offset = 0;
-	int i;
-	
-	for (i=0; i < FONT_ENTRIES; i++) {
-		prop_font_offset[i] = offset;
-		offset += prop_font_width[i];
-	}
 }
 
 //----------------------------------------------------------------------------------
@@ -271,18 +254,18 @@ void Render::render_fixed_text(BITMAP *destination, char *text, int x_pos, int y
 //----------------------------------------------------------------------------------
 void Render::render_map(BITMAP *destination, Maze m) {
 
-	// xOff and yOff are used to center the map in the entire map region.
-	int xOff = MAP_X_POS + 7 + ((m.get_width() / 2) + 1) * MAP_DOT_WIDTH;
-	int yOff = MAP_Y_POS + 16 + ((m.get_height() / 2) + 1) * MAP_DOT_HEIGHT;
-
 	// Blit the base map
 	blit(screen, destination, MAP_VMEM_X, MAP_VMEM_Y, MAP_X_POS, MAP_Y_POS, 
 	     MAP_VMEM_WIDTH, MAP_VMEM_HEIGHT);
 
 	// Draw the player's position on the map
-	blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat, destination, 
-         MAP_DOT_PLAYER*MAP_DOT_WIDTH, 0, xOff + (g_player.x_pos*MAP_DOT_WIDTH),
-		 yOff + (g_player.y_pos*MAP_DOT_HEIGHT), MAP_DOT_WIDTH,MAP_DOT_HEIGHT);
+	blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat, 
+	     destination, 
+         MAP_DOT_PLAYER*MAP_DOT_WIDTH,
+		 0, 
+		 map_maze_xoffset + (g_player.x_pos*MAP_DOT_WIDTH),
+		 map_maze_yoffset + (g_player.y_pos*MAP_DOT_HEIGHT), 
+		 MAP_DOT_WIDTH,MAP_DOT_HEIGHT);
 
 	// TODO - Draw actual relevant text.  Needs game state to do this.
 	render_fixed_text(destination, "Cave 1", 55, 30, FONT_YELLOW);
@@ -306,7 +289,7 @@ void Render::render_prop_text(BITMAP *destination, char *text, int x_pos, int y_
 	int y = y_pos;
 	int offset;
 	char *cur = text;
-	 
+
 	while (*cur != 0) {
 		offset = (*cur++) - 32;
 		masked_blit((BITMAP *)g_game_data[DAMRL_PROP_FONT].dat, destination, prop_font_offset[offset],

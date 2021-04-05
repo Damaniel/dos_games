@@ -149,8 +149,19 @@ const int prop_font_width[FONT_ENTRIES] = {
 	7, 7, 8, 7, 6, 8, 8, 8, 8, 8, 6, 4, 6, 4, 5, 8, 
 	3, 7, 7, 6, 7, 6, 5, 7, 8, 4, 6, 7, 4, 8, 8, 6, 
 	7, 7, 7, 6, 4, 7, 8, 7, 6, 6, 6, 4, 2, 4, 7, 7  
-};		
+};
 const int prop_font_height = 8;
+
+// Offsets into the font bitmap for each character (based on the character widths
+// defined in prop_font_width)
+const int prop_font_offset[FONT_ENTRIES] = {
+	0,    6,    8,  14,  21,  27,  33,  40,  42,  46,  50,  55,  60,  62,  68,  70, 
+	76,  83,   87,  94, 101, 108, 115, 122, 129, 136, 143, 145, 147, 152, 158, 163, 
+	169, 177, 185, 192, 199, 206, 213, 220, 227, 235, 239, 246, 254, 261, 269, 277,
+	284, 291, 298, 306, 313, 319, 327, 335, 343, 351, 359, 365, 369, 375, 379, 384, 
+	392, 395, 402, 409, 415, 422, 428, 433, 440, 448, 452, 458, 465, 469, 477, 485, 
+	491, 498, 505, 512, 518, 522, 529, 537, 544, 550, 556, 562, 566, 568, 572, 579
+};	
 
 // Width and height of all characters in the standard fixed font
 const int fixed_font_width = 8;
@@ -160,10 +171,11 @@ const int fixed_font_height = 8;
 // Render class definition
 //----------------------------------------------------------------------------
 class Render {
-	private:
-		// This is filled in by a function based on prop_font_width 
-		int prop_font_offset[FONT_ENTRIES];
-		
+	private:	
+		// Used to center the maze inside the map region
+		int map_maze_xoffset;
+		int map_maze_yoffset;
+
 		void render_actors(BITMAP *destination, int maze_x, int maze_y);
 		void render_base_tile(BITMAP *destination, int tileId, int x, int y);
 		void render_statics(BITMAP *destination, int maze_x, int maze_y);
@@ -173,7 +185,6 @@ class Render {
 		void initialize_map_bitmap(Maze m);
 		void add_area_to_map_bitmap(Maze m, int x, int y);
 		void copy_data_to_offscreen_vram(void);		
-		void generate_prop_font_offsets(void);
 		void render_fixed_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);		
 		void render_map(BITMAP *destination, Maze m);		
 		void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);

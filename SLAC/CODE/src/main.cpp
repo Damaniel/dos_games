@@ -66,8 +66,7 @@ int load_resources(void) {
 //
 // Perform any initializtion tasks that need to be done with game data.
 //----------------------------------------------------------------------------------
-void init_resources(Render r) {
-	r.generate_prop_font_offsets();		
+void init_resources(Render r) {	
 	r.copy_data_to_offscreen_vram();	
 	set_palette((PALETTE)g_game_data[DAMRL_DB16].dat);		
 	g_back_buffer = create_sub_bitmap(screen, 0, 240, 320, 240);
