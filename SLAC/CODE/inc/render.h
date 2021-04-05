@@ -86,6 +86,12 @@
 #define MAP_DOT_WIDTH				 2
 #define MAP_DOT_HEIGHT				 2
 
+// The maximum width and height of the map area in dots. This is the maximum
+// amount of displayable area inside the map.  Currently, the maze can be
+// no larger than these values below, but can be smaller.
+#define MAP_NUM_X_DOTS				64
+#define MAP_NUM_Y_DOTS				64
+
 // Each font has 5 different versions in different colors.  These are used to grab the correct
 // color font from the bitmaps
 enum {
@@ -117,7 +123,7 @@ enum {
 // MAP_DOT_FLOOR is used for unoccupied floor spaces)
 enum {
 	MAP_DOT_FLOOR,
-	MAP_DOT_1,
+	MAP_DOT_FOG_OF_WAR,
 	MAP_DOT_2,
 	MAP_DOT_3,
 	MAP_DOT_4,
@@ -164,6 +170,7 @@ class Render {
 		
 	public:
 		Render();
+		void initialize_map_bitmap(Maze m);
 		void add_area_to_map_bitmap(Maze m, int x, int y);
 		void copy_data_to_offscreen_vram(void);		
 		void generate_prop_font_offsets(void);

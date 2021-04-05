@@ -48,7 +48,13 @@ const int ROOM_ATTEMPTS = 200;
 const int NO_STAIRS = -1;
 const int STAIRS_UP = 0;
 const int STAIRS_DOWN = 1;
-const int NUM_STAIRS = 3;
+const int NUM_STAIRS = 2;
+
+// The minimum and maximum size of maze that can be generated
+const int MIN_MAZE_WIDTH = 30;
+const int MIN_MAZE_HEIGHT = 30;
+const int MAX_MAZE_WIDTH = 64;
+const int MAX_MAZE_HEIGHT = 64;
 
 //------------------------------------------------------------------------------
 // Stair struct definition
@@ -155,6 +161,7 @@ public:
 	void init(void);
 	bool is_carved(int x, int y);
 	bool is_square_lit(int x, int y);
+	void knock_out_walls(int chance);
 	void print(void);
 	void print_memory_usage(void); 
 	void print_room_ids(void);

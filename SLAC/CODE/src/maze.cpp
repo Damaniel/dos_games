@@ -42,6 +42,11 @@ Maze::Maze() {
 // Maze constructor
 //------------------------------------------------------------------------------
 Maze::Maze(int x, int y) {
+	if (x < MIN_MAZE_WIDTH) x = MIN_MAZE_WIDTH;
+	if (y < MIN_MAZE_HEIGHT) y = MIN_MAZE_HEIGHT;
+	if (x > MAX_MAZE_WIDTH) x = MAX_MAZE_WIDTH;
+	if (y > MAX_MAZE_HEIGHT) y = MAX_MAZE_HEIGHT;
+
 	/* If the maze is of even size, add an additional row/column to ensure 
 	 * a border surrounds the entire maze. */
 	rows = y % 2 == 0 ? y + 1 : y;
@@ -583,6 +588,38 @@ void Maze::remove_dead_ends(void) {
 }
 
 //------------------------------------------------------------------------------
+// knock_out_walls
+//
+// Randomly carves out walls from a finished maze.  
+//
+// Notes:
+//   Used to open up some of the longer passages a little more.  The 'chance'
+//   value should fall between 0 (don't knock out any walls) to 1000 (destroy
+//   every wall) - the value of chance corresponds to a chance/1000 odds that
+//   a particular wall will be destroyed.
+//
+//   The function will only knock out walls that aren't adjacent to a room
+//   square.  The 'open_rooms' function already does this for rooms.  This 
+//   prevents lots of 'openings' in rooms that don't connect to a passageway.
+//------------------------------------------------------------------------------
+void Maze::knock_out_walls(int chance) {
+	int val;
+
+	// Don't carve the outermost rows/columns of the maze
+	for (int y = 1; y < rows-1; y++) {
+		for (int x = 1; x < cols-1; x++) {
+			val = rand() % 1000;
+			if (is_carved(x,y) == false && val < chance) {
+				if(get_room_id_at(x-1,y) == -1 && get_room_id_at(x+1,y) == -1 &&
+				   get_room_id_at(x,y-1) == -1 && get_room_id_at(x,y+1) == -1) {
+					carve(x,y, PASSAGE);
+				   }
+			}
+		}
+	}
+}
+
+//------------------------------------------------------------------------------
 // uncarve
 //
 // Puts back a previously uncarved square.
@@ -662,6 +699,7 @@ void Maze::generate(void) {
 	remove_dead_ends();
 	mark_walls();
 	add_stairs(NUM_STAIRS, NUM_STAIRS);
+	//knock_out_walls(100);
 }
 
 //------------------------------------------------------------------------------

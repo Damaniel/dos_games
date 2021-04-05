@@ -93,6 +93,30 @@ void Render::render_statics(BITMAP *destination, int maze_x, int maze_y) {
 //==================================================================================
 
 //----------------------------------------------------------------------------------
+// initialize_map_bitmap
+//
+// Clears the entire backround of the map area to the 'fog of war' color.
+// Called every time the player enters a new maze.
+//
+// I could cheat and just blit the fog of war color, but for now I want to do it
+// the same way that the update map function does.
+//----------------------------------------------------------------------------------
+void Render::initialize_map_bitmap(Maze m) {
+	for (int y=0; y <= MAP_NUM_Y_DOTS; y++) {
+		for (int x=0; x <= MAP_NUM_X_DOTS; x++) {
+			blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat,
+			screen,
+			MAP_DOT_FOG_OF_WAR * MAP_DOT_WIDTH,
+			0,
+			MAP_AREA_VMEM_X + (x * MAP_DOT_WIDTH),
+			MAP_AREA_VMEM_Y + (y * MAP_DOT_HEIGHT),
+			MAP_DOT_WIDTH,
+			MAP_DOT_HEIGHT);			
+		}
+	}	
+}
+
+//----------------------------------------------------------------------------------
 // add_area_to_map_bitmap
 //
 // Debug function.
@@ -110,6 +134,11 @@ void Render::render_statics(BITMAP *destination, int maze_x, int maze_y) {
 // TODO: Figure out another way to do this.
 //----------------------------------------------------------------------------------
 void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
+
+	// xOff and yOff are used to center the map in the entire map region.
+	int xOff = MAP_AREA_VMEM_X + ((m.get_width() / 2) + 1) * MAP_DOT_WIDTH;
+	int yOff = MAP_AREA_VMEM_Y + ((m.get_height() / 2) + 1) * MAP_DOT_HEIGHT;
+
 	for(int i=x-1; i<=x+1; i++) {
 		for(int j=y-1; j<=y+1; j++) {
 			if(i >=0 && i < m.get_width() && j >=0 && j < m.get_height()) {
@@ -118,10 +147,19 @@ void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 				     	screen,
 					 	MAP_DOT_WALL * MAP_DOT_WIDTH,
 					 	0,
-					 	MAP_AREA_VMEM_X + (i * MAP_DOT_WIDTH),
-					 	MAP_AREA_VMEM_Y + (j * MAP_DOT_HEIGHT),
+					 	xOff + (i * MAP_DOT_WIDTH),
+					 	yOff + (j * MAP_DOT_HEIGHT),
 					 	MAP_DOT_WIDTH,
 					 	MAP_DOT_HEIGHT);
+				} else {
+					blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat,
+				     	screen,
+					 	MAP_DOT_FLOOR * MAP_DOT_WIDTH,
+					 	0,
+					 	xOff + (i * MAP_DOT_WIDTH),
+					 	yOff + (j * MAP_DOT_HEIGHT),
+					 	MAP_DOT_WIDTH,
+					 	MAP_DOT_HEIGHT);			
 				}
 			}
 		}
@@ -140,8 +178,17 @@ void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 					     	screen,
 					 		MAP_DOT_WALL * MAP_DOT_WIDTH,
 					 		0,
-					 		MAP_AREA_VMEM_X + (i * MAP_DOT_WIDTH),
-					 		MAP_AREA_VMEM_Y + (j * MAP_DOT_HEIGHT),
+					 		xOff + (i * MAP_DOT_WIDTH),
+					 		yOff + (j * MAP_DOT_HEIGHT),
+					 		MAP_DOT_WIDTH,
+					 		MAP_DOT_HEIGHT);
+					} else {
+						blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat,
+					     	screen,
+					 		MAP_DOT_FLOOR * MAP_DOT_WIDTH,
+					 		0,
+					 		xOff + (i * MAP_DOT_WIDTH),
+					 		yOff + (j * MAP_DOT_HEIGHT),
 					 		MAP_DOT_WIDTH,
 					 		MAP_DOT_HEIGHT);
 					}
@@ -204,7 +251,7 @@ void Render::render_fixed_text(BITMAP *destination, char *text, int x_pos, int y
 	// This isn't a library, so we'll assume strings are terminated.  That should end well...
 	while(*cur != 0) {
 		offset = (*cur++) - 32;
-		blit((BITMAP *)g_game_data[DAMRL_FIXED_FONT].dat, destination, offset * fixed_font_width, 
+		masked_blit((BITMAP *)g_game_data[DAMRL_FIXED_FONT].dat, destination, offset * fixed_font_width, 
 		     font_idx * fixed_font_height, x, y, fixed_font_width, fixed_font_height);
 		x += 8;
 	}
@@ -221,6 +268,12 @@ void Render::render_fixed_text(BITMAP *destination, char *text, int x_pos, int y
 void Render::render_map(BITMAP *destination) {
 	blit(screen, destination, MAP_VMEM_X, MAP_VMEM_Y, MAP_X_POS, MAP_Y_POS, 
 	     MAP_VMEM_WIDTH, MAP_VMEM_HEIGHT);
+
+	// TODO - Draw actual relevant text.  Needs game state to do this.
+	render_fixed_text(destination, "Cave 1", 55, 30, FONT_YELLOW);
+	render_fixed_text(destination, "Floor 3", 130, 30, FONT_YELLOW);
+	render_fixed_text(destination, "X:25", 74, 171, FONT_YELLOW);
+	render_fixed_text(destination, "Y:18", 137, 171, FONT_YELLOW);
 }
 
 //----------------------------------------------------------------------------------
@@ -238,10 +291,10 @@ void Render::render_prop_text(BITMAP *destination, char *text, int x_pos, int y_
 	int y = y_pos;
 	int offset;
 	char *cur = text;
-	
+	 
 	while (*cur != 0) {
 		offset = (*cur++) - 32;
-		blit((BITMAP *)g_game_data[DAMRL_PROP_FONT].dat, destination, prop_font_offset[offset],
+		masked_blit((BITMAP *)g_game_data[DAMRL_PROP_FONT].dat, destination, prop_font_offset[offset],
 		     font_idx * prop_font_height, x, y, prop_font_width[offset], prop_font_height);
 		x += prop_font_width[offset] + 1;
 	}

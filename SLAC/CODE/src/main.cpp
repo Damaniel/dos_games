@@ -264,8 +264,11 @@ int main(void) {
 	}
 	init_resources(g_render);
 
-	g_maze = Maze(64, 64);
+	g_maze = Maze(30,30);
 	g_maze.generate();
+
+	// TODO: Should be done on a per-floor basis!
+	g_render.initialize_map_bitmap(g_maze);
 
 	initialize_state();
 
