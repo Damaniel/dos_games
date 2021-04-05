@@ -119,19 +119,23 @@ void Render::initialize_map_bitmap(Maze m) {
 //----------------------------------------------------------------------------------
 // add_area_to_map_bitmap
 //
-// Debug function.
+// Debug function (for now).  TODO: investigate a better way to do this
 //
 // Adds small squares to the map bitmap corresponding to the area in the 
 // immediate vicinity of the location specified by (x, y)
 //
 // Notes:
-//   This method will probably change dramatically.  It doesn't account for 
-//   already visited squares, does minimal bounds checking, and assumes
-//   a 3x3 square centered on the (x, y) location.  It also only adds walls and
-//   floors - not even the player.  It's mainly to test the validity 
-//   of using an off-screen VRAM bitmap to hold map status
+//   This method will probably change dramatically since many features are 
+//   missing and this function can be pretty slow.
+//  
+//   - Currently, walls and floors will be redrawn even if they've been drawn 
+//     previously - keeping track of what's already done can reduce the blitting
+//   - xOff and yOff should be precomputed somewhere since it only changes once
+//     per generated maze
+//   - A 3x3 area centered on the player is always used.  The player may have
+//     a larger light radius than that
+//   - Non-player static objects (like items and stairs) aren't currently drawn
 //
-// TODO: Figure out another way to do this.
 //----------------------------------------------------------------------------------
 void Render::add_area_to_map_bitmap(Maze m, int x, int y) {
 
@@ -265,9 +269,20 @@ void Render::render_fixed_text(BITMAP *destination, char *text, int x_pos, int y
 // Notes: 
 //   The map dialog is stored in otherwise unused VGA memory.
 //----------------------------------------------------------------------------------
-void Render::render_map(BITMAP *destination) {
+void Render::render_map(BITMAP *destination, Maze m) {
+
+	// xOff and yOff are used to center the map in the entire map region.
+	int xOff = MAP_X_POS + 7 + ((m.get_width() / 2) + 1) * MAP_DOT_WIDTH;
+	int yOff = MAP_Y_POS + 16 + ((m.get_height() / 2) + 1) * MAP_DOT_HEIGHT;
+
+	// Blit the base map
 	blit(screen, destination, MAP_VMEM_X, MAP_VMEM_Y, MAP_X_POS, MAP_Y_POS, 
 	     MAP_VMEM_WIDTH, MAP_VMEM_HEIGHT);
+
+	// Draw the player's position on the map
+	blit((BITMAP *)g_game_data[DAMRL_MAP_DOTS].dat, destination, 
+         MAP_DOT_PLAYER*MAP_DOT_WIDTH, 0, xOff + (g_player.x_pos*MAP_DOT_WIDTH),
+		 yOff + (g_player.y_pos*MAP_DOT_HEIGHT), MAP_DOT_WIDTH,MAP_DOT_HEIGHT);
 
 	// TODO - Draw actual relevant text.  Needs game state to do this.
 	render_fixed_text(destination, "Cave 1", 55, 30, FONT_YELLOW);

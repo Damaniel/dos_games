@@ -132,7 +132,7 @@ enum {
 	MAP_DOT_7,
 	MAP_DOT_8,
 	MAP_DOT_9,
-	MAP_DOT_10,
+	MAP_DOT_PLAYER,
 	MAP_DOT_11,
 	MAP_DOT_12,
 	MAP_DOT_13,
@@ -175,7 +175,7 @@ class Render {
 		void copy_data_to_offscreen_vram(void);		
 		void generate_prop_font_offsets(void);
 		void render_fixed_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);		
-		void render_map(BITMAP *destination);		
+		void render_map(BITMAP *destination, Maze m);		
 		void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos, int font_idx);
 		void render_status_base(BITMAP *destination);		
 		void render_text_base(BITMAP *destination, bool extended);		

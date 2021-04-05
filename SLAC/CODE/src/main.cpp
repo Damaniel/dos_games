@@ -84,7 +84,7 @@ void unload_resources(void) {
 
 void update_display(void) {
 	if (g_state_flags.map_displayed == true) {
-		g_render.render_map(g_back_buffer);
+		g_render.render_map(g_back_buffer, g_maze);
 	}
 	else {		
 		if (g_state_flags.update_maze_area == true) {
