@@ -79,12 +79,6 @@ typedef struct {
   unsigned char  filler[54];
 } PCXheader;
 
-typedef struct {
-  PCXheader header;
-  unsigned char *buffer;
-  unsigned char *palette;
-} PCX;
-
 void printpcxheader(PCXheader header);
 Bitmap *loadpcx(char *filename, int loadpalette);
 
