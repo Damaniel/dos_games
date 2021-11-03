@@ -34,26 +34,27 @@ void setmode(int mode) {
   memset(&regs, 0, sizeof regs);
   regs.x.ax = mode;
   __dpmi_int(0x10, &regs);
+  
 }
 
 /*----------------------------------------------------------------------------
  * setpixel
  *--------------------------------------------------------------------------*/
-void setpixel(char *dest, int x, int y, int color) {
-  dest[(y<<8) + (y<<6) + x] = color;
+void setpixel(Bitmap *dest, int x, int y, int color) {
+  dest->buffer[(y<<8) + (y<<6) + x] = color;
 }
 /*----------------------------------------------------------------------------
  * getpixel
  *--------------------------------------------------------------------------*/
-int getpixel(char *dest, int x, int y) {
-  return dest[(y<<8) + (y<<6) + x];
+int getpixel(Bitmap *dest, int x, int y) {
+  return dest->buffer[(y<<8) + (y<<6) + x];
 }
 
 
 /*----------------------------------------------------------------------------
  * getpalette
  *--------------------------------------------------------------------------*/
-void getpalette(char *dest) {
+void getpalette(Palette *dest) {
   int i;
   
   if (dest == NULL)
@@ -67,7 +68,7 @@ void getpalette(char *dest) {
 /*----------------------------------------------------------------------------
  * setpalette
  *--------------------------------------------------------------------------*/
-void setpalette(char *src) {
+void setpalette(Palette *src) {
   int i;
 
   if (src == NULL)
@@ -81,7 +82,7 @@ void setpalette(char *src) {
 /*----------------------------------------------------------------------------
  * getcolor
  *--------------------------------------------------------------------------*/
-Color getcolor(char *pal, int index) {
+Color getcolor(Palette *pal, int index) {
   Color c;
   int offset = index * 3;
   c.r = pal[offset];
@@ -93,7 +94,7 @@ Color getcolor(char *pal, int index) {
 /*----------------------------------------------------------------------------
  * setcolor
  *--------------------------------------------------------------------------*/
-void setcolor(char *pal, int index, Color c) {
+void setcolor(Palette *pal, int index, Color c) {
   int offset = index * 3;
   pal[offset] = c.r;
   pal[offset + 1] = c.g;
@@ -103,7 +104,7 @@ void setcolor(char *pal, int index, Color c) {
 /*----------------------------------------------------------------------------
  * setcolor
  *--------------------------------------------------------------------------*/
-void drawsysfontchar(char *dest, int xc, int yc, char c, int color, int trans) {
+void drawsysfontchar(Bitmap *dest, int xc, int yc, char c, int color, int trans) {
   int offset, x, y;
   char *chardata;
   unsigned char bitmask = 0x80;
@@ -120,12 +121,12 @@ void drawsysfontchar(char *dest, int xc, int yc, char c, int color, int trans) {
     for (x=0; x<8; x++) {
       /* If this pixel contains part of the character, draw it */
       if((*chardata & bitmask))
-        dest[offset+x] = color;
+        dest->buffer[offset+x] = color;
       /* If not, then check if the transparency flag is set.  If not,
          draw the space in index 0.  Otherwise, the non-pixel data
          won't be drawn, leaving the underlying image alone */
       else if (!trans)
-          dest[offset+x] = 0;
+          dest->buffer[offset+x] = 0;
         
        /* Shift the bitmask one pixel over */
        bitmask = (bitmask >> 1);
@@ -138,8 +139,7 @@ void drawsysfontchar(char *dest, int xc, int yc, char c, int color, int trans) {
 /*----------------------------------------------------------------------------
  * setcolor
  *--------------------------------------------------------------------------*/
-void drawsysfontstring(char *dest, int x, int y, char *text, int color, int trans) {
-  
+void drawsysfontstring(Bitmap *dest, int x, int y, char *text, int color, int trans) {
   int i;
   
   for(i = 0; text[i] != 0; i++)
@@ -149,29 +149,62 @@ void drawsysfontstring(char *dest, int x, int y, char *text, int color, int tran
 /*----------------------------------------------------------------------------
  * clear
  *--------------------------------------------------------------------------*/
-void clear(char *dest, int color) {
-  memset(dest, color, SCREEN_WIDTH * SCREEN_HEIGHT);
+void clear(Bitmap *dest, int color) {
+  memset(dest->buffer, color, SCREEN_WIDTH * SCREEN_HEIGHT);
 }
 
 /*----------------------------------------------------------------------------
  * hline
  *--------------------------------------------------------------------------*/
-void hline(char *dest, int x1, int x2, int y, int color) {
-  memset(dest + (y * SCREEN_WIDTH + x1), color, x2-x1+1);
+void hline(Bitmap *dest, int x1, int x2, int y, int color) {
+  memset(dest->buffer + (y * SCREEN_WIDTH + x1), color, x2-x1+1);
 }
 
 /*----------------------------------------------------------------------------
  * vline
  *--------------------------------------------------------------------------*/
-void vline(char *dest, int x, int y1, int y2, int color) {
+void vline(Bitmap *dest, int x, int y1, int y2, int color) {
   int i;
   int pos = y1 * SCREEN_WIDTH + x;
   for (i=0; i < y2-y1+1; i++) {
-    dest[pos] = color;
+    dest->buffer[pos] = color;
     pos += SCREEN_WIDTH;
   }
 }
 
+/*----------------------------------------------------------------------------
+ * createbitmap
+ *--------------------------------------------------------------------------*/
+Bitmap *createbitmap(int w, int h, Palette *p) {
+  Bitmap *b;
+  if((b->buffer = (char *)malloc(w*h*sizeof(char))) == NULL) 
+    return NULL;
+  
+  b->w = w;
+  b->h = h;
+  
+  if(p == NULL) {
+    b->palette = NULL;
+  } else {
+    b->palette = (char *)malloc(PALETTE_SIZE * sizeof(char));
+    memcpy(b->palette, p, PALETTE_SIZE*sizeof(char));
+  }
+  
+  return b;
+}
+
+/*----------------------------------------------------------------------------
+ * freebitmap
+ *--------------------------------------------------------------------------*/
+void freebitmap(Bitmap *b) {
+  if (b->buffer)
+    free(b->buffer);
+  if (b->palette)
+    free(b->palette);
+  if(b)
+    free(b);
+}
+  
 /*----------------------------------------------------------------------------
  * graphinit
  *--------------------------------------------------------------------------*/
@@ -184,13 +217,18 @@ int graphinit(void) {
    *   add the offset to it
    */
    
-  /* Point screen to the start of VGA video memory */
-  screen = (char *)0xa0000 + __djgpp_conventional_base;
+  /* Create the screen object and point it to the VGA memory and a copy of the palette.
+  /* Since mode 13 is the only supported mode right now, just set the width and height
+   * here.*/
+  screen = (Bitmap *)malloc(sizeof(Bitmap));
+  screen->w = SCREEN_WIDTH;
+  screen->h = SCREEN_HEIGHT;  
+  screen->buffer = (char *)0xa0000 + __djgpp_conventional_base;
+  screen->palette = (char *)malloc(PALETTE_SIZE * sizeof(char));  
+
   /* Point sysfont to the VGA font data */
   sysfont = (char *)0xFFA6E + __djgpp_conventional_base;
   
-  /* Allocate space to hold the palette */
-  palette = (char *)malloc(PALETTE_SIZE * sizeof(char));  
 }
 
 /*----------------------------------------------------------------------------
@@ -198,6 +236,11 @@ int graphinit(void) {
  *--------------------------------------------------------------------------*/
 int graphshutdown(void) {
   
-  if(palette)
-    free(palette);
+  if(screen->palette)
+    free(screen->palette);
+  
+  if(screen)
+    free(screen);
+  
+  __djgpp_nearptr_disable();
 }

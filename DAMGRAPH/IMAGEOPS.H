@@ -85,8 +85,7 @@ typedef struct {
   unsigned char *palette;
 } PCX;
 
-void printpcxheader(PCX *image);
-int  loadpcx(char *filename, PCX *image, int loadpalette);
-void freepcx(PCX *image);
+void printpcxheader(PCXheader header);
+Bitmap *loadpcx(char *filename, int loadpalette);
 
 #endif

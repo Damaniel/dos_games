@@ -23,8 +23,10 @@
 #include <stdio.h>
 #include <string.h>
 
-int loadpcx(char *filename, PCX *image, int loadpalette) {
+Bitmap *loadpcx(char *filename, int loadpalette) {
   FILE *fp;
+  PCXheader header;  
+  Bitmap *image;
   int buffersize;
   int currentbyte;
   int i;
@@ -32,39 +34,45 @@ int loadpcx(char *filename, PCX *image, int loadpalette) {
   unsigned char tempbyte;
   
   if ((fp = fopen(filename, "rb")) == NULL)
-    return -1;
+    return NULL;
   
   /* Read in the header.  Bail if the manufacturer byte isn't set to 10,
      or if the encoding isn't set to RLE. */
-  image->header.manufacturer = fgetc(fp);
-  if(image->header.manufacturer != 10) {
+  header.manufacturer = fgetc(fp);
+  if(header.manufacturer != 10) {
     fclose(fp);
-    return -1;
+    return NULL;
   }
-  image->header.version = fgetc(fp);
-  image->header.encoding = fgetc(fp);
-  if(image->header.encoding != 1) {
+  header.version = fgetc(fp);
+  header.encoding = fgetc(fp);
+  if(header.encoding != 1) {
     fclose(fp);
-    return -1;
+    return NULL;
   }
-  image->header.bitsperpixel = fgetc(fp);
-  fread(&(image->header.xmin), sizeof(short), 1, fp);
-  fread(&(image->header.ymin), sizeof(short), 1, fp);
-  fread(&(image->header.xmax), sizeof(short), 1, fp);
-  fread(&(image->header.ymax), sizeof(short), 1, fp);
-  fread(&(image->header.hdpi), sizeof(short), 1, fp);
-  fread(&(image->header.vdpi), sizeof(short), 1, fp);
-  fread(image->header.colormap, sizeof(char), 48, fp);
-  image->header.reserved = fgetc(fp);
-  image->header.nplanes = fgetc(fp);
-  fread(&(image->header.bytesperline), sizeof(short), 1, fp);
-  fread(&(image->header.paletteinfo), sizeof(short), 1, fp);  
-  fread(&(image->header.hscreensize), sizeof(short), 1, fp);
-  fread(&(image->header.vscreensize), sizeof(short), 1, fp);
-  fread(image->header.filler, sizeof(char), 54, fp);
+  
+  header.bitsperpixel = fgetc(fp);
+  fread(&(header.xmin), sizeof(short), 1, fp);
+  fread(&(header.ymin), sizeof(short), 1, fp);
+  fread(&(header.xmax), sizeof(short), 1, fp);
+  fread(&(header.ymax), sizeof(short), 1, fp);
+  fread(&(header.hdpi), sizeof(short), 1, fp);
+  fread(&(header.vdpi), sizeof(short), 1, fp);
+  fread(header.colormap, sizeof(char), 48, fp);
+  header.reserved = fgetc(fp);
+  header.nplanes = fgetc(fp);
+  fread(&(header.bytesperline), sizeof(short), 1, fp);
+  fread(&(header.paletteinfo), sizeof(short), 1, fp);  
+  fread(&(header.hscreensize), sizeof(short), 1, fp);
+  fread(&(header.vscreensize), sizeof(short), 1, fp);
+  fread(header.filler, sizeof(char), 54, fp);
+  
+  image = (Bitmap *)malloc(sizeof(Bitmap));
+  
+  image->w = (header.xmax - header.xmin + 1);
+  image->h = (header.ymax - header.ymin + 1);
   
   /* Allocate sufficient memory for the buffer (image height * bytes per pixel) */  
-  buffersize = (image->header.bytesperline * (image->header.ymax - image->header.ymin + 1)) * sizeof(char);
+  buffersize = (header.bytesperline * (header.ymax - header.ymin + 1)) * sizeof(char);
   image->buffer = (char *)malloc(buffersize);
   
   currentbyte = 0;
@@ -73,16 +81,12 @@ int loadpcx(char *filename, PCX *image, int loadpalette) {
     if (tempbyte < 192) {
       image->buffer[currentbyte] = tempbyte;
       currentbyte++;
-      //printf("Wrote %d to buffer\n", tempbyte);
-      //printf("currentbyte is now %d\n", currentbyte);      
     }
     else {
       runsize = tempbyte - 192;
       tempbyte = fgetc(fp);
       memset(&(image->buffer[currentbyte]), tempbyte, runsize);
       currentbyte+=runsize;
-      //printf("Wrote %d bytes of %d to buffer\n", runsize, tempbyte);
-      //printf("currentbyte is now %d\n", currentbyte);
     }
   }
   
@@ -94,6 +98,7 @@ int loadpcx(char *filename, PCX *image, int loadpalette) {
      Note that values in the file range from 0-255, but the VGA expects
      values from 0-63, so each value is divided by 4. 
    */
+  
   if (loadpalette) {
     image->palette = (char *)malloc(PALETTE_SIZE * sizeof(char));
     for(i = 0; i < 768; i++) {
@@ -105,12 +110,12 @@ int loadpcx(char *filename, PCX *image, int loadpalette) {
   }
   
   fclose(fp);
-  return 0;
+  return image;
 }
 
-void printpcxheader(PCX *image) {
+void printpcxheader(PCXheader header) {
   printf("Manufacturer: ");
-  switch (image->header.manufacturer) {
+  switch (header.manufacturer) {
     case 10:
       printf("ZSoft\n");
       break;
@@ -120,7 +125,7 @@ void printpcxheader(PCX *image) {
   }
   
   printf("Version: ");
-  switch (image->header.version) {
+  switch (header.version) {
     case 0:
       printf("PC Paintbrush version 2.5\n");
       break;
@@ -142,7 +147,7 @@ void printpcxheader(PCX *image) {
   }
   
   printf("Encoding: ");
-  switch(image->header.encoding) {
+  switch(header.encoding) {
     case 1:
       printf("RLE\n");
       break;
@@ -151,15 +156,15 @@ void printpcxheader(PCX *image) {
       break;
   }
   
-  printf("Bits per pixel: %d\n", image->header.bitsperpixel);
-  printf("Image width: %d\n", image->header.xmax - image->header.xmin + 1);
-  printf("Image height: %d\n", image->header.ymax - image->header.ymin + 1);
-  printf("Horizontal DPI: %d\n", image->header.hdpi);
-  printf("Vertical DPI: %d\n", image->header.vdpi);
-  printf("Number of color planes: %d\n", image->header.nplanes);
-  printf("Number of bytes per line: %d\n", image->header.bytesperline);
+  printf("Bits per pixel: %d\n", header.bitsperpixel);
+  printf("Image width: %d\n", header.xmax - header.xmin + 1);
+  printf("Image height: %d\n", header.ymax - header.ymin + 1);
+  printf("Horizontal DPI: %d\n", header.hdpi);
+  printf("Vertical DPI: %d\n", header.vdpi);
+  printf("Number of color planes: %d\n", header.nplanes);
+  printf("Number of bytes per line: %d\n", header.bytesperline);
   printf("Palette info: ");
-  switch(image->header.paletteinfo) {
+  switch(header.paletteinfo) {
     case 1:
       printf("Color\n");
       break;
@@ -171,12 +176,6 @@ void printpcxheader(PCX *image) {
       break;
   }
   
-  printf("Buffer size required: %d bytes\n", (image->header.bytesperline * (image->header.ymax - image->header.ymin + 1)));
+  printf("Buffer size required: %d bytes\n", (header.bytesperline * (header.ymax - header.ymin + 1)));
 }
 
-void freepcx(PCX *image) {
-  if (image->buffer) 
-    free(image->buffer);
-  if (image->palette)
-    free(image->palette);
-}

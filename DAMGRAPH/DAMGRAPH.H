@@ -34,12 +34,19 @@
 #define SCREEN_HEIGHT  200
 #define PALETTE_SIZE   768
 
+typedef struct {
+  int w;
+  int h;
+  char *buffer;
+  char *palette;
+} Bitmap;
+
+typedef char Palette;
+
 /*
- * screen - a pointer to the chunk of VGA memory containing the mode 13h 
- * framebuffer.  Can be used as a destination for most of the drawing
- * functions.
+ * screen - a Bitmap reference to the Mode 13 framebuffer 
  */
-char *screen;
+Bitmap *screen;
 
 /*
  * sysfont - a pointer to the text mode character set.
@@ -51,7 +58,7 @@ char *sysfont;
  * using setpalette, and the destination of data received by calling
  * getpalette.
  */
-char *palette;
+Palette *palette;
 
 /*
  * Color - an RGB triple.  Used to define palette entries.  
@@ -65,12 +72,6 @@ typedef struct {
 /*
  * Bitmap - a generic image holding struct. 
  */
-typedef struct {
-  int w;
-  int h;
-  char *buffer;
-  char *palette;
-} Bitmap;
 
 /*============================================================================
  * setMode
@@ -84,35 +85,35 @@ void setmode(int mode);
  *
  * Places a pixel of the specified color in the destination buffer.
  *==========================================================================*/
-void setpixel(char *dest, int x, int y, int color);
+void setpixel(Bitmap *dest, int x, int y, int color);
 
 /*============================================================================
  * getpixel
  *
  * Retreives the color at the specified location in the specified buffer.
  *==========================================================================*/
-int getpixel(char *dest, int x, int y);
+int getpixel(Bitmap *dest, int x, int y);
 
 /*============================================================================
  * hline
  *
  * Draws a horizontal line from point x1,y to x2,y in the specified color.
  *==========================================================================*/
-void hline(char *dest, int x1, int x2, int y, int color);
+void hline(Bitmap *dest, int x1, int x2, int y, int color);
 
 /*============================================================================
  * vline
  *
  * Draws a vertical line from point x,y1 to x,y2 in the specified color.
  *==========================================================================*/
-void vline(char *dest, int x, int y1, int y2, int color);
+void vline(Bitmap *dest, int x, int y1, int y2, int color);
 
 /*============================================================================
  * drawsysfontchar
  *
  * Draws an ASCII character in the specified location using the system font.  
  *==========================================================================*/
-void drawsysfontchar(char *dest, int xc, int yc, char c, int color, int trans);
+void drawsysfontchar(Bitmap *dest, int xc, int yc, char c, int color, int trans);
 
 /*============================================================================
  * drawsysfontstring
@@ -120,28 +121,28 @@ void drawsysfontchar(char *dest, int xc, int yc, char c, int color, int trans);
  * Draws a string of ASCII characters in the specified location using the
  * system font.
  *==========================================================================*/
-void drawsysfontstring(char *dest, int x, int y, char *text, int color, int trans);
+void drawsysfontstring(Bitmap *dest, int x, int y, char *text, int color, int trans);
 
 /*============================================================================
  * getpalette
  *
  * Retrieves the current VGA palette and places it into the specified buffer.
  *==========================================================================*/
-void getpalette(char *dest);
+void getpalette(Palette *dest);
 
 /*============================================================================
  * setpalette
  *
  * Sets the VGA palette using the values in the specified buffer.
  *==========================================================================*/
-void setpalette(char *src);
+void setpalette(Palette *src);
 
 /*============================================================================
  * getcolor
  *
  * Gets the RGB triplet for the specified index of the specified palette.
  *==========================================================================*/
-Color getcolor(char *pal, int index);
+Color getcolor(Palette *pal, int index);
 
 /*============================================================================
  * setcolor
@@ -149,14 +150,32 @@ Color getcolor(char *pal, int index);
  * Sets the specified entry of the specified palette to the provided RGB
  * color.
  *==========================================================================*/
-void setcolor(char *pal, int index, Color c);
+void setcolor(Palette *pal, int index, Color c);
 
 /*============================================================================
  * clear
  *
  * Clears the specified buffer to the specified color.
  *==========================================================================*/
-void clear(char *dest, int color);
+void clear(Bitmap *dest, int color);
+
+/*============================================================================
+ * createbitmap
+ *
+ * Creates a bitmap of the specified size.  If p is not NULL, then
+ * the palette of the Bitmap object will be set to the contents of p.
+ *
+ * Bitmaps created with createbitmap() need to be freed when they are no 
+ * longer needed; use freebitmap() for that.
+ *==========================================================================*/
+Bitmap *createbitmap(int w, int h, Palette *p);
+
+/*============================================================================
+ * freebitmap
+ *
+ * Deallocates memory used by a Bitmap.
+ *==========================================================================*/
+void freebitmap(Bitmap *b);
 
 /*============================================================================
  * graphinit

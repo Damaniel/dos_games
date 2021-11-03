@@ -27,8 +27,7 @@
 int main(void) {
   Color c;
   int i, j;
-  
-  PCX image;
+  Bitmap *testimage;
   
   if (!graphinit())
     return -1;
@@ -38,7 +37,9 @@ int main(void) {
   srand(time(NULL));
   
   clear(screen, 0);
+  setpixel(screen, 120, 100, 15);
   
+ 
   while(!kbhit()) {
     drawsysfontchar(screen, 
                     (rand()%40) * 8,
@@ -47,17 +48,17 @@ int main(void) {
                     (rand()%255) + 1,
                     0);
   }  
-  loadpcx("test/credits.pcx", &image, 1);
-  setpalette(image.palette);
-  memcpy(screen, image.buffer, 64000*sizeof(char));
+  
+  
+  testimage = loadpcx("test/credits.pcx", 1);
+  setpalette(testimage->palette);
+  memcpy(screen->buffer, testimage->buffer, 64000*sizeof(char));
   
   sleep(3);
   
   setmode(TEXTMODE);
  
-  printpcxheader(&image);
-  freepcx(&image);
-  
+  freebitmap(testimage);
   graphshutdown();
   
   return 0;
