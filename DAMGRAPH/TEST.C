@@ -24,6 +24,27 @@
 #include <time.h>
 #include <pc.h>
 
+/* Stuff to think about:
+    - Does screen even need a palette?
+    - If so, should getting the palette automatically load it into 
+      screen's palette?
+    - Should setting the palette mirror the palette data to 
+      screen's palette?
+    - setpalette/getpalette/updatepalette?
+      - setpalette = copy user palette to screen palette
+      - getpalette = copy screen palette to user palette
+      - updatepalette - copy VGA palette data to screen palette
+      
+      Usage: user calls setpalette to update the palette, 
+             screen does the update
+             user calls getpalette to get a copy of the palette,
+             screen gets the palette from VGA and updates their
+             palette, then sends it to the user.
+             (That way, all palette changes should go through
+             the screen, since the screen should match the
+             currently used palette.)             
+*/
+
 int main(void) {
   Color c;
   int i, j;
@@ -32,14 +53,13 @@ int main(void) {
   if (!graphinit())
     return -1;
   
+  
   setmode(MODE13H);
 
   srand(time(NULL));
   
   clear(screen, 0);
-  setpixel(screen, 120, 100, 15);
   
- 
   while(!kbhit()) {
     drawsysfontchar(screen, 
                     (rand()%40) * 8,
@@ -49,11 +69,11 @@ int main(void) {
                     0);
   }  
   
-  
   testimage = loadpcx("test/credits.pcx", 1);
   setpalette(testimage->palette);
-  memcpy(screen->buffer, testimage->buffer, 64000*sizeof(char));
+  clear(screen, 0);
   
+  blitbitmap(screen, testimage, 30, 10);
   sleep(3);
   
   setmode(TEXTMODE);

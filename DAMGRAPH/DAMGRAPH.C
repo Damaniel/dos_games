@@ -50,7 +50,6 @@ int getpixel(Bitmap *dest, int x, int y) {
   return dest->buffer[(y<<8) + (y<<6) + x];
 }
 
-
 /*----------------------------------------------------------------------------
  * getpalette
  *--------------------------------------------------------------------------*/
@@ -102,7 +101,7 @@ void setcolor(Palette *pal, int index, Color c) {
 }
 
 /*----------------------------------------------------------------------------
- * setcolor
+ * drawsysfontchar
  *--------------------------------------------------------------------------*/
 void drawsysfontchar(Bitmap *dest, int xc, int yc, char c, int color, int trans) {
   int offset, x, y;
@@ -137,7 +136,7 @@ void drawsysfontchar(Bitmap *dest, int xc, int yc, char c, int color, int trans)
 }
 
 /*----------------------------------------------------------------------------
- * setcolor
+ * drawsysfontstring
  *--------------------------------------------------------------------------*/
 void drawsysfontstring(Bitmap *dest, int x, int y, char *text, int color, int trans) {
   int i;
@@ -170,6 +169,107 @@ void vline(Bitmap *dest, int x, int y1, int y2, int color) {
     dest->buffer[pos] = color;
     pos += SCREEN_WIDTH;
   }
+}
+
+/*----------------------------------------------------------------------------
+ * blitbitmap
+ *--------------------------------------------------------------------------*/
+void blitbitmap(Bitmap *dest, Bitmap *src, int x, int y) {
+  clippedblit(dest, src, 0, 0, x, y, src->w, src->h);
+}
+
+/*----------------------------------------------------------------------------
+ * clippedblit
+ *--------------------------------------------------------------------------*/
+void clippedblit(Bitmap *dest, Bitmap *src, int srcx, int srcy, 
+                 int destx, int desty, int w, int h) {
+  
+  int c_sx, c_sy, c_dx, c_dy, c_w, c_h;
+  
+  /* Source blit region needs to be fully within the bounds of
+     the source bitmap */   
+  if(srcx < 0 || srcy < 0)
+  {
+    //printf("Returning, source bitmap region is less than 0\n");
+    return;
+  }
+  if(srcx + w > src->w || srcy + h > src->h) {
+    //printf("Returning, source bitmap region goes beyond its bitmap edge\n");
+    return;
+  }
+  /* If the entire source bitmap will lie outside of the destination
+     bitmap, just don't draw it */
+  if (destx + w < 0 || desty + h < 0) {
+    //printf("Not blitting, source bitmap falls outside the left/top margin\n");
+    return;
+  }
+  if (destx >= SCREEN_WIDTH || desty >= SCREEN_HEIGHT) {
+    //printf("Not blitting, source bitmap falls outside the bottom/right margin\n");
+    return;
+  }
+  
+  c_sx = srcx;
+  c_sy = srcy;
+  c_dx = destx;
+  c_dy = desty;
+  c_w = w;
+  c_h = h;
+  
+  /* Clip the left edge */
+  if (destx < 0) {
+    c_dx = 0;
+    c_sx += -destx;
+    c_w -= -destx;
+  }
+  
+  /* Clip the top edge */
+  if (desty < 0) {
+    c_dy = 0;
+    c_sy += -desty;
+    c_h -= -desty;
+  }
+ 
+  /* Clip the right edge */
+  if (destx + w > dest->w)
+    c_w = (dest->w - destx);
+    
+  /* Clip the bottom edge */
+  if (desty + h > dest->h)
+    c_h = (dest->h - desty);
+  
+  /* If the resulting image width or height is <= 0, don't blit.
+     Note that the previous checks should have prevented this condition, but 
+     it doesn't hurt to do the extra check */
+  if (c_w <=0 || c_h <=0 ) {
+    //printf("Not blitting, resulting clipped width or height is <= 0\n");
+    return;
+  } 
+  
+  //printf("Original blit: (%d, %d) -> (%d, %d), size %dx%d\n", srcx, srcy, destx, desty, w, h);
+  //printf("Clipped blit:  (%d, %d) -> (%d, %d), size %dx%d\n", c_sx, c_sy, c_dx, c_dy, c_w, c_h);
+  blit(dest, src, c_sx, c_sy, c_dx, c_dy, c_w, c_h);
+}
+      
+/*----------------------------------------------------------------------------
+ * blit
+ *--------------------------------------------------------------------------*/      
+void blit(Bitmap *dest, Bitmap *src, int srcx, int srcy, int destx, 
+          int desty, int w, int h) {
+
+  /* Not currently efficient.  It just does a memcopy for each row
+     of the blit.  I'm sure this can be done far faster in assembly,
+     but I'm just looking for 'works' rather than 'fast' */
+     
+  /* This does no bounds checking.  If you want to ensure all blits
+     have in-bounds sources and destinations, use blit(), 
+     which does any required clipping */
+   int i;
+   
+   for(i=0; i<h; i++) {
+     memcpy(&dest->buffer[(desty+i) * SCREEN_WIDTH + destx],
+            &src->buffer[(srcy+i) * src->w + srcx], 
+            w*sizeof(char));
+   }
 }
 
 /*----------------------------------------------------------------------------

@@ -41,6 +41,34 @@ typedef struct {
   char *palette;
 } Bitmap;
 
+/* 
+ * A sprite structure:
+ * 
+ * Fields:
+ *  - width: the width of the sprite
+ *  - height: the height of the sprite
+ *  - numframes: number of animation frames
+ *  - curframe: the current animation frame
+ *  - animspeed: number of update frames each sprite frame is displayed
+ *  - animcounter: number of update frames that the current frame has
+ *    been displayed
+ *  - behind: the part of the screen behind the currently drawn sprite
+ *    (so it can be restored when the sprite is moved)
+ *  - spritesheet: contains all frames of the animation in a single row. 
+ *    It must have dimensions greater than or equal to 
+ *    (numframes*width) x height
+ */
+typedef struct {
+  int width;
+  int height;
+  int numframes;
+  int curframe;
+  int animspeed;
+  int animcounter;
+  Bitmap *behind;
+  Bitmap *spritesheet;
+} Sprite;
+
 typedef char Palette;
 
 /*
@@ -170,6 +198,38 @@ void clear(Bitmap *dest, int color);
  *==========================================================================*/
 Bitmap *createbitmap(int w, int h, Palette *p);
 
+/*============================================================================
+ * blitbitmap
+ *
+ * A convenience function.  Blits the entire source bitmap to the destination
+ * location, clipping as needed.
+ *==========================================================================*/
+void blitbitmap(Bitmap *dest, Bitmap *src, int x, int y);
+
+/*============================================================================
+ * clippedblit
+ *
+ * Blits the specified source region (position, width, height) to the 
+ * destination location, clipping the edges of the source if required.
+ * Note that the source region specified must be fully within the source
+ * bitmap, but any part of it can fall outside the destination bitmap. 
+ *==========================================================================*/
+void clippedblit(Bitmap *dest, Bitmap *src, int srcx, int srcy, 
+                 int destx, int desty, int w, int h) ;
+                 
+/*============================================================================
+ * clippedblit
+ *
+ * Blits the specified source region (position, width, height) to the 
+ * destination location. No clipping or bounds checking is done, so bad things
+ * will happen if your source or destination bitmaps reference locations
+ * outside of their bounds.  Useful if you know that your source region
+ * only references pixels inside its own region and will fit fully within
+ * the bounds of the destination.
+ *==========================================================================*/
+void blit(Bitmap *dest, Bitmap *src, int srcx, int srcy, int destx, 
+              int desty, int w, int h);
+             
 /*============================================================================
  * freebitmap
  *
