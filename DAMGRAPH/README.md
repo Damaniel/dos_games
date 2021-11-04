@@ -1,4 +1,4 @@
 Currently holds some DOS mode 13h graphics stuff for DJGPP.  
 
-Will eventually hold a game project and will be renamed, but
-I just want to get this stuff into git for now.
+NOTE: I'm planning to just use Allegro instead since the overhead isn't much higher.  My code is a little faster, but Allegro does a ton more and supports a lot more features. I'm leaving this for historical purposes.
+
