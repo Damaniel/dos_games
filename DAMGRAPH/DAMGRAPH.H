@@ -199,6 +199,17 @@ void clear(Bitmap *dest, int color);
 Bitmap *createbitmap(int w, int h, Palette *p);
 
 /*============================================================================
+ * blitsprite
+ *
+ * Blits a frame of animation from a Sprite onto the screen.  If 
+ * usecurframe is less than zero, the frame displayed will be pulled from
+ * the sprite's curframe field, otherwise the specific frame will be shown.
+ * If the frame is out of the range of the number of frames in the
+ * spritesheet, frame 0 will be displayed.
+ *==========================================================================*/
+void blitsprite(Bitmap *dest, Sprite *src, int frame, int x, int y);
+
+/*============================================================================
  * blitbitmap
  *
  * A convenience function.  Blits the entire source bitmap to the destination
@@ -236,6 +247,22 @@ void blit(Bitmap *dest, Bitmap *src, int srcx, int srcy, int destx,
  * Deallocates memory used by a Bitmap.
  *==========================================================================*/
 void freebitmap(Bitmap *b);
+
+/*============================================================================
+ * loadsprite
+ *
+ * Creates a Sprite based on a loaded image.  The PCX spritesheet that's 
+ * imported must be wide enough to hold <numframes> worth of <width>*<height>
+ * images.
+ *==========================================================================*/
+Sprite *loadsprite(char *filename, int width, int height, int numframes);
+
+/*============================================================================
+ * freesprite
+ *
+ * Deallocates memory used by a sprite
+ *==========================================================================*/
+void freesprite(Sprite *s);
 
 /*============================================================================
  * graphinit

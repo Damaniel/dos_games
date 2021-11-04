@@ -172,6 +172,23 @@ void vline(Bitmap *dest, int x, int y1, int y2, int color) {
 }
 
 /*----------------------------------------------------------------------------
+ * blitsprite
+ *--------------------------------------------------------------------------*/
+void blitsprite(Bitmap *dest, Sprite *src, int frame, int x, int y) {
+  int xoff;
+  int frameoff;
+  
+  if (frame <0) {
+    frameoff = src->curframe;
+  } else
+    frameoff = (frame < src->numframes) ? frame : 0;
+  
+  xoff = src->width * frameoff;
+
+  clippedblit(dest, src->spritesheet, xoff, 0, x, y, src->width, src->height);
+}
+
+/*----------------------------------------------------------------------------
  * blitbitmap
  *--------------------------------------------------------------------------*/
 void blitbitmap(Bitmap *dest, Bitmap *src, int x, int y) {
@@ -277,11 +294,15 @@ void blit(Bitmap *dest, Bitmap *src, int srcx, int srcy, int destx,
  *--------------------------------------------------------------------------*/
 Bitmap *createbitmap(int w, int h, Palette *p) {
   Bitmap *b;
+  b = (Bitmap *)malloc(sizeof(Bitmap));
+  
   if((b->buffer = (char *)malloc(w*h*sizeof(char))) == NULL) 
     return NULL;
   
   b->w = w;
   b->h = h;
+  
+  memset(b->buffer, 0, w*h*sizeof(char));
   
   if(p == NULL) {
     b->palette = NULL;
@@ -297,14 +318,67 @@ Bitmap *createbitmap(int w, int h, Palette *p) {
  * freebitmap
  *--------------------------------------------------------------------------*/
 void freebitmap(Bitmap *b) {
-  if (b->buffer)
+  if (b->buffer != NULL) {
     free(b->buffer);
-  if (b->palette)
-    free(b->palette);
-  if(b)
+  }
+  if (b->palette != NULL) {
+    free(b->palette);  
+  }  
+  if(b != NULL) {
     free(b);
+  }
 }
+
+/*----------------------------------------------------------------------------
+ * loadsprite
+ *--------------------------------------------------------------------------*/
+Sprite *loadsprite(char *filename, int width, int height, int numframes) {
   
+  Sprite *s;
+  
+  s = (Sprite *)malloc(sizeof(Sprite));
+  
+  /* Load the PCX bitmap */
+  s->spritesheet = loadpcx(filename, 0);
+  
+  if (s->spritesheet==NULL) {
+   if(s)
+     free(s);
+   return NULL;
+  }
+  
+  /* Check to see if the spritesheet is big enough for the sprite */
+  if(s->spritesheet->w < (width * numframes) ||
+     s->spritesheet->h < height) {
+        freebitmap(s->spritesheet);
+        if(s)
+          free(s);
+        return NULL;
+  }
+  
+  s->width = width;
+  s->height = height;
+  s->numframes = numframes;
+  s->curframe = 0;
+  s->animspeed = 0;
+  s->animcounter = 0;
+  s->behind = createbitmap(width, height, NULL);
+  
+  return s;
+}
+
+/*----------------------------------------------------------------------------
+ * freesprite
+ *--------------------------------------------------------------------------*/
+void freesprite(Sprite *s) {
+  if(s->behind)
+    freebitmap(s->behind);
+  if(s->spritesheet)
+    freebitmap(s->spritesheet);
+  if(s)
+    free(s);
+}
+
 /*----------------------------------------------------------------------------
  * graphinit
  *--------------------------------------------------------------------------*/

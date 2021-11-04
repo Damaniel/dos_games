@@ -48,7 +48,8 @@
 int main(void) {
   Color c;
   int i, j;
-  Bitmap *testimage;
+  Sprite *testsprite;
+  Bitmap *b;
   
   if (!graphinit())
     return -1;
@@ -60,6 +61,7 @@ int main(void) {
   
   clear(screen, 0);
   
+  
   while(!kbhit()) {
     drawsysfontchar(screen, 
                     (rand()%40) * 8,
@@ -69,16 +71,21 @@ int main(void) {
                     0);
   }  
   
-  testimage = loadpcx("test/credits.pcx", 1);
-  setpalette(testimage->palette);
+  /* Force load the palette */
+  b = loadpcx("test/sprites.pcx", 1);
+  setpalette(b->palette);
+  
   clear(screen, 0);
   
-  blitbitmap(screen, testimage, 30, 10);
+  testsprite = loadsprite("test/sprites.pcx", 16, 16, 3);
+  blitsprite(screen, testsprite, 0, 16, 16);
+  
   sleep(3);
   
   setmode(TEXTMODE);
  
-  freebitmap(testimage);
+  freesprite(testsprite);
+  freebitmap(b);
   graphshutdown();
   
   return 0;
