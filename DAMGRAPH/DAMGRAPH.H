@@ -52,6 +52,8 @@ typedef struct {
  *  - animspeed: number of update frames each sprite frame is displayed
  *  - animcounter: number of update frames that the current frame has
  *    been displayed
+ *  - transidx: the color index used for transparency.  If < 0, 
+ *    don't use transparency
  *  - behind: the part of the screen behind the currently drawn sprite
  *    (so it can be restored when the sprite is moved)
  *  - spritesheet: contains all frames of the animation in a single row. 
@@ -65,6 +67,7 @@ typedef struct {
   int curframe;
   int animspeed;
   int animcounter;
+  int transidx;
   Bitmap *behind;
   Bitmap *spritesheet;
 } Sprite;
@@ -199,6 +202,21 @@ void clear(Bitmap *dest, int color);
 Bitmap *createbitmap(int w, int h, Palette *p);
 
 /*============================================================================
+ * NOTE about blit functions:
+ *
+ * The convenience blit functions are all transparency aware.  For the sprite 
+ * function (blitsprite), transparency is determined by the 'transidx' value 
+ * in its own structure.  The other blit functions all have an argument (the 
+ * last one) that specifies the transparent color index (or -1 for bitmaps 
+ * that are non-transparent).
+ *
+ * Each of these functions will eventually call transblit or blit, depending
+ * on the transparency index value that each of the convenience functions
+ * uses.  If you plan to do unclipped blits directly using blit or transblit,
+ * be aware that the former has no transidx argument, but the latter does.
+ *==========================================================================*/
+ 
+/*============================================================================
  * blitsprite
  *
  * Blits a frame of animation from a Sprite onto the screen.  If 
@@ -215,7 +233,7 @@ void blitsprite(Bitmap *dest, Sprite *src, int frame, int x, int y);
  * A convenience function.  Blits the entire source bitmap to the destination
  * location, clipping as needed.
  *==========================================================================*/
-void blitbitmap(Bitmap *dest, Bitmap *src, int x, int y);
+void blitbitmap(Bitmap *dest, Bitmap *src, int x, int y, int transidx);
 
 /*============================================================================
  * clippedblit
@@ -226,7 +244,7 @@ void blitbitmap(Bitmap *dest, Bitmap *src, int x, int y);
  * bitmap, but any part of it can fall outside the destination bitmap. 
  *==========================================================================*/
 void clippedblit(Bitmap *dest, Bitmap *src, int srcx, int srcy, 
-                 int destx, int desty, int w, int h) ;
+                 int destx, int desty, int w, int h, int transidx) ;
                  
 /*============================================================================
  * clippedblit
@@ -241,6 +259,17 @@ void clippedblit(Bitmap *dest, Bitmap *src, int srcx, int srcy,
 void blit(Bitmap *dest, Bitmap *src, int srcx, int srcy, int destx, 
               int desty, int w, int h);
              
+/*----------------------------------------------------------------------------
+ * transblit
+ *
+ * Essentially the same idea as blit(), but treats the color index 
+ * <transidx> as transparent, not drawing the pixel in those places.
+ * Since this is done with dual loops instead of memcpy, it's a fair
+ *   bit slower and should be reserved for bitmaps that need it.
+ *--------------------------------------------------------------------------*/  
+void transblit(Bitmap *dest, Bitmap *src, int srcx, int srcy, int destx, 
+          int desty, int w, int h, int transidx);
+         
 /*============================================================================
  * freebitmap
  *
@@ -255,7 +284,8 @@ void freebitmap(Bitmap *b);
  * imported must be wide enough to hold <numframes> worth of <width>*<height>
  * images.
  *==========================================================================*/
-Sprite *loadsprite(char *filename, int width, int height, int numframes);
+Sprite *loadsprite(char *filename, int width, int height, int numframes,
+                   int transidx);
 
 /*============================================================================
  * freesprite

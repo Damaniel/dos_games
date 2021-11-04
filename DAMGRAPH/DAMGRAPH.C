@@ -185,21 +185,22 @@ void blitsprite(Bitmap *dest, Sprite *src, int frame, int x, int y) {
   
   xoff = src->width * frameoff;
 
-  clippedblit(dest, src->spritesheet, xoff, 0, x, y, src->width, src->height);
+  clippedblit(dest, src->spritesheet, xoff, 0, x, y, src->width, src->height,
+              src->transidx);
 }
 
 /*----------------------------------------------------------------------------
  * blitbitmap
  *--------------------------------------------------------------------------*/
-void blitbitmap(Bitmap *dest, Bitmap *src, int x, int y) {
-  clippedblit(dest, src, 0, 0, x, y, src->w, src->h);
+void blitbitmap(Bitmap *dest, Bitmap *src, int x, int y, int transidx) {
+  clippedblit(dest, src, 0, 0, x, y, src->w, src->h, transidx);
 }
 
 /*----------------------------------------------------------------------------
  * clippedblit
  *--------------------------------------------------------------------------*/
 void clippedblit(Bitmap *dest, Bitmap *src, int srcx, int srcy, 
-                 int destx, int desty, int w, int h) {
+                 int destx, int desty, int w, int h, int transidx) {
   
   int c_sx, c_sy, c_dx, c_dy, c_w, c_h;
   
@@ -207,21 +208,17 @@ void clippedblit(Bitmap *dest, Bitmap *src, int srcx, int srcy,
      the source bitmap */   
   if(srcx < 0 || srcy < 0)
   {
-    //printf("Returning, source bitmap region is less than 0\n");
     return;
   }
   if(srcx + w > src->w || srcy + h > src->h) {
-    //printf("Returning, source bitmap region goes beyond its bitmap edge\n");
     return;
   }
   /* If the entire source bitmap will lie outside of the destination
      bitmap, just don't draw it */
   if (destx + w < 0 || desty + h < 0) {
-    //printf("Not blitting, source bitmap falls outside the left/top margin\n");
     return;
   }
   if (destx >= SCREEN_WIDTH || desty >= SCREEN_HEIGHT) {
-    //printf("Not blitting, source bitmap falls outside the bottom/right margin\n");
     return;
   }
   
@@ -262,31 +259,90 @@ void clippedblit(Bitmap *dest, Bitmap *src, int srcx, int srcy,
     return;
   } 
   
-  //printf("Original blit: (%d, %d) -> (%d, %d), size %dx%d\n", srcx, srcy, destx, desty, w, h);
-  //printf("Clipped blit:  (%d, %d) -> (%d, %d), size %dx%d\n", c_sx, c_sy, c_dx, c_dy, c_w, c_h);
-  blit(dest, src, c_sx, c_sy, c_dx, c_dy, c_w, c_h);
+  if (transidx < 0)
+    blit(dest, src, c_sx, c_sy, c_dx, c_dy, c_w, c_h);
+  else
+    transblit(dest, src, c_sx, c_sy, c_dx, c_dy, c_w, c_h, transidx);
 }
-      
+
 /*----------------------------------------------------------------------------
  * blit
  *--------------------------------------------------------------------------*/      
 void blit(Bitmap *dest, Bitmap *src, int srcx, int srcy, int destx, 
           int desty, int w, int h) {
-
-  /* Not currently efficient.  It just does a memcopy for each row
-     of the blit.  I'm sure this can be done far faster in assembly,
-     but I'm just looking for 'works' rather than 'fast' */
-     
+ 
   /* This does no bounds checking.  If you want to ensure all blits
-     have in-bounds sources and destinations, use blit(), 
-     which does any required clipping */
+     have in-bounds sources and destinations, use clippedblit(), 
+     which does any required clipping.
+     
+     This version is plenty fast for my needs - rough estimates show that 
+     if doing nothing else, it can update the entire screen at approximately
+     120 fps on a low end 386, and more like 1700 fps on a mid spec first 
+     gen Pentium. 
+  */
    int i;
-   
+
    for(i=0; i<h; i++) {
-     memcpy(&dest->buffer[(desty+i) * SCREEN_WIDTH + destx],
+     memcpy(&dest->buffer[(desty+i) * dest->w + destx],
             &src->buffer[(srcy+i) * src->w + srcx], 
             w*sizeof(char));
    }
+   
+   /*
+     For historical purposes, here's some assembly I wrote to do the
+     same thing.  Since it uses movsb instead of using a word based
+     approach with exceptions for odd line lengths, it ended up about 50%
+     slower than the memcpy version.  Nobody said my assembly was any
+     good.
+     
+     asm(
+       "movl %0, %%eax\n\t"
+       "movl %1, %%edi\n\t"
+       "movl %2, %%esi\n\t"             
+       "%=:\n\t"
+       "movl %3, %%ecx\n\t"        
+       "rep movsb\n\t"
+       "add %4, %%esi\n\t"       
+       "add %5, %%edi\n\t"       
+       "dec %%eax\n\t"
+       "jnz %=b\n\t"
+       :
+       : "m"(h), 
+         "m"(&dest->buffer[desty * SCREEN_WIDTH + destx]),
+         "m"(&src->buffer[srcy * src->w + srcx]), 
+         "m"(w),
+         "m"(src->w - w),
+         "m"(SCREEN_WIDTH-w)
+       : "%esi", "%edi", "%eax", "%ecx");
+    */   
+}
+
+/*----------------------------------------------------------------------------
+ * transblit
+ *--------------------------------------------------------------------------*/  
+void transblit(Bitmap *dest, Bitmap *src, int srcx, int srcy, int destx, 
+          int desty, int w, int h, int transidx) {
+         
+  /* Essentially the same idea as blit(), but treats the color index 
+     <transidx> as transparent, not drawing the pixel in those places.
+     Since this is done with dual loops instead of memcpy, it's a fair
+     bit slower and should be reserved for bitmaps that need it */
+  int i, j;
+  int sidx, didx;
+   
+  sidx = srcy * src->w + srcx;
+  didx = desty * dest->w + destx;
+  
+  for(j = 0; j < h; j++) {
+    for(i = 0; i < w; i++) {
+      if (src->buffer[sidx] != transidx)
+        dest->buffer[didx] = src->buffer[sidx];
+      sidx++;
+      didx++;
+     }
+    sidx += src->w - w;
+    didx += dest->w - w;
+  }
 }
 
 /*----------------------------------------------------------------------------
@@ -332,8 +388,8 @@ void freebitmap(Bitmap *b) {
 /*----------------------------------------------------------------------------
  * loadsprite
  *--------------------------------------------------------------------------*/
-Sprite *loadsprite(char *filename, int width, int height, int numframes) {
-  
+Sprite *loadsprite(char *filename, int width, int height, int numframes,
+                   int transidx) {
   Sprite *s;
   
   s = (Sprite *)malloc(sizeof(Sprite));
@@ -362,6 +418,7 @@ Sprite *loadsprite(char *filename, int width, int height, int numframes) {
   s->curframe = 0;
   s->animspeed = 0;
   s->animcounter = 0;
+  s->transidx = transidx;
   s->behind = createbitmap(width, height, NULL);
   
   return s;

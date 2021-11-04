@@ -50,40 +50,43 @@ int main(void) {
   int i, j;
   Sprite *testsprite;
   Bitmap *b;
+  // int loopcount;
+  srand(time(NULL));
   
   if (!graphinit())
     return -1;
   
-  
   setmode(MODE13H);
 
-  srand(time(NULL));
-  
-  clear(screen, 0);
-  
-  
-  while(!kbhit()) {
-    drawsysfontchar(screen, 
-                    (rand()%40) * 8,
-                    (rand()%25) * 8,
-                    (rand()%94) + 33,
-                    (rand()%255) + 1,
-                    0);
-  }  
-  
   /* Force load the palette */
-  b = loadpcx("test/sprites.pcx", 1);
+  b = loadpcx("test/credits.pcx", 1);
   setpalette(b->palette);
   
   clear(screen, 0);
   
-  testsprite = loadsprite("test/sprites.pcx", 16, 16, 3);
-  blitsprite(screen, testsprite, 0, 16, 16);
+  testsprite = loadsprite("test/sprites.pcx", 16, 16, 3, 0);
   
+  //loopcount=0;
+  
+  //while(!kbhit()) { 
+    //blitsprite(screen, testsprite, rand()%3, rand()%20 * 16, rand()%12 * 16);
+    //loopcount++;
+    /*drawsysfontchar(screen, 
+                    (rand()%40) * 8,
+                    (rand()%25) * 8,
+                    (rand()%94) + 33,
+                    (rand()%255) + 1,
+                    0);*/
+  //}  
+ 
+  blit(screen, b, 0, 0, 0, 0, 320, 200);
+  blitsprite(screen, testsprite, 0, 8, 8);
+
   sleep(3);
   
   setmode(TEXTMODE);
- 
+
+  //printf("%d\n", loopcount);
   freesprite(testsprite);
   freebitmap(b);
   graphshutdown();
