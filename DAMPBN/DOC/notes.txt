@@ -1,0 +1,177 @@
+Name:
+
+Not sure yet.
+
+==============================================================================
+What is it?  
+==============================================================================
+
+It's a hyper-casual game that's not unlike some of the color-by-number like
+programs that show up on mobile platforms (Cross Stitch World is the first
+one that comes to mind since I played it the most).  The goal is just to 
+fill in all of the squares with the appropriate color using the provided
+palette.  Initially, images will be supported up to 320x240 (so they can
+be shown completely on screen once they're complete), and support 
+palettes of up to 64 colors.  Each image will contain its own palette, which
+includes the 64 colors, an additional 128 colors for highlighting (that is,
+to draw cross stitch style Xs or diamond painting squares), and 64 system
+colors used to draw the UI and such.  The 64 color system palette is fixed
+but the additional colors are unique to each picture.
+
+==============================================================================
+Features:
+==============================================================================
+
+ - Up to 320x240 images to work on
+ - Up to 64 colors in an image
+ - Images include their category so they can be organized
+ - Tracks total progress, mistakes, elapsed time
+ - Highlights incorrectly colored squares
+ - Optional ability to highlight all squares of the currently active
+   color being worked on
+ - Overview image shows position of the image visible on the display.
+   Each pixel in the overview shows status for that small region of
+   the picture:
+     - green: complete, all squares are colored correctly
+     - red: complete, one or more squares are colored incorrectly
+     - blue: region is in progress
+     - black: no squares in this region have been worked on yet
+ - Fully keyboard driven interface, so no mouse required.
+ - Gallery mode, to view pictures that you've finished
+ - The game keeps track of not only finished pieces, but the ordering
+   in which the player worked on them, so you can get a quick 'replay'
+   of the progress of the image while looking at it in gallery mode
+ - UI themes (different sets of colors for UI elements, using pre-defined
+   color sets built into the system palette) 
+
+==============================================================================   
+Keys:
+==============================================================================
+
+  - up/down/left/right - move cursor inside the draw area
+  - SHIFT + up/down/left/right - move draw area by one page (20 tiles) inside 
+    the draw area
+  - Space or Enter - color the current draw location with the selected color
+  - Backspace - remove the color from the draw location
+  - [ / ] - move up and down through the palette
+  - S - save
+  - L - load
+  - U - undo last color placement
+  - R - redo last undone color placement
+  - O - options screen
+  - T - reset image progress.  Requires confirmation!
+  - H - Help screen
+  - X / Escape - Exit to the main menu.  Prompts for save
+  - I - Toggle highlight of unmarked squares of the current palette color
+  
+Stretch features:
+  - Use MTCP to add network support, to download new images straight
+    from inside the game
+  - Mouse support
+  - Integrated MIDI player, to play background music while you work
+  
+==============================================================================
+File formats:
+==============================================================================
+
+Picture file format:
+Header:
+  - 2 bytes - "DP"
+  - 2 bytes - x resolution
+  - 2 bytes - y resolution
+  - 1 bytes - category:
+              0 - uncategorized
+              1 - miscellaneous
+              2 - landscape
+              3 - animal
+              4 - fantasy
+              5 - abstract
+              7 - pattern
+              >7 - unknown.  Newer versions may have category values >7
+  - 32 bytes - picture name.  Shown on gallery, not on in-progress work
+  - 1 byte  - number of colors in the palette (1-64)
+  - 1 byte  - compression type:
+              0 - uncompressed
+              1 - run length encoded
+  - 192 bytes - color palette (64 sets of R,G,B).  If there are fewer than 64 colors,
+                extra colors should be set to 0, 0, 0
+  - 23 bytes - padding to bring the total to 256 bytes
+Data:
+  - an (x * y) grid of image data, read from left to right, top to bottom.  The data
+    itself can be run length encoded.  If the upper two bits are 00, then the lower six
+    bits specify the color number of the location.  If the upper two bits are 01, 10
+    or 11, then the next byte specifies the number of times to repeat the color
+    and the lower six bits of the first byte specifies the color number.  Runs of up
+    to 255 can be created.
+    
+    Example:
+    00110000 - 1 square of color 48
+    00100000 00001000 - 1 square of color 32, 1 square of color 8
+    11010000 00001100 - 12 squares of color 16
+    
+    
+Progress file format:
+  The progress file has the same name as the picture file, with the extension .inp.
+  
+Header:
+  - 2 bytes - "PR"
+  - 12 bytes - name of original picture file (just in case we need it)
+  - 2 bytes - x resolution
+  - 2 bytes - y resolution
+  - 3 bytes - elapsed time (hours, minutes, seconds), each one byte
+  - 4 bytes - number of mistakes made
+  - 4 bytes - progress (number of correctly placed colors)
+  - 35 bytes - padding to bring the total to 64 bytes
+
+Data:
+  - (x * y ) * 4 bytes - an array of positions (x, y), specifying the order of
+    placement of *correct* colors.  Used to 'replay' the player's progress at the
+    end of a successfully created puzzle.  
+    
+About the replay file:
+
+  Two arrays:
+    1: (x * y) * 4 array, each location represents numerical order
+    2: (x * y) * 4 array, each location represents an (x,y) location
+    
+  The two forms are used as follows:
+    - Array 1 is used to enforce ordering.  If a location (x,y) already has
+      an order value in it, then erasing or changing the color won't 
+      affect the order in any way (that is, the order is only set the first
+      time that the color is set)
+      
+    - Array 2 is an array indexed by order, with the (x,y) location specified by
+      that order.  This is used as a way to quickly iterate through the order that
+      colors were placed, so they can be replayed without having to iterate through
+      Array 1.
+      
+  The data in the replay file is based on Array 2.  When puzzle progress is loaded,
+  Array 1 is filled using data derived from Array 2.  As the image is filled in,
+  Array 1 is updated with ordering data, and Array 2 has location data added.
+  This 2 array setup could be done  more effectively with something like a hash table, 
+  but I'm writing this in C and I'd rather use an extra couple hundred K of RAM 
+  than implement a hash table to save some fraction of that.
+  
+  The main downside of the replay file is that it's pretty large.  For a 320x240 image,
+  it will always have a fixed size of 307,264 bytes (64 bytes of header + 307,000 
+  bytes of replay data).  I may choose to compress it at some point, or I may only
+  choose to only hold moves that have already been made - or possibly both.
+  
+  Example - a 3 x 3 array
+  
+  0 3 1
+  2 4 6
+  8 7 5
+  
+  Array 1 is 0x00000000, 0x00000003, 0x00000001, 
+             0x00000002, 0x00000004, 0x00000006,
+             0x00000008, 0x00000007, 0x00000005   - 36 bytes
+  Array 2 is 0x0000, 0x0000, 
+             0x0002, 0x0000, 
+             0x0000, 0x0001, 
+             0x0001, 0x0000,
+             0x0001, 0x0001, 
+             0x0002, 0x0002, 
+             0x0002, 0x0001, 
+             0x0001, 0x0002,
+             0x0000, 0x0002  - 36 bytes
