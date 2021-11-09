@@ -21,9 +21,9 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "dampbn.h"
-#include "palette.h"
-#include "uiconsts.h"
+#include "../inc/dampbn.h"
+#include "../inc/palette.h"
+#include "../inc/uiconsts.h"
 
 /* Some stuff to cut down the executable size */
 BEGIN_GFX_DRIVER_LIST

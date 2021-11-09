@@ -21,7 +21,7 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../palette.h"
+#include "../inc/palette.h"
 
 /* Some stuff to cut down the executable size */
 BEGIN_GFX_DRIVER_LIST
