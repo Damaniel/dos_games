@@ -19,17 +19,19 @@
    DEALINGS IN THE SOFTWARE.
  */
 #include <allegro.h>
-#include "../include/dampbn.h"
+#include "../INCLUDE/DAMPBN.H"
+#include "../INCLUDE/UICONSTS.H"
 
 int process_input(int state) {
 
     int update;
 
+    /* By default, don't update any graphics */
     update = 0;
 
-    /*----------------------
-     * ESC
-     *----------------------*/
+    /*-------------------------------------------------------------------------
+     * ESC - exit the game
+     *------------------------------------------------------------------------*/
     if(key[KEY_ESC]) {
       if (!g_keypress_lockout[KEY_ESC]) {
           g_game_done = 1;
@@ -40,9 +42,9 @@ int process_input(int state) {
       g_keypress_lockout[KEY_ESC] = 0;
     }
     
-    /*-----------------------
-     * left
-     *-----------------------*/
+    /*-------------------------------------------------------------------------
+     * left - move the cursor left in the play area
+     *------------------------------------------------------------------------*/
     if(key[KEY_LEFT]) {
       /* If the key was previously up... */
       if (!g_keypress_lockout[KEY_LEFT]) {
@@ -74,9 +76,9 @@ int process_input(int state) {
       g_keypress_lockout[KEY_LEFT] = 0;
     }
 
-    /*-----------------------
-     * right
-     *-----------------------*/
+    /*-------------------------------------------------------------------------
+     * right - move the cursor right in the play area 
+     *------------------------------------------------------------------------*/
     if (key[KEY_RIGHT]) {
       /* If the key was previously up... */
       if (!g_keypress_lockout[KEY_RIGHT]) {
@@ -108,9 +110,9 @@ int process_input(int state) {
       g_keypress_lockout[KEY_RIGHT] = 0;
     }
 
-    /*-----------------------
-     * up
-     *-----------------------*/
+    /*-------------------------------------------------------------------------
+     * up - move the cursor up in the play area 
+     *------------------------------------------------------------------------*/
     if (key[KEY_UP]) {
       /* If the key was previously up */
       if (!g_keypress_lockout[KEY_UP]) {
@@ -142,9 +144,9 @@ int process_input(int state) {
       g_keypress_lockout[KEY_UP] = 0;
     }
 
-    /*-----------------------
-     * down
-     *-----------------------*/
+    /*-------------------------------------------------------------------------
+     * down - move the cursor down in the play area 
+     *------------------------------------------------------------------------*/
     if (key[KEY_DOWN]) {
       /* If the key was previously up */
       if (!g_keypress_lockout[KEY_DOWN]) {
@@ -175,20 +177,35 @@ int process_input(int state) {
       g_keypress_lockout[KEY_DOWN] = 0;
     }
 
-    /*-----------------------
-     * P
-     *-----------------------*/
+    /*-------------------------------------------------------------------------
+     * P - toggle palette page
+     *------------------------------------------------------------------------*/
     if (key[KEY_P]) {
       if (!g_keypress_lockout[KEY_P]) {
+        g_prev_color = g_cur_color;        
         if (g_palette_page == 0) {
-          g_palette_page = 1;
+          /* Only change if there's more than one page worth of colors */
+          if (g_picture->num_colors > PALETTE_COLORS_PER_PAGE) {
+            g_palette_page = 1;
+            g_cur_color += PALETTE_COLORS_PER_PAGE;
+            /* Change previous color to represent the index on the new page */
+            g_prev_color += PALETTE_COLORS_PER_PAGE;
+          }
         }
         else {
           g_palette_page = 0;
+          g_cur_color -= PALETTE_COLORS_PER_PAGE;
+          /* Change previous color to represent the index on the new page */
+          g_prev_color -= PALETTE_COLORS_PER_PAGE;          
         }
+        /* If the wrapped color is now higher than the biggest color index,
+           clamp it. */
+        if (g_cur_color > g_picture->num_colors)
+          g_cur_color = g_picture->num_colors;
+
         clear_render_components(&g_components);
         g_components.render_palette_area = 1;
-        g_components.render_palette = 1;
+        g_components.render_palette_cursor = 1;
         update = 1;
         g_keypress_lockout[KEY_P] = 1;
       }
@@ -196,6 +213,70 @@ int process_input(int state) {
     if(!key[KEY_P] && g_keypress_lockout[KEY_P]) {
       g_keypress_lockout[KEY_P] = 0;
     }     
+
+    /*-------------------------------------------------------------------------
+     * Open Brace ([) - move to previous palette color
+     *------------------------------------------------------------------------*/
+    if (key[KEY_OPENBRACE]) {
+      if (!g_keypress_lockout[KEY_OPENBRACE]) {
+        /* Change to the previous color index */
+        g_prev_color = g_cur_color;
+        g_cur_color--;
+        /* If at the lowest index on the page, wrap to the highest */
+        if (g_palette_page == 0) {
+          if (g_cur_color < FIRST_COLOR_ON_FIRST_PAGE)
+            g_cur_color = LAST_COLOR_ON_FIRST_PAGE;      
+        } 
+        if (g_palette_page == 1) {
+          if (g_cur_color < FIRST_COLOR_ON_SECOND_PAGE)
+            g_cur_color = LAST_COLOR_ON_SECOND_PAGE;
+        }
+        /* If the wrapped color is now higher than the biggest color index,
+           clamp it. */
+        if (g_cur_color > g_picture->num_colors)
+          g_cur_color = g_picture->num_colors;
+
+        clear_render_components(&g_components);
+        g_components.render_palette_cursor = 1;
+        update = 1;
+        g_keypress_lockout[KEY_OPENBRACE] = 1;
+      }
+    }
+    if(!key[KEY_OPENBRACE] && g_keypress_lockout[KEY_OPENBRACE]) {
+      g_keypress_lockout[KEY_OPENBRACE] = 0;
+    }
+
+    /*-------------------------------------------------------------------------
+     * Open Brace ([) - move to next palette color
+     *------------------------------------------------------------------------*/
+    if (key[KEY_CLOSEBRACE]) {
+      if (!g_keypress_lockout[KEY_CLOSEBRACE]) {
+        /* Change to the next color index */
+        g_prev_color = g_cur_color;
+        g_cur_color++;
+        /* If we reach the end of the palette on the current page,
+           either because we hit the last index of the page, or the end of the
+           picture's palette, wrap back around. */
+        if (g_palette_page == 0) {
+          if (g_cur_color > LAST_COLOR_ON_FIRST_PAGE || 
+              g_cur_color > g_picture->num_colors)
+            g_cur_color = FIRST_COLOR_ON_FIRST_PAGE;
+        } 
+        if (g_palette_page == 1) {
+          if (g_cur_color > LAST_COLOR_ON_SECOND_PAGE || 
+              g_cur_color > g_picture->num_colors)
+            g_cur_color = FIRST_COLOR_ON_SECOND_PAGE;
+        }
+
+        clear_render_components(&g_components);
+        g_components.render_palette_cursor = 1;
+        update = 1;
+        g_keypress_lockout[KEY_CLOSEBRACE] = 1;
+      }
+    }
+    if(!key[KEY_CLOSEBRACE] && g_keypress_lockout[KEY_CLOSEBRACE]) {
+      g_keypress_lockout[KEY_CLOSEBRACE] = 0;
+    }
 
     return update;
 }

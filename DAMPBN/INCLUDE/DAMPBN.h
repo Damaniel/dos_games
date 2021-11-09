@@ -29,6 +29,14 @@
 /* The maximum number of colors in the palette */
 #define MAX_COLORS        64
 
+/* The number of palette colors displayed at once */
+#define PALETTE_COLORS_PER_PAGE     32
+
+#define FIRST_COLOR_ON_FIRST_PAGE    1
+#define LAST_COLOR_ON_FIRST_PAGE    32
+#define FIRST_COLOR_ON_SECOND_PAGE  33
+#define LAST_COLOR_ON_SECOND_PAGE   64
+
 /* The internal frame rate of various timers */
 #define FRAME_RATE        30
 
@@ -44,6 +52,7 @@ BITMAP *g_pal_col;
 BITMAP *g_draw_cursor;
 BITMAP *g_small_pal;
 BITMAP *g_large_pal;
+BITMAP *g_pal_cursor;
 
 /* The position within the draw area of the cursor */
 int g_draw_cursor_x;
@@ -67,6 +76,9 @@ int g_palette_page;
 /* What color will be used to draw */
 int g_cur_color;
 
+/* The last color selected.  Used to limit what's being drawn/erased */
+int g_prev_color;
+
 /* An array of key codes.  Used to prevent keys from retriggering
  * until released */
 unsigned char g_keypress_lockout[128];
@@ -85,10 +97,14 @@ typedef struct {
   int render_overview_display;
   /* The time/progress text at the bottom */
   int render_status_text;
-  /* Update the cursor */
+  /* Update the draw cursor */
   int render_draw_cursor;
+  /* Update the palette cursor */
+  int render_palette_cursor;
   /* Render everything - convenience function */
   int render_all;
+  /* Render debug text.  Must be explicitly set or cleared */
+  int render_debug;
 } RenderComponents;
 
 typedef struct {
@@ -184,6 +200,25 @@ void init_defaults(void);
  * color that has been filled in).
  *============================================================================*/
 void render_main_area_squares(BITMAP *dest, int x_off, int y_off);
+
+/*=============================================================================
+ * render_main_area_square_at
+ *
+ * Draws content of a specific square of the play area (either a number if
+ * the square isn't filled in, otherwise a block of color representing the
+ * color that has been filled in).
+ *============================================================================*/
+void render_main_area_square_at(BITMAP *dest, int x, int y);
+
+/*=============================================================================
+ * render_palette_item_at
+ *
+ * Draws content of a specific index of the palette.  If change_page is set,
+ * the page will be adjusted as well.  Otherwise, it will just draw the
+ * specified index number and swatch at the place where it would normally go.
+ *============================================================================*/
+
+void render_palette_item_at(BITMAP *dest, int palette_index, int change_page);
 
 /*=============================================================================
  * render_screen

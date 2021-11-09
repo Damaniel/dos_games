@@ -87,6 +87,8 @@
  *==============================================*/
 #define DRAW_CURSOR_WIDTH           10
 #define DRAW_CURSOR_HEIGHT          10
+#define PALETTE_CURSOR_WIDTH        16
+#define PALETTE_CURSOR_HEIGHT       11
  
 #endif
  
