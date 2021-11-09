@@ -19,7 +19,7 @@
    DEALINGS IN THE SOFTWARE.
  */
 #include <allegro.h>
-#include "../inc/dampbn.h"
+#include "../include/dampbn.h"
 
 int process_input(int state) {
 
