@@ -33,6 +33,7 @@ int process_input(int state) {
      * ESC - exit the game
      *------------------------------------------------------------------------*/
     if(key[KEY_ESC]) {
+      /* If the key was previously up... */
       if (!g_keypress_lockout[KEY_ESC]) {
           g_game_done = 1;
           g_keypress_lockout[KEY_ESC] = 1;
@@ -48,25 +49,30 @@ int process_input(int state) {
     if(key[KEY_LEFT]) {
       /* If the key was previously up... */
       if (!g_keypress_lockout[KEY_LEFT]) {
+        clear_render_components(&g_components);
+        g_old_draw_cursor_x = g_draw_cursor_x;
+        g_old_draw_cursor_y = g_draw_cursor_y;        
         /* If the SHIFT key is held, move a page.  Don't move cursor */
         if (key_shifts & KB_SHIFT_FLAG) {
           g_pic_render_x -= PLAY_AREA_W;
+          g_components.render_main_area_squares = 1;          
         } else {
           /* Move the cursor, move the page if on the edge */
           g_draw_cursor_x--;
           if(g_draw_cursor_x < 0) {
             g_draw_cursor_x = 0;
             g_pic_render_x--;
+            g_components.render_main_area_squares = 1;            
           }
         }
         /* Check to make sure the visible area is fully in the picture */
         if (g_pic_render_x < 0) {
               g_pic_render_x = 0;
         }
+        /* Calculate where we'll be drawing within the whole picture */
         g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
-        clear_render_components(&g_components);
-        g_components.render_main_area_squares = 1;
+        
         g_components.render_draw_cursor = 1;
         update = 1;
         g_keypress_lockout[KEY_LEFT] = 1;
@@ -82,25 +88,30 @@ int process_input(int state) {
     if (key[KEY_RIGHT]) {
       /* If the key was previously up... */
       if (!g_keypress_lockout[KEY_RIGHT]) {
+        clear_render_components(&g_components);
+        g_old_draw_cursor_x = g_draw_cursor_x;
+        g_old_draw_cursor_y = g_draw_cursor_y;             
         /* If the SHIFT key is held, move a page. Don't move cursor */
         if (key_shifts & KB_SHIFT_FLAG) {
           g_pic_render_x += PLAY_AREA_W;
+          g_components.render_main_area_squares = 1;            
         } else {
           /* Move the cursor, move the page if on the edge */
           g_draw_cursor_x++;
           if(g_draw_cursor_x >= PLAY_AREA_W) {
             g_draw_cursor_x = PLAY_AREA_W -1;
             g_pic_render_x++;
+            g_components.render_main_area_squares = 1;              
           }
         }
         /* Check to make sure the visible area is fully in the picture */
         if (g_pic_render_x >= g_picture->w - PLAY_AREA_W) {
           g_pic_render_x = g_picture->w - PLAY_AREA_W;
         }
+        /* Calculate where we'll be drawing within the whole picture */        
         g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
-        clear_render_components(&g_components);
-        g_components.render_main_area_squares = 1;
+
         g_components.render_draw_cursor = 1;
         update = 1;
         g_keypress_lockout[KEY_RIGHT] = 1;
@@ -116,25 +127,30 @@ int process_input(int state) {
     if (key[KEY_UP]) {
       /* If the key was previously up */
       if (!g_keypress_lockout[KEY_UP]) {
+        clear_render_components(&g_components);
+        g_old_draw_cursor_x = g_draw_cursor_x;
+        g_old_draw_cursor_y = g_draw_cursor_y;              
         /* If the SHIFT key is held, move a page.  Don't move cursor */
         if (key_shifts & KB_SHIFT_FLAG) {
           g_pic_render_y -= PLAY_AREA_H;
+          g_components.render_main_area_squares = 1;              
         } else {
           /* Move the cursor, move the page if on the edge */
           g_draw_cursor_y--;
           if(g_draw_cursor_y <0) {
             g_draw_cursor_y = 0;
             g_pic_render_y--;
+            g_components.render_main_area_squares = 1;                
           }
         }
         /* Check to make sure the visible area is fully in the picture */
         if (g_pic_render_y < 0) {
           g_pic_render_y = 0;
         }
+        /* Calculate where we'll be drawing within the whole picture */
         g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
-        clear_render_components(&g_components);
-        g_components.render_main_area_squares = 1;
+
         g_components.render_draw_cursor = 1;
         update = 1;
         g_keypress_lockout[KEY_UP] = 1;
@@ -150,24 +166,30 @@ int process_input(int state) {
     if (key[KEY_DOWN]) {
       /* If the key was previously up */
       if (!g_keypress_lockout[KEY_DOWN]) {
+        clear_render_components(&g_components);
+        g_old_draw_cursor_x = g_draw_cursor_x;
+        g_old_draw_cursor_y = g_draw_cursor_y;
+        
         /* If the SHIFT key is held, move a page.  Don't move cursor */
         if (key_shifts & KB_SHIFT_FLAG) {
           g_pic_render_y += PLAY_AREA_H;
+          g_components.render_main_area_squares = 1;
         } else {
           g_draw_cursor_y++;
           if(g_draw_cursor_y >= PLAY_AREA_H) {
             g_draw_cursor_y = PLAY_AREA_H -1;
             g_pic_render_y++;
+            g_components.render_main_area_squares = 1;
           }
         }
         /* Check to make sure the visible area is fully in the picture */
         if (g_pic_render_y >= g_picture->h - PLAY_AREA_H) {
           g_pic_render_y = g_picture->h - PLAY_AREA_H;
         }
+        /* Calculate where we'll be drawing within the whole picture */        
         g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
-        clear_render_components(&g_components);
-        g_components.render_main_area_squares = 1;
+
         g_components.render_draw_cursor = 1;
         update = 1;
         g_keypress_lockout[KEY_DOWN] = 1;

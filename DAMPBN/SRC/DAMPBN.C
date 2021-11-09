@@ -231,8 +231,22 @@ void render_palette_item_at(BITMAP *dest, int palette_index, int change_page) {
 /*=============================================================================
  * render_main_area_square_at
  *============================================================================*/
-void render_main_area_square_at(BITMAP *dest, int x, int y) {
+void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
+                               int off_x, int off_y) {
+  ColorSquare c;
+  int pal_offset;
 
+  c = g_picture->pic_squares[(tl_y + off_y) * g_picture->w + (tl_x +off_x)];
+  pal_offset = c.pal_entry;  
+
+  blit(g_numbers, 
+      dest, 
+      pal_offset * NUMBER_BOX_WIDTH,
+      0,
+      DRAW_AREA_X + (off_x * NUMBER_BOX_RENDER_X_OFFSET),
+      DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET),
+      NUMBER_BOX_WIDTH, 
+      NUMBER_BOX_HEIGHT);
 }
 
 /*=============================================================================
@@ -276,11 +290,21 @@ void render_screen(BITMAP *dest, RenderComponents c) {
 
   /* Draw the squares in the play area */
   if(c.render_main_area_squares || c.render_all) {
-    render_main_area_squares(dest, g_pic_render_x, g_pic_render_y);
+    for(i = 0; i < PLAY_AREA_W; i++) {
+      for(j = 0; j < PLAY_AREA_H; j++) {
+        render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, i, j);
+      }
+    }
   }
 
   /* Draw the various cursors */
   if(c.render_draw_cursor || c.render_all) {
+    /* Redraw the background locations of where the cursor was and now is */
+    render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, 
+                               g_old_draw_cursor_x, g_old_draw_cursor_y);
+    render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, 
+                               g_draw_cursor_x, g_old_draw_cursor_y);    
+    /* Draw the cursor itself */                          
     draw_sprite(dest, g_draw_cursor,
                 DRAW_AREA_X + DRAW_CURSOR_WIDTH * g_draw_cursor_x, 
                 DRAW_AREA_Y + DRAW_CURSOR_WIDTH * g_draw_cursor_y);              

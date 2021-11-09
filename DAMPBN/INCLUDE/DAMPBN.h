@@ -54,9 +54,12 @@ BITMAP *g_small_pal;
 BITMAP *g_large_pal;
 BITMAP *g_pal_cursor;
 
-/* The position within the draw area of the cursor */
+/* The position of the cursor within the draw area */
 int g_draw_cursor_x;
 int g_draw_cursor_y;
+
+int g_old_draw_cursor_x;
+int g_old_draw_cursor_y;
 
 /* The position of the picture that's at the top left corner of 
  * the draw area */
@@ -198,6 +201,9 @@ void init_defaults(void);
  * Draws content for each of the squares of the play area (either a number,
  * if the square isn't filled in, otherwise a block of color respresenting the
  * color that has been filled in).
+ * 
+ * - x_off and y_off refer to the position of the picture that makes up the
+ *   upper left part of the play area
  *============================================================================*/
 void render_main_area_squares(BITMAP *dest, int x_off, int y_off);
 
@@ -207,8 +213,13 @@ void render_main_area_squares(BITMAP *dest, int x_off, int y_off);
  * Draws content of a specific square of the play area (either a number if
  * the square isn't filled in, otherwise a block of color representing the
  * color that has been filled in).
+ * 
+ * - tl_x and tl_y refer to the position of the picture that makes up the upper
+ *   left part of the play area
+ * - off_x and off_y refer to the position within the play area to draw
  *============================================================================*/
-void render_main_area_square_at(BITMAP *dest, int x, int y);
+void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
+                               int off_x, int off_y);
 
 /*=============================================================================
  * render_palette_item_at
