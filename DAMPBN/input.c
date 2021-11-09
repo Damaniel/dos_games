@@ -22,11 +22,11 @@
 #include "dampbn.h"
 
 int process_input(int state) {
-  
+
     int update;
-       
+
     update = 0;
-    
+
     /*----------------------
      * ESC
      *----------------------*/
@@ -60,9 +60,9 @@ int process_input(int state) {
         /* Check to make sure the visible area is fully in the picture */
         if (g_pic_render_x < 0) {
               g_pic_render_x = 0;
-        }              
+        }
         g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
-        g_draw_position_y = g_pic_render_y + g_draw_cursor_y;      
+        g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
         clear_render_components(&g_components);
         g_components.render_main_area_squares = 1;
         g_components.render_draw_cursor = 1;
@@ -76,7 +76,7 @@ int process_input(int state) {
 
     /*-----------------------
      * right
-     *-----------------------*/    
+     *-----------------------*/
     if (key[KEY_RIGHT]) {
       /* If the key was previously up... */
       if (!g_keypress_lockout[KEY_RIGHT]) {
@@ -87,18 +87,18 @@ int process_input(int state) {
           /* Move the cursor, move the page if on the edge */
           g_draw_cursor_x++;
           if(g_draw_cursor_x >= PLAY_AREA_W) {
-            g_draw_cursor_x = PLAY_AREA_W -1;                  
+            g_draw_cursor_x = PLAY_AREA_W -1;
             g_pic_render_x++;
           }
         }
         /* Check to make sure the visible area is fully in the picture */
         if (g_pic_render_x >= g_picture->w - PLAY_AREA_W) {
           g_pic_render_x = g_picture->w - PLAY_AREA_W;
-        }        
+        }
         g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
         clear_render_components(&g_components);
-        g_components.render_main_area_squares = 1; 
+        g_components.render_main_area_squares = 1;
         g_components.render_draw_cursor = 1;
         update = 1;
         g_keypress_lockout[KEY_RIGHT] = 1;
@@ -107,10 +107,10 @@ int process_input(int state) {
     if (!key[KEY_RIGHT] && g_keypress_lockout[KEY_RIGHT]) {
       g_keypress_lockout[KEY_RIGHT] = 0;
     }
-    
+
     /*-----------------------
      * up
-     *-----------------------*/        
+     *-----------------------*/
     if (key[KEY_UP]) {
       /* If the key was previously up */
       if (!g_keypress_lockout[KEY_UP]) {
@@ -134,17 +134,17 @@ int process_input(int state) {
         clear_render_components(&g_components);
         g_components.render_main_area_squares = 1;
         g_components.render_draw_cursor = 1;
-        update = 1;  
+        update = 1;
         g_keypress_lockout[KEY_UP] = 1;
       }
     }
     if (!key[KEY_UP] && g_keypress_lockout[KEY_UP]) {
       g_keypress_lockout[KEY_UP] = 0;
     }
-    
+
     /*-----------------------
      * down
-     *-----------------------*/        
+     *-----------------------*/
     if (key[KEY_DOWN]) {
       /* If the key was previously up */
       if (!g_keypress_lockout[KEY_DOWN]) {
@@ -154,27 +154,30 @@ int process_input(int state) {
         } else {
           g_draw_cursor_y++;
           if(g_draw_cursor_y >= PLAY_AREA_H) {
-            g_draw_cursor_y = PLAY_AREA_H -1;                  
+            g_draw_cursor_y = PLAY_AREA_H -1;
             g_pic_render_y++;
-          }          
+          }
         }
         /* Check to make sure the visible area is fully in the picture */
         if (g_pic_render_y >= g_picture->h - PLAY_AREA_H) {
           g_pic_render_y = g_picture->h - PLAY_AREA_H;
         }
         g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
-        g_draw_position_y = g_pic_render_y + g_draw_cursor_y;         
+        g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
         clear_render_components(&g_components);
         g_components.render_main_area_squares = 1;
         g_components.render_draw_cursor = 1;
-        update = 1;     
+        update = 1;
         g_keypress_lockout[KEY_DOWN] = 1;
       }
     }
     if (!key[KEY_DOWN] && g_keypress_lockout[KEY_DOWN]) {
       g_keypress_lockout[KEY_DOWN] = 0;
     }
-    
+
+    /*-----------------------
+     * P
+     *-----------------------*/
     if (key[KEY_P]) {
       if (!g_keypress_lockout[KEY_P]) {
         if (g_palette_page == 0) {
@@ -188,11 +191,11 @@ int process_input(int state) {
         g_components.render_palette = 1;
         update = 1;
         g_keypress_lockout[KEY_P] = 1;
-      }     
+      }
     }
     if(!key[KEY_P] && g_keypress_lockout[KEY_P]) {
       g_keypress_lockout[KEY_P] = 0;
     }     
-    
+
     return update;
 }

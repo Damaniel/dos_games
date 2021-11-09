@@ -21,9 +21,9 @@
 #ifndef __PALETTE_H__
 #define __PALETTE_H__
 
-/* The palette used by the paint by number game.  The palette is divided as 
+/* The palette used by the paint by number game.  The palette is divided as
    follows:
-   
+
    * 64 entries - the primary palette of the image
    * 64 entries - reserved for light highlights of the primary palette
    * 64 entries - reserved for dark highlights of the primary palette
@@ -61,7 +61,6 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
-  {0, 0, 0}, 
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
@@ -77,7 +76,8 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
-  {0, 0, 0}, 
+  {0, 0, 0},
+  {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
@@ -125,7 +125,6 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
-  {0, 0, 0}, 
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
@@ -141,7 +140,8 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
-  {0, 0, 0}, 
+  {0, 0, 0},
+  {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
@@ -189,7 +189,6 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
-  {0, 0, 0}, 
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
@@ -205,7 +204,6 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
-  {0, 0, 0}, 
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
@@ -221,7 +219,9 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
-  {0, 0, 0},  
+  {0, 0, 0},
+  {0, 0, 0},
+  {0, 0, 0},
   {19, 18, 19}, /* Reserved for system */
   {17, 9, 13},
   {12, 13, 27},
@@ -253,7 +253,6 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
-  {0, 0, 0}, 
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
@@ -269,7 +268,8 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
-  {0, 0, 0}, 
+  {0, 0, 0},
+  {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0},
@@ -286,5 +286,5 @@ PALETTE game_pal = {
   {0, 0, 0},
   {0, 0, 0},
   {0, 0, 0}};
-  
+
 #endif

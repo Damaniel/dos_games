@@ -45,7 +45,8 @@ BITMAP *g_large_pal;
 int g_draw_cursor_x;
 int g_draw_cursor_y;
 
-/* The position of the picture that's at the top left corner of the draw area */
+/* The position of the picture that's at the top left corner of 
+ * the draw area */
 int g_pic_render_x;
 int g_pic_render_y;
 
@@ -62,30 +63,43 @@ int g_palette_page;
 /* What color will be used to draw */
 int g_cur_color;
 
-/* An array of key codes.  Used to prevent keys from retriggering until released */
+/* An array of key codes.  Used to prevent keys from retriggering
+ * until released */
 unsigned char g_keypress_lockout[128];
 
 /* A list of areas of the screen to update when calling render_screen() */
 typedef struct {
-  int render_main_area_squares;  /* The visible part of the picture in the main area*/
-  int render_palette_area;       /* The palette columns on the right */
-  int render_palette;            /* The numbers/colors in the palette on the right */
-  int render_ui_components;      /* All static UI elements */
-  int render_overview_display;   /* The overview/progress area in the top right */
-  int render_status_text;        /* The time/progress text at the bottom */
-  int render_draw_cursor;             /* Update the cursor */
-  int render_all;                /* Render everything - convenience function */
+  /* The visible part of the work area*/
+  int render_main_area_squares;
+  /* The palette columns on the right */
+  int render_palette_area;
+  /* The numbers/colors in the palette */
+  int render_palette;
+  /* All static UI elements */
+  int render_ui_components;
+  /* The overview area in the top right */
+  int render_overview_display;
+  /* The time/progress text at the bottom */
+  int render_status_text;
+  /* Update the cursor */
+  int render_draw_cursor;
+  /* Render everything - convenience function */
+  int render_all;
 } RenderComponents;
 
 typedef struct {
-  char pal_entry;                /* The color this square should be */
-  char fill_value;               /* 0 = not filled in, x = value actually filled in */
-  int  order;                    /* The order in which this square was *correctly* filled in */
+  /* The color this square should be */
+  char pal_entry;
+  /* 0 = not filled in, x = value actually filled in */
+  char fill_value;
+  /* The order in which this square was *correctly* filled in */
+  int  order;
 } ColorSquare;
 
 typedef struct {
-  int x;                         /* The x and y position of the Nth square filled in */
-  int y;                         /* correctly by the player */
+  /* The x and y position of the Nth square filled in correctly */
+  int x;
+  int y;
 } OrderItem;
 
 typedef struct {

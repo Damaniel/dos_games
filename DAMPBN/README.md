@@ -16,9 +16,8 @@ PCX images into files described in the file format doc.
 
 ### Build requirements
 
-The only component right now is the converter tool, but everything will use the same
-toolchain.  Said toolchain is very specific (and old!) though - I'll probably toss a 
-pre-assembled DJGPP installation on archive.org somewhere.  It includes:
+The toolchain used by this game is very specific (and old!) though - I'll probably 
+toss a pre-assembled DJGPP installation on archive.org somewhere.  It includes:
 
 - DJGPP 2.03
 - gcc 2.95.2

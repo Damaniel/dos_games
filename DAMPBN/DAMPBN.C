@@ -38,14 +38,14 @@ BEGIN_JOYSTICK_DRIVER_LIST
 END_JOYSTICK_DRIVER_LIST
 
 Picture *load_picture_file(char *filename) {
-  
+
   /* Steps:
       - Read header
       - Allocate memory for picture
       - Allocate memory for order, color arrays
       - Populate header info into Picture struct
       - Decode image data
-      
+
      Any place an order is required, set the value to 
      -1, since ordering will be updated by the
      progress file.
@@ -57,19 +57,19 @@ Picture *load_picture_file(char *filename) {
   int i, bytes_processed;
   RGB pic_pal[64];
   unsigned char dummy, first_byte, run_length;
-  
+
   fp = fopen(filename, "rb");
     if (fp == NULL)
       return NULL;
-    
+
   fscanf(fp, "%c%c", &magic[0], &magic[1]);
   if(magic[0] != 'D' || magic[1] != 'P') {
     fclose(fp);
     return NULL;
   }
-  
+
   pic = malloc(sizeof(Picture));
-  
+
   fread(&(pic->w), 1, sizeof(short), fp);
   fread(&(pic->h), 1, sizeof(short), fp);
   fread(&(pic->category), 1, sizeof(unsigned char), fp);
@@ -84,18 +84,18 @@ Picture *load_picture_file(char *filename) {
   for(i=0;i<23;i++) {
     dummy = fgetc(fp);
   }
-  
+
   /* Set the image portion of the global palette */
   for (i=0; i<64; i++) {
     game_pal[i].r = pic_pal[i].r;
     game_pal[i].g = pic_pal[i].g;
     game_pal[i].b = pic_pal[i].b;
   }
-  
+
   /* Create arrays */
   pic->pic_squares = malloc(pic->w * pic->h * sizeof(ColorSquare));
   pic->draw_order = malloc(pic->w * pic->h * sizeof(OrderItem));
-  
+
   if(compression == 0) {
     for(i=0; i< (pic->w*pic->h); i++) {
       /* Using '+ 1'  since palettes go from 1 - 64, not 0 - 63 */
@@ -109,10 +109,10 @@ Picture *load_picture_file(char *filename) {
       first_byte = fgetc(fp);
       if(first_byte & 0x80) {
         /* found a run.  Load the next byte and write the appropriate
-           number of copies to the buffer */   
+           number of copies to the buffer */
         run_length = fgetc(fp);
         for (i=0;i<run_length;i++) {
-          (pic->pic_squares[bytes_processed]).pal_entry = (first_byte & 0x7F) + 1;
+          (pic->pic_squares[bytes_processed]).pal_entry =(first_byte & 0x7F)+1;
           (pic->pic_squares[bytes_processed]).fill_value = 0;
           (pic->pic_squares[bytes_processed]).order = -1;
           bytes_processed++;
@@ -126,10 +126,10 @@ Picture *load_picture_file(char *filename) {
       }
     } 
   }
-  
+
   fclose(fp);
   return pic;
-  
+
 }
 
 void free_picture_file(Picture *p) {
@@ -156,7 +156,7 @@ void render_main_area_squares(BITMAP *dest, int x_off, int y_off) {
   int i,j;
   int pal_offset;
   ColorSquare c;
-  
+
   for (j = y_off; j < y_off + PLAY_AREA_H; j++) {
     for (i = x_off; i < x_off + PLAY_AREA_W; i++) {
       c = g_picture->pic_squares[j * g_picture->w + i];
@@ -165,8 +165,8 @@ void render_main_area_squares(BITMAP *dest, int x_off, int y_off) {
            dest, 
            pal_offset * NUMBER_BOX_WIDTH,
            0,
-           DRAW_AREA_X + ((i-x_off) * NUMBER_BOX_RENDER_X_OFFSET), 
-           DRAW_AREA_Y + ((j-y_off) * NUMBER_BOX_RENDER_Y_OFFSET), 
+           DRAW_AREA_X + ((i-x_off) * NUMBER_BOX_RENDER_X_OFFSET),
+           DRAW_AREA_Y + ((j-y_off) * NUMBER_BOX_RENDER_Y_OFFSET),
            NUMBER_BOX_WIDTH, 
            NUMBER_BOX_HEIGHT);
     }
@@ -178,19 +178,19 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   int start_index, palette_color, square_x, square_y;
   int swatch_x, swatch_y;
   int i, j;
-  
+
   if (c.render_ui_components || c.render_all) {
-    blit(g_bg_right, dest, 0, 0, RIGHT_SIDE_PANEL_X, RIGHT_SIDE_PANEL_Y, 
+    blit(g_bg_right, dest, 0, 0, RIGHT_SIDE_PANEL_X, RIGHT_SIDE_PANEL_Y,
          g_bg_right->w, g_bg_right->h);
     blit(g_bg_lower, dest, 0, 0, BOTTOM_PANEL_X, BOTTOM_PANEL_Y,
          g_bg_lower->w, g_bg_lower->h);
     blit(g_mainarea, dest, 0, 0, MAIN_AREA_X, MAIN_AREA_Y, 
          g_mainarea->w, g_mainarea->h);
   }
-  
+
   if (c.render_palette_area || c.render_all) {
     /* Render palette columns */
-    blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_1_X, PALETTE_COLUMN_Y, 
+    blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_1_X, PALETTE_COLUMN_Y,
          g_pal_col->w, g_pal_col->h);
     blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_2_X, PALETTE_COLUMN_Y,
          g_pal_col->w, g_pal_col->h);
@@ -198,36 +198,36 @@ void render_screen(BITMAP *dest, RenderComponents c) {
          g_pal_col->w, g_pal_col->h);
     blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_4_X, PALETTE_COLUMN_Y,
          g_pal_col->w, g_pal_col->h);
-    
+
     /* Render numbers depending on the page.  If the box falls outside
        of the number of valid colors, draw a gray box instead */
     if (g_palette_page == 0)
       start_index = PALETTE_PAGE_1_START;
     else
       start_index = PALETTE_PAGE_2_START;
-        
+
     for (j=0; j<NUM_PALETTE_COLUMNS; j++) {
       for(i=0; i<NUM_PALETTE_ROWS; i++) {
         palette_color = start_index + (j * NUM_PALETTE_ROWS) + i + 1;
         square_x = PALETTE_AREA_X + (j * PALETTE_COLUMN_WIDTH);
         square_y = PALETTE_AREA_Y + (i * PALETTE_ITEM_HEIGHT);
         if (palette_color > g_picture->num_colors) {
-          blit(g_numbers, dest, 0, 0, square_x, square_y, 
+          blit(g_numbers, dest, 0, 0, square_x, square_y,
                NUMBER_BOX_WIDTH, NUMBER_BOX_HEIGHT);
         } else {
-          blit(g_numbers, dest, palette_color * NUMBER_BOX_WIDTH, 0, 
+          blit(g_numbers, dest, palette_color * NUMBER_BOX_WIDTH, 0,
                square_x, square_y, NUMBER_BOX_WIDTH, NUMBER_BOX_HEIGHT);
         }
       }
     }
   }
-  
+
   if (c.render_palette || c.render_all) {
     if (g_palette_page == 0)
       start_index = PALETTE_PAGE_1_START;
     else
       start_index = PALETTE_PAGE_2_START;
-    
+
     for (j=0; j<NUM_PALETTE_COLUMNS; j++) {
       for (i=0; i<NUM_PALETTE_ROWS; i++) {
         palette_color = start_index + (j * NUM_PALETTE_ROWS ) + i + 1;
@@ -237,54 +237,54 @@ void render_screen(BITMAP *dest, RenderComponents c) {
           blit(g_small_pal, dest, 0, 0, swatch_x, swatch_y,
                NUMBER_BOX_WIDTH, NUMBER_BOX_HEIGHT);
         } else {
-          blit(g_small_pal, dest, palette_color * PALETTE_BOX_WIDTH, 0, 
+          blit(g_small_pal, dest, palette_color * PALETTE_BOX_WIDTH, 0,
                swatch_x, swatch_y, PALETTE_BOX_WIDTH, PALETTE_BOX_HEIGHT);
         }
       }
     }
   }
-  
+
   if (c.render_overview_display || c.render_all) {
   }
-  
+
   if (c.render_status_text || c.render_all) {
-    
-  }  
-  
+
+  }
+
   if(c.render_main_area_squares || c.render_all) {
     render_main_area_squares(dest, g_pic_render_x, g_pic_render_y);
   }
-  
+
   if(c.render_draw_cursor || c.render_all) {
-    draw_sprite(dest, g_draw_cursor, 
+    draw_sprite(dest, g_draw_cursor,
                 DRAW_AREA_X + DRAW_CURSOR_WIDTH * g_draw_cursor_x, 
                 DRAW_AREA_Y + DRAW_CURSOR_WIDTH * g_draw_cursor_y);
   }
-    
+
 }
 
 void load_palette_swatches(void) {
   int i, x, y;
-  
+
   for(i=0; i<MAX_COLORS; i++) {
      x = ( (i + 1) * PALETTE_BOX_WIDTH) + 1;
-     rectfill(g_small_pal, x, 1, 
-              x+(PALETTE_BOX_INTERIOR_WIDTH-1), 
+     rectfill(g_small_pal, x, 1,
+              x+(PALETTE_BOX_INTERIOR_WIDTH-1),
               PALETTE_BOX_INTERIOR_HEIGHT, i);
      x = ( (i + 1) * PALETTE_BOX_HEIGHT) + 1;
      rectfill(g_large_pal, x, 1, 
-              x+(NUMBER_BOX_INTERIOR_WIDTH-1), 
-              NUMBER_BOX_INTERIOR_HEIGHT, i);     
+              x+(NUMBER_BOX_INTERIOR_WIDTH-1),
+              NUMBER_BOX_INTERIOR_HEIGHT, i);
   }
-  
+
 }
 
 int load_graphics(void) {
-  PALETTE res_pal;    
+  PALETTE res_pal;
   int result;
-  
+
   result = 0;
-  
+
   g_numbers  = load_pcx("res/numbers.pcx", res_pal);
   if(g_numbers == NULL) {
     result = - 1;
@@ -316,7 +316,7 @@ int load_graphics(void) {
   g_large_pal = load_pcx("res/lg_pal.pcx", res_pal);
   if(g_large_pal == NULL) {
     result = -1;
-  }    
+  }
   
   return result;
 }
@@ -347,7 +347,7 @@ void init_defaults(void) {
   g_draw_position_y = 0;
   g_game_done = 0;
   g_palette_page = 0;
-  
+
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;
 }
@@ -356,15 +356,15 @@ int main(void) {
 
   int status, i;
   int done, update_components;
-  
+
   allegro_init();
   install_keyboard();
   install_timer();
-  
+
   install_int(int_handler, 1000/FRAME_RATE);
-  
+
   set_gfx_mode(GFX_VGA, 320, 200, 0, 0);
-  
+
   status = load_graphics();
   if (status != 0) {
     set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);
@@ -376,25 +376,24 @@ int main(void) {
 
   set_palette(game_pal);
   load_palette_swatches();
-  
+
   init_defaults();
-  
+
   clear_render_components(&g_components);
   g_components.render_all = 1;
-  
+
   render_screen(screen, g_components);
-  
+
   while(!g_game_done) {  
     update_components = process_input(0);
     if (update_components)
       render_screen(screen, g_components);
   }
-    
+
   free_picture_file(g_picture);
   destroy_graphics();
-  set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);  
+  set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);
   allegro_exit();
-  
+
   return 0;
 }
-
