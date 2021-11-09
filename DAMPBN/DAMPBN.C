@@ -84,6 +84,13 @@ Picture *load_picture_file(char *filename) {
     dummy = fgetc(fp);
   }
   
+  /* Set the image portion of the global palette */
+  for (i=0; i<64; i++) {
+    game_pal[i].r = pic_pal[i].r;
+    game_pal[i].g = pic_pal[i].g;
+    game_pal[i].b = pic_pal[i].b;
+  }
+  
   /* Create arrays */
   pic->pic_squares = malloc(pic->w * pic->h * sizeof(ColorSquare));
   pic->draw_order = malloc(pic->w * pic->h * sizeof(OrderItem));
@@ -180,6 +187,7 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   }
   
   if (c.render_palette || c.render_all) {
+    
   }
   
   if (c.render_overview_display || c.render_all) {
@@ -189,12 +197,29 @@ void render_screen(BITMAP *dest, RenderComponents c) {
     
   }  
   
-  if(c.render_main_area_squares || c.render_all)
+  if(c.render_main_area_squares || c.render_all) {
     render_main_area_squares(dest, g_pic_render_x, g_pic_render_y);
+  }
   
-  if(c.render_draw_cursor || c.render_all)
+  if(c.render_draw_cursor || c.render_all) {
     draw_sprite(dest, g_draw_cursor, 2 + 10 * g_draw_cursor_x, 2 + 10 * g_draw_cursor_y);
+  }
     
+}
+
+void load_palette_swatches(void) {
+  /* For both the small swatch and large swatch, 
+     create one solid rectangle of each color of the
+     palette in the appropriate place*/     
+  int i, x, y;
+  
+  for(i=0; i<64; i++) {
+     x = (i*6) + 7;
+     rectfill(g_small_pal, x, 1, x+3, 10, i);
+     x = (i*11) + 12;
+     rectfill(g_large_pal, x, 1, x+9, 10, i);     
+  }
+  
 }
 
 int load_graphics(void) {
@@ -227,6 +252,14 @@ int load_graphics(void) {
   if(g_draw_cursor == NULL) {
     result = -1;
   }
+  g_small_pal = load_pcx("res/sm_pal.pcx", res_pal);
+  if(g_small_pal == NULL) {
+    result = -1;
+  }
+  g_large_pal = load_pcx("res/lg_pal.pcx", res_pal);
+  if(g_large_pal == NULL) {
+    result = -1;
+  }    
   
   return result;
 }
@@ -238,10 +271,28 @@ void destroy_graphics(void) {
   destroy_bitmap(g_mainarea);
   destroy_bitmap(g_pal_col);
   destroy_bitmap(g_draw_cursor);
+  destroy_bitmap(g_small_pal);
+  destroy_bitmap(g_large_pal);
 }
 
-void int_handler() {
+void int_handler(void) {
   /* do animation stuff here */
+}
+
+void init_defaults(void) {
+  int i;
+  
+  g_draw_cursor_x = 0;
+  g_draw_cursor_y = 0;
+  g_pic_render_x = 0;
+  g_pic_render_y = 0;
+  g_draw_position_x = 0;
+  g_draw_position_y = 0;
+  g_game_done = 0;
+  g_palette_page = 0;
+  
+  for(i=0; i<128; i++)
+    g_keypress_lockout[i] = 0;
 }
 
 int main(void) {
@@ -267,21 +318,14 @@ int main(void) {
   g_picture = load_picture_file("TOOLS/IMG1.PIC");
 
   set_palette(game_pal);
+  load_palette_swatches();
+  
+  init_defaults();
   
   clear_render_components(&g_components);
-  blit(g_numbers, screen, 9, 0, 0, 0, 9, 9);
   g_components.render_all = 1;
   
   render_screen(screen, g_components);
-  
-  g_draw_cursor_x = 0;
-  g_draw_cursor_y = 0;
-  g_pic_render_x = 0;
-  g_pic_render_y = 0;
-  g_game_done = 0;
-  
-  for(i=0; i<128; i++)
-    g_keypress_lockout[i] = 0;
   
   while(!g_game_done) {  
     update_components = process_input(0);

@@ -29,23 +29,32 @@
 /* The internal frame rate of various timers */
 #define FRAME_RATE        30
 
-/* Number of frames to wait after a key is held down before
-   it counts as a keypress again */
-#define DEBOUNCE_FRAMES    8
-
 BITMAP *g_numbers;
 BITMAP *g_bg_lower;
 BITMAP *g_bg_right;
 BITMAP *g_mainarea;
 BITMAP *g_pal_col;
 BITMAP *g_draw_cursor;
+BITMAP *g_small_pal;
+BITMAP *g_large_pal;
 
+/* The position within the draw area of the cursor */
 int g_draw_cursor_x;
 int g_draw_cursor_y;
 
+/* The position of the picture that's at the top left corner of the draw area */
 int g_pic_render_x;
 int g_pic_render_y;
+
+/* The position that will be drawn within the picture at the cursor */
+int g_draw_position_x;
+int g_draw_position_y;
+
+/* Has the player exited the game? */
 int g_game_done;
+
+/* What page of the palette is visible? */
+int g_palette_page;
 
 unsigned char g_keypress_lockout[128];
 
