@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "dampbn.h"
 #include "palette.h"
+#include "uiconsts.h"
 
 /* Some stuff to cut down the executable size */
 BEGIN_GFX_DRIVER_LIST
@@ -142,6 +143,7 @@ void free_picture_file(Picture *p) {
 
 void clear_render_components(RenderComponents *c) {
   c->render_main_area_squares = 0;
+  c->render_palette_area = 0;
   c->render_palette = 0;
   c->render_ui_components = 0;
   c->render_overview_display = 0;
@@ -161,33 +163,85 @@ void render_main_area_squares(BITMAP *dest, int x_off, int y_off) {
       pal_offset = c.pal_entry;
       blit(g_numbers, 
            dest, 
-           pal_offset * 11,
+           pal_offset * NUMBER_BOX_WIDTH,
            0,
-           2 + ((i-x_off) * 10), 
-           2 + ((j-y_off) * 10), 
-           11, 
-           11);
+           DRAW_AREA_X + ((i-x_off) * NUMBER_BOX_RENDER_X_OFFSET), 
+           DRAW_AREA_Y + ((j-y_off) * NUMBER_BOX_RENDER_Y_OFFSET), 
+           NUMBER_BOX_WIDTH, 
+           NUMBER_BOX_HEIGHT);
     }
   }
 }
 
 void render_screen(BITMAP *dest, RenderComponents c) {
 
+  int start_index, palette_color, square_x, square_y;
+  int swatch_x, swatch_y;
+  int i, j;
+  
   if (c.render_ui_components || c.render_all) {
-    blit(g_bg_right, dest, 0, 0, 209, 0, g_bg_right->w, g_bg_right->h);
-    blit(g_bg_lower, dest, 0, 0, 0, 169, g_bg_lower->w, g_bg_lower->h);
-    blit(g_mainarea, dest, 0, 0, 0, 0, g_mainarea->w, g_mainarea->h);
+    blit(g_bg_right, dest, 0, 0, RIGHT_SIDE_PANEL_X, RIGHT_SIDE_PANEL_Y, 
+         g_bg_right->w, g_bg_right->h);
+    blit(g_bg_lower, dest, 0, 0, BOTTOM_PANEL_X, BOTTOM_PANEL_Y,
+         g_bg_lower->w, g_bg_lower->h);
+    blit(g_mainarea, dest, 0, 0, MAIN_AREA_X, MAIN_AREA_Y, 
+         g_mainarea->w, g_mainarea->h);
   }
   
   if (c.render_palette_area || c.render_all) {
-    blit(g_pal_col, dest, 0, 0, 226, 83, g_pal_col->w, g_pal_col->h);
-    blit(g_pal_col, dest, 0, 0, 246, 83, g_pal_col->w, g_pal_col->h);    
-    blit(g_pal_col, dest, 0, 0, 266, 83, g_pal_col->w, g_pal_col->h);
-    blit(g_pal_col, dest, 0, 0, 286, 83, g_pal_col->w, g_pal_col->h);        
+    /* Render palette columns */
+    blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_1_X, PALETTE_COLUMN_Y, 
+         g_pal_col->w, g_pal_col->h);
+    blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_2_X, PALETTE_COLUMN_Y,
+         g_pal_col->w, g_pal_col->h);
+    blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_3_X, PALETTE_COLUMN_Y,
+         g_pal_col->w, g_pal_col->h);
+    blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_4_X, PALETTE_COLUMN_Y,
+         g_pal_col->w, g_pal_col->h);
+    
+    /* Render numbers depending on the page.  If the box falls outside
+       of the number of valid colors, draw a gray box instead */
+    if (g_palette_page == 0)
+      start_index = PALETTE_PAGE_1_START;
+    else
+      start_index = PALETTE_PAGE_2_START;
+        
+    for (j=0; j<NUM_PALETTE_COLUMNS; j++) {
+      for(i=0; i<NUM_PALETTE_ROWS; i++) {
+        palette_color = start_index + (j * NUM_PALETTE_ROWS) + i + 1;
+        square_x = PALETTE_AREA_X + (j * PALETTE_COLUMN_WIDTH);
+        square_y = PALETTE_AREA_Y + (i * PALETTE_ITEM_HEIGHT);
+        if (palette_color > g_picture->num_colors) {
+          blit(g_numbers, dest, 0, 0, square_x, square_y, 
+               NUMBER_BOX_WIDTH, NUMBER_BOX_HEIGHT);
+        } else {
+          blit(g_numbers, dest, palette_color * NUMBER_BOX_WIDTH, 0, 
+               square_x, square_y, NUMBER_BOX_WIDTH, NUMBER_BOX_HEIGHT);
+        }
+      }
+    }
   }
   
   if (c.render_palette || c.render_all) {
+    if (g_palette_page == 0)
+      start_index = PALETTE_PAGE_1_START;
+    else
+      start_index = PALETTE_PAGE_2_START;
     
+    for (j=0; j<NUM_PALETTE_COLUMNS; j++) {
+      for (i=0; i<NUM_PALETTE_ROWS; i++) {
+        palette_color = start_index + (j * NUM_PALETTE_ROWS ) + i + 1;
+        swatch_x = SWATCH_AREA_X + (j * PALETTE_COLUMN_WIDTH);
+        swatch_y = SWATCH_AREA_Y + (i * PALETTE_ITEM_HEIGHT);
+        if (palette_color > g_picture->num_colors) {
+          blit(g_small_pal, dest, 0, 0, swatch_x, swatch_y,
+               NUMBER_BOX_WIDTH, NUMBER_BOX_HEIGHT);
+        } else {
+          blit(g_small_pal, dest, palette_color * PALETTE_BOX_WIDTH, 0, 
+               swatch_x, swatch_y, PALETTE_BOX_WIDTH, PALETTE_BOX_HEIGHT);
+        }
+      }
+    }
   }
   
   if (c.render_overview_display || c.render_all) {
@@ -202,22 +256,25 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   }
   
   if(c.render_draw_cursor || c.render_all) {
-    draw_sprite(dest, g_draw_cursor, 2 + 10 * g_draw_cursor_x, 2 + 10 * g_draw_cursor_y);
+    draw_sprite(dest, g_draw_cursor, 
+                DRAW_AREA_X + DRAW_CURSOR_WIDTH * g_draw_cursor_x, 
+                DRAW_AREA_Y + DRAW_CURSOR_WIDTH * g_draw_cursor_y);
   }
     
 }
 
 void load_palette_swatches(void) {
-  /* For both the small swatch and large swatch, 
-     create one solid rectangle of each color of the
-     palette in the appropriate place*/     
   int i, x, y;
   
-  for(i=0; i<64; i++) {
-     x = (i*6) + 7;
-     rectfill(g_small_pal, x, 1, x+3, 10, i);
-     x = (i*11) + 12;
-     rectfill(g_large_pal, x, 1, x+9, 10, i);     
+  for(i=0; i<MAX_COLORS; i++) {
+     x = ( (i + 1) * PALETTE_BOX_WIDTH) + 1;
+     rectfill(g_small_pal, x, 1, 
+              x+(PALETTE_BOX_INTERIOR_WIDTH-1), 
+              PALETTE_BOX_INTERIOR_HEIGHT, i);
+     x = ( (i + 1) * PALETTE_BOX_HEIGHT) + 1;
+     rectfill(g_large_pal, x, 1, 
+              x+(NUMBER_BOX_INTERIOR_WIDTH-1), 
+              NUMBER_BOX_INTERIOR_HEIGHT, i);     
   }
   
 }

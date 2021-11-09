@@ -54,6 +54,7 @@ Keys:
   - Space or Enter - color the current draw location with the selected color
   - Backspace - remove the color from the draw location
   - [ / ] - move up and down through the palette
+  - P - switch palette pages
   - S - save
   - L - load
   - U - undo last color placement

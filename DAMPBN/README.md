@@ -11,7 +11,7 @@ PCX images into files described in the file format doc.
 
 - A 386 or higher (it runs in protected mode)
 - Some amount of RAM.  4MB is probably enough.  
-- A VGA that can do 320x240 Mode X resolution.  They pretty much all can.
+- A VGA card.  It uses Mode 13 (320x200, 256 colors), supported by all VGAs.
 - A copy of CWSDPMI.EXE, either in the program directory or on your PATH.
 
 ### Build requirements

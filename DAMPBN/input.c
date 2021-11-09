@@ -175,5 +175,24 @@ int process_input(int state) {
       g_keypress_lockout[KEY_DOWN] = 0;
     }
     
+    if (key[KEY_P]) {
+      if (!g_keypress_lockout[KEY_P]) {
+        if (g_palette_page == 0) {
+          g_palette_page = 1;
+        }
+        else {
+          g_palette_page = 0;
+        }
+        clear_render_components(&g_components);
+        g_components.render_palette_area = 1;
+        g_components.render_palette = 1;
+        update = 1;
+        g_keypress_lockout[KEY_P] = 1;
+      }     
+    }
+    if(!key[KEY_P] && g_keypress_lockout[KEY_P]) {
+      g_keypress_lockout[KEY_P] = 0;
+    }     
+    
     return update;
 }

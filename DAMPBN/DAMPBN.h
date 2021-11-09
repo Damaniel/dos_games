@@ -26,6 +26,9 @@
 #define PLAY_AREA_W       20
 #define PLAY_AREA_H       16
 
+/* The maximum number of colors in the palette */
+#define MAX_COLORS        64
+
 /* The internal frame rate of various timers */
 #define FRAME_RATE        30
 
@@ -56,6 +59,10 @@ int g_game_done;
 /* What page of the palette is visible? */
 int g_palette_page;
 
+/* What color will be used to draw */
+int g_cur_color;
+
+/* An array of key codes.  Used to prevent keys from retriggering until released */
 unsigned char g_keypress_lockout[128];
 
 /* A list of areas of the screen to update when calling render_screen() */
