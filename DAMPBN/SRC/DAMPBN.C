@@ -307,35 +307,35 @@ int load_graphics(void) {
 
   result = 0;
 
-  g_numbers  = load_pcx("res/numbers.pcx", res_pal);
+  g_numbers  = load_pcx("RES/NUMBERS.PCX", res_pal);
   if(g_numbers == NULL) {
     result = - 1;
   }
-  g_bg_lower = load_pcx("res/bg_lower.pcx", res_pal);
+  g_bg_lower = load_pcx("RES/BG_LOWER.PCX", res_pal);
   if(g_bg_lower == NULL) {
     result = -1;
   }
-  g_bg_right = load_pcx("res/bg_right.pcx", res_pal);
+  g_bg_right = load_pcx("RES/BG_RIGHT.PCX", res_pal);
   if(g_bg_right == NULL) {
     result = -1;
   }
-  g_mainarea = load_pcx("res/mainarea.pcx", res_pal);
+  g_mainarea = load_pcx("RES/MAINAREA.PCX", res_pal);
   if(g_mainarea == NULL) {
     result = -1;
   }
-  g_pal_col  = load_pcx("res/pal_col.pcx", res_pal);
+  g_pal_col  = load_pcx("RES/PAL_COL.PCX", res_pal);
   if(g_pal_col == NULL) {
     result = -1;
   }
-  g_draw_cursor = load_pcx("res/drawcurs.pcx", res_pal);
+  g_draw_cursor = load_pcx("RES/DRAWCURS.PCX", res_pal);
   if(g_draw_cursor == NULL) {
     result = -1;
   }
-  g_small_pal = load_pcx("res/sm_pal.pcx", res_pal);
+  g_small_pal = load_pcx("RES/SM_PAL.PCX", res_pal);
   if(g_small_pal == NULL) {
     result = -1;
   }
-  g_large_pal = load_pcx("res/lg_pal.pcx", res_pal);
+  g_large_pal = load_pcx("RES/LG_PAL.PCX", res_pal);
   if(g_large_pal == NULL) {
     result = -1;
   }
@@ -405,7 +405,7 @@ int main(void) {
     allegro_exit();
     exit(1);
   }
-  g_picture = load_picture_file("TOOLS/IMG1.PIC");
+  g_picture = load_picture_file("RES/PICS/IMG1.PIC");
 
   set_palette(game_pal);
   load_palette_swatches();
