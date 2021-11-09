@@ -1,0 +1,299 @@
+/* Copyright 2021 Shaun Brandt
+   
+   Permission is hereby granted, free of charge, to any person obtaining a 
+   copy of this software and associated documentation files (the "Software"),
+   to deal in the Software without restriction, including without limitation
+   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included
+   in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+   DEALINGS IN THE SOFTWARE.
+ */
+#include <allegro.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "dampbn.h"
+#include "palette.h"
+
+/* Some stuff to cut down the executable size */
+BEGIN_GFX_DRIVER_LIST
+   GFX_DRIVER_VGA
+END_GFX_DRIVER_LIST
+
+BEGIN_COLOR_DEPTH_LIST
+   COLOR_DEPTH_8
+END_COLOR_DEPTH_LIST
+
+BEGIN_JOYSTICK_DRIVER_LIST
+END_JOYSTICK_DRIVER_LIST
+
+Picture *load_picture_file(char *filename) {
+  
+  /* Steps:
+      - Read header
+      - Allocate memory for picture
+      - Allocate memory for order, color arrays
+      - Populate header info into Picture struct
+      - Decode image data
+      
+     Any place an order is required, set the value to 
+     -1, since ordering will be updated by the
+     progress file.
+   */
+  FILE *fp;
+  Picture *pic;
+  unsigned char magic[2];
+  unsigned char compression;
+  int i, bytes_processed;
+  RGB pic_pal[64];
+  unsigned char dummy, first_byte, run_length;
+  
+  fp = fopen(filename, "rb");
+    if (fp == NULL)
+      return NULL;
+    
+  fscanf(fp, "%c%c", &magic[0], &magic[1]);
+  if(magic[0] != 'D' || magic[1] != 'P') {
+    fclose(fp);
+    return NULL;
+  }
+  
+  pic = malloc(sizeof(Picture));
+  
+  fread(&(pic->w), 1, sizeof(short), fp);
+  fread(&(pic->h), 1, sizeof(short), fp);
+  fread(&(pic->category), 1, sizeof(unsigned char), fp);
+  fread(pic->image_name, 32, sizeof(char), fp);
+  fread(&(pic->num_colors), 1, sizeof(unsigned char), fp);
+  fread(&compression, 1, sizeof(unsigned char), fp);
+  for(i=0; i<64; i++) {
+    pic_pal[i].r = fgetc(fp);
+    pic_pal[i].g = fgetc(fp);
+    pic_pal[i].b = fgetc(fp);
+  }
+  for(i=0;i<23;i++) {
+    dummy = fgetc(fp);
+  }
+  
+  /* Create arrays */
+  pic->pic_squares = malloc(pic->w * pic->h * sizeof(ColorSquare));
+  pic->draw_order = malloc(pic->w * pic->h * sizeof(OrderItem));
+  
+  if(compression == 0) {
+    for(i=0; i< (pic->w*pic->h); i++) {
+      /* Using '+ 1'  since palettes go from 1 - 64, not 0 - 63 */
+      (pic->pic_squares[i]).pal_entry = fgetc(fp) + 1;
+      (pic->pic_squares[i]).fill_value = 0;
+      (pic->pic_squares[i]).order = -1;
+    }
+  } else {
+    bytes_processed = 0;
+    while (bytes_processed < (pic->w * pic->h)) {
+      first_byte = fgetc(fp);
+      if(first_byte & 0x80) {
+        /* found a run.  Load the next byte and write the appropriate
+           number of copies to the buffer */   
+        run_length = fgetc(fp);
+        for (i=0;i<run_length;i++) {
+          (pic->pic_squares[bytes_processed]).pal_entry = (first_byte & 0x7F) + 1;
+          (pic->pic_squares[bytes_processed]).fill_value = 0;
+          (pic->pic_squares[bytes_processed]).order = -1;
+          bytes_processed++;
+        }
+      } else {
+        /* Found a single value */
+        (pic->pic_squares[bytes_processed]).pal_entry = first_byte + 1;
+        (pic->pic_squares[bytes_processed]).fill_value = 0;
+        (pic->pic_squares[i]).order = -1;
+        bytes_processed++;
+      }
+    } 
+  }
+  
+  fclose(fp);
+  return pic;
+  
+}
+
+void free_picture_file(Picture *p) {
+  if(p->pic_squares != NULL) 
+    free(p->pic_squares);
+  if(p->draw_order != NULL)
+    free(p->draw_order);
+  if(p != NULL)
+    free(p);
+}
+
+void clear_render_components(RenderComponents *c) {
+  c->render_main_area_squares = 0;
+  c->render_palette = 0;
+  c->render_ui_components = 0;
+  c->render_overview_display = 0;
+  c->render_status_text = 0;
+  c->render_draw_cursor = 0;
+  c->render_all = 0;
+}
+
+void render_main_area_squares(BITMAP *dest, int x_off, int y_off) {
+  int i,j;
+  int pal_offset;
+  ColorSquare c;
+  
+  for (j = y_off; j < y_off + PLAY_AREA_H; j++) {
+    for (i = x_off; i < x_off + PLAY_AREA_W; i++) {
+      c = g_picture->pic_squares[j * g_picture->w + i];
+      pal_offset = c.pal_entry;
+      blit(g_numbers, 
+           dest, 
+           pal_offset * 11,
+           0,
+           2 + ((i-x_off) * 10), 
+           2 + ((j-y_off) * 10), 
+           11, 
+           11);
+    }
+  }
+}
+
+void render_screen(BITMAP *dest, RenderComponents c) {
+
+  if (c.render_ui_components || c.render_all) {
+    blit(g_bg_right, dest, 0, 0, 209, 0, g_bg_right->w, g_bg_right->h);
+    blit(g_bg_lower, dest, 0, 0, 0, 169, g_bg_lower->w, g_bg_lower->h);
+    blit(g_mainarea, dest, 0, 0, 0, 0, g_mainarea->w, g_mainarea->h);
+  }
+  
+  if (c.render_palette_area || c.render_all) {
+    blit(g_pal_col, dest, 0, 0, 226, 83, g_pal_col->w, g_pal_col->h);
+    blit(g_pal_col, dest, 0, 0, 246, 83, g_pal_col->w, g_pal_col->h);    
+    blit(g_pal_col, dest, 0, 0, 266, 83, g_pal_col->w, g_pal_col->h);
+    blit(g_pal_col, dest, 0, 0, 286, 83, g_pal_col->w, g_pal_col->h);        
+  }
+  
+  if (c.render_palette || c.render_all) {
+  }
+  
+  if (c.render_overview_display || c.render_all) {
+  }
+  
+  if (c.render_status_text || c.render_all) {
+    
+  }  
+  
+  if(c.render_main_area_squares || c.render_all)
+    render_main_area_squares(dest, g_pic_render_x, g_pic_render_y);
+  
+  if(c.render_draw_cursor || c.render_all)
+    draw_sprite(dest, g_draw_cursor, 2 + 10 * g_draw_cursor_x, 2 + 10 * g_draw_cursor_y);
+    
+}
+
+int load_graphics(void) {
+  PALETTE res_pal;    
+  int result;
+  
+  result = 0;
+  
+  g_numbers  = load_pcx("res/numbers.pcx", res_pal);
+  if(g_numbers == NULL) {
+    result = - 1;
+  }
+  g_bg_lower = load_pcx("res/bg_lower.pcx", res_pal);
+  if(g_bg_lower == NULL) {
+    result = -1;
+  }
+  g_bg_right = load_pcx("res/bg_right.pcx", res_pal);
+  if(g_bg_right == NULL) {
+    result = -1;
+  }
+  g_mainarea = load_pcx("res/mainarea.pcx", res_pal);
+  if(g_mainarea == NULL) {
+    result = -1;
+  }
+  g_pal_col  = load_pcx("res/pal_col.pcx", res_pal);
+  if(g_pal_col == NULL) {
+    result = -1;
+  }
+  g_draw_cursor = load_pcx("res/drawcurs.pcx", res_pal);
+  if(g_draw_cursor == NULL) {
+    result = -1;
+  }
+  
+  return result;
+}
+
+void destroy_graphics(void) {
+  destroy_bitmap(g_numbers);
+  destroy_bitmap(g_bg_lower);
+  destroy_bitmap(g_bg_right);
+  destroy_bitmap(g_mainarea);
+  destroy_bitmap(g_pal_col);
+  destroy_bitmap(g_draw_cursor);
+}
+
+void int_handler() {
+  /* do animation stuff here */
+}
+
+int main(void) {
+
+  int status, i;
+  int done, update_components;
+  
+  allegro_init();
+  install_keyboard();
+  install_timer();
+  
+  install_int(int_handler, 1000/FRAME_RATE);
+  
+  set_gfx_mode(GFX_VGA, 320, 200, 0, 0);
+  
+  status = load_graphics();
+  if (status != 0) {
+    set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);
+    printf("Unable to load all graphics!\n");
+    allegro_exit();
+    exit(1);
+  }
+  g_picture = load_picture_file("TOOLS/IMG1.PIC");
+
+  set_palette(game_pal);
+  
+  clear_render_components(&g_components);
+  blit(g_numbers, screen, 9, 0, 0, 0, 9, 9);
+  g_components.render_all = 1;
+  
+  render_screen(screen, g_components);
+  
+  g_draw_cursor_x = 0;
+  g_draw_cursor_y = 0;
+  g_pic_render_x = 0;
+  g_pic_render_y = 0;
+  g_game_done = 0;
+  
+  for(i=0; i<128; i++)
+    g_keypress_lockout[i] = 0;
+  
+  while(!g_game_done) {  
+    update_components = process_input(0);
+    if (update_components)
+      render_screen(screen, g_components);
+  }
+    
+  free_picture_file(g_picture);
+  destroy_graphics();
+  set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);  
+  allegro_exit();
+  
+  return 0;
+}
+

@@ -99,8 +99,8 @@ Header:
 Data:
   - an (x * y) grid of image data, read from left to right, top to bottom.  The data
     itself can be run length encoded.  If the upper two bits are 00, then the lower six
-    bits specify the color number of the location.  If the upper two bits are 01, 10
-    or 11, then the next byte specifies the number of times to repeat the color
+    bits specify the color number of the location.  If the uppermost bit is 1,
+    then the next byte specifies the number of times to repeat the color
     and the lower six bits of the first byte specifies the color number.  Runs of up
     to 255 can be created.
     

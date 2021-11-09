@@ -1,0 +1,1 @@
+gcc -O2 -o dampbn.exe dampbn.c input.c -lalleg

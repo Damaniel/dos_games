@@ -21,7 +21,7 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "palette.h"
+#include "../palette.h"
 
 /* Some stuff to cut down the executable size */
 BEGIN_GFX_DRIVER_LIST
@@ -33,7 +33,7 @@ BEGIN_COLOR_DEPTH_LIST
 END_COLOR_DEPTH_LIST
  
 /*
- * convert - a tool to take PCX images (between 20x20 and 320x240 in size, and from
+ * convert - a tool to take PCX images (between 20x20 and 320x200 in size, and from
  *           1 to 64 colors) and convert them to the format used by my paint
  *           by number game.  See notes.txt for info about the file format.
  *           
