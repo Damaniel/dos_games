@@ -32,6 +32,10 @@
 /* The internal frame rate of various timers */
 #define FRAME_RATE        30
 
+/* Compression types for dampbm .PIC files */
+#define COMPRESSION_NONE   0
+#define COMPRESSION_RLE    1
+
 BITMAP *g_numbers;
 BITMAP *g_bg_lower;
 BITMAP *g_bg_right;
@@ -115,14 +119,93 @@ typedef struct {
 RenderComponents g_components;
 Picture *g_picture;
 
-/* From input.c */
+/* == Functions from input.c == */
+
+/*=============================================================================
+ * process_input
+ *
+ * Take keypresses and perform the appropriate actions.  'Appropriate' actions
+ * vary based on the game state.
+ *============================================================================*/
 int process_input(int state);
 
-/* From dampbn.c */
-Picture *load_picture(char *filename);
+/* == Functions from dampbn.c == */
+
+/*=============================================================================
+ * load_picture_file
+ *
+ * Loads an image created using the dampbn convert tool into an appropriate
+ * instance of the Picture data structure.  
+ *============================================================================*/
+Picture *load_picture_file(char *filename);
+
+/*=============================================================================
+ * free_picture_file
+ *
+ * Deallocates all objects associated with a picture file.
+ *============================================================================*/
+void free_picture_file(Picture *p);
+
+/*=============================================================================
+ * clear_render_components
+ *
+ * Resets all of the render flags for the display.  
+ *============================================================================*/
+void clear_render_components(RenderComponents *c);
+
+/*=============================================================================
+ * load_palette_swatches
+ *
+ * Populates the 2 palette swatch bitmaps (one for the main draw area, one
+ * for the color select area) with the colors used by the current Picture.  
+ *============================================================================*/
+void load_palette_swatches(void);
+
+/*=============================================================================
+ * int_handler
+ *
+ * An interrupt handler called 30 times per second.  Not currently used for
+ * anything but will be used for progress timing.
+ *============================================================================*/
+void int_handler(void);
+
+/*=============================================================================
+ * init_defaults
+ *
+ * Resets various variables to their default values
+ *============================================================================*/
+void init_defaults(void);
+
+/*=============================================================================
+ * render_main_area_squares
+ *
+ * Draws content for each of the squares of the play area (either a number,
+ * if the square isn't filled in, otherwise a block of color respresenting the
+ * color that has been filled in).
+ *============================================================================*/
 void render_main_area_squares(BITMAP *dest, int x_off, int y_off);
+
+/*=============================================================================
+ * render_screen
+ *
+ * Draws screen components.  The components that are drawn is dictated by
+ * the global RenderComponents object.
+ *============================================================================*/
 void render_screen(BITMAP *dest, RenderComponents c);
+
+/*=============================================================================
+ * load_graphics
+ *
+ * Load in-game graphics into bitmap objects.  All graphics are stored in the
+ * PCX format.
+ *============================================================================*/
 int load_graphics(void);
+
+/*=============================================================================
+ * destroy_graphics
+ *
+ * Free memory used by loaded bitmaps.
+ *============================================================================*/
 void destroy_graphics(void);
 
 #endif

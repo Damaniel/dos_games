@@ -37,19 +37,10 @@ END_COLOR_DEPTH_LIST
 BEGIN_JOYSTICK_DRIVER_LIST
 END_JOYSTICK_DRIVER_LIST
 
+/*=============================================================================
+ * load_picture_file
+ *============================================================================*/
 Picture *load_picture_file(char *filename) {
-
-  /* Steps:
-      - Read header
-      - Allocate memory for picture
-      - Allocate memory for order, color arrays
-      - Populate header info into Picture struct
-      - Decode image data
-
-     Any place an order is required, set the value to 
-     -1, since ordering will be updated by the
-     progress file.
-   */
   FILE *fp;
   Picture *pic;
   unsigned char magic[2];
@@ -62,14 +53,17 @@ Picture *load_picture_file(char *filename) {
     if (fp == NULL)
       return NULL;
 
+  /* Check for magic bytes */
   fscanf(fp, "%c%c", &magic[0], &magic[1]);
   if(magic[0] != 'D' || magic[1] != 'P') {
     fclose(fp);
     return NULL;
   }
 
-  pic = malloc(sizeof(Picture));
+  /* Set up the Picture object */
+  pic = (Picture *)malloc(sizeof(Picture));
 
+  /* Read in the header */
   fread(&(pic->w), 1, sizeof(short), fp);
   fread(&(pic->h), 1, sizeof(short), fp);
   fread(&(pic->category), 1, sizeof(unsigned char), fp);
@@ -92,13 +86,16 @@ Picture *load_picture_file(char *filename) {
     game_pal[i].b = pic_pal[i].b;
   }
 
-  /* Create arrays */
-  pic->pic_squares = malloc(pic->w * pic->h * sizeof(ColorSquare));
-  pic->draw_order = malloc(pic->w * pic->h * sizeof(OrderItem));
+  /* Create required Picture arrays */
+  pic->pic_squares = (ColorSquare *)malloc(pic->w * pic->h *
+                                           sizeof(ColorSquare));
+  pic->draw_order = (OrderItem *)malloc(pic->w * pic->h *
+                                        sizeof(OrderItem));
 
-  if(compression == 0) {
+  /* Check compression type and perform appropriate decompression */
+  if(compression == COMPRESSION_NONE) {
     for(i=0; i< (pic->w*pic->h); i++) {
-      /* Using '+ 1'  since palettes go from 1 - 64, not 0 - 63 */
+      /* Using '+ 1'  since palettes in the Picture go from 1-64, not 0-63 */
       (pic->pic_squares[i]).pal_entry = fgetc(fp) + 1;
       (pic->pic_squares[i]).fill_value = 0;
       (pic->pic_squares[i]).order = -1;
@@ -132,6 +129,9 @@ Picture *load_picture_file(char *filename) {
 
 }
 
+/*=============================================================================
+ * free_picture_file
+ *============================================================================*/
 void free_picture_file(Picture *p) {
   if(p->pic_squares != NULL) 
     free(p->pic_squares);
@@ -141,6 +141,9 @@ void free_picture_file(Picture *p) {
     free(p);
 }
 
+/*=============================================================================
+ * clear_render_components
+ *============================================================================*/
 void clear_render_components(RenderComponents *c) {
   c->render_main_area_squares = 0;
   c->render_palette_area = 0;
@@ -152,11 +155,16 @@ void clear_render_components(RenderComponents *c) {
   c->render_all = 0;
 }
 
+/*=============================================================================
+ * render_main_area_squares
+ *============================================================================*/
 void render_main_area_squares(BITMAP *dest, int x_off, int y_off) {
   int i,j;
   int pal_offset;
   ColorSquare c;
 
+  /* Iterate through each square of the visible area of the picture and
+     draw either the related color number or color swatch for that square */
   for (j = y_off; j < y_off + PLAY_AREA_H; j++) {
     for (i = x_off; i < x_off + PLAY_AREA_W; i++) {
       c = g_picture->pic_squares[j * g_picture->w + i];
@@ -173,12 +181,15 @@ void render_main_area_squares(BITMAP *dest, int x_off, int y_off) {
   }
 }
 
+/*=============================================================================
+ * render_screen
+ *============================================================================*/
 void render_screen(BITMAP *dest, RenderComponents c) {
-
   int start_index, palette_color, square_x, square_y;
   int swatch_x, swatch_y;
   int i, j;
 
+  /* Draw the static UI components */
   if (c.render_ui_components || c.render_all) {
     blit(g_bg_right, dest, 0, 0, RIGHT_SIDE_PANEL_X, RIGHT_SIDE_PANEL_Y,
          g_bg_right->w, g_bg_right->h);
@@ -188,6 +199,7 @@ void render_screen(BITMAP *dest, RenderComponents c) {
          g_mainarea->w, g_mainarea->h);
   }
 
+  /* Draw the palette columns */
   if (c.render_palette_area || c.render_all) {
     /* Render palette columns */
     blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_1_X, PALETTE_COLUMN_Y,
@@ -199,7 +211,7 @@ void render_screen(BITMAP *dest, RenderComponents c) {
     blit(g_pal_col, dest, 0, 0, PALETTE_COLUMN_4_X, PALETTE_COLUMN_Y,
          g_pal_col->w, g_pal_col->h);
 
-    /* Render numbers depending on the page.  If the box falls outside
+    /* Draw the palette numbers depending on the page.  If the box falls outside
        of the number of valid colors, draw a gray box instead */
     if (g_palette_page == 0)
       start_index = PALETTE_PAGE_1_START;
@@ -222,6 +234,7 @@ void render_screen(BITMAP *dest, RenderComponents c) {
     }
   }
 
+  /* Draw the palette color swatches */
   if (c.render_palette || c.render_all) {
     if (g_palette_page == 0)
       start_index = PALETTE_PAGE_1_START;
@@ -244,17 +257,20 @@ void render_screen(BITMAP *dest, RenderComponents c) {
     }
   }
 
+  /* Draw the overview window */
   if (c.render_overview_display || c.render_all) {
   }
 
+  /* Draw updated status text in the lower left part of the display */
   if (c.render_status_text || c.render_all) {
-
   }
 
+  /* Draw the squares in the play area */
   if(c.render_main_area_squares || c.render_all) {
     render_main_area_squares(dest, g_pic_render_x, g_pic_render_y);
   }
 
+  /* Draw the various cursors */
   if(c.render_draw_cursor || c.render_all) {
     draw_sprite(dest, g_draw_cursor,
                 DRAW_AREA_X + DRAW_CURSOR_WIDTH * g_draw_cursor_x, 
@@ -263,6 +279,9 @@ void render_screen(BITMAP *dest, RenderComponents c) {
 
 }
 
+/*=============================================================================
+ * load_palette_swatches
+ *============================================================================*/
 void load_palette_swatches(void) {
   int i, x, y;
 
@@ -279,6 +298,9 @@ void load_palette_swatches(void) {
 
 }
 
+/*=============================================================================
+ * load_graphics
+ *============================================================================*/
 int load_graphics(void) {
   PALETTE res_pal;
   int result;
@@ -321,6 +343,9 @@ int load_graphics(void) {
   return result;
 }
 
+/*=============================================================================
+ * destroy_graphics
+ *============================================================================*/
 void destroy_graphics(void) {
   destroy_bitmap(g_numbers);
   destroy_bitmap(g_bg_lower);
@@ -332,10 +357,16 @@ void destroy_graphics(void) {
   destroy_bitmap(g_large_pal);
 }
 
+/*=============================================================================
+ * int_handler
+ *============================================================================*/
 void int_handler(void) {
   /* do animation stuff here */
 }
 
+/*=============================================================================
+ * init_defaults
+ *============================================================================*/
 void init_defaults(void) {
   int i;
   
@@ -352,8 +383,10 @@ void init_defaults(void) {
     g_keypress_lockout[i] = 0;
 }
 
+/*=============================================================================
+ * main
+ *============================================================================*/
 int main(void) {
-
   int status, i;
   int done, update_components;
 
