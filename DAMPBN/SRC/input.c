@@ -24,6 +24,7 @@
 
 int process_input(int state) {
 
+    ColorSquare c;
     int update;
 
     /* By default, don't update any graphics */
@@ -299,6 +300,23 @@ int process_input(int state) {
     if(!key[KEY_CLOSEBRACE] && g_keypress_lockout[KEY_CLOSEBRACE]) {
       g_keypress_lockout[KEY_CLOSEBRACE] = 0;
     }
+
+    /*-------------------------------------------------------------------------
+     * Space - Mark the highlighted square with the current color
+     *------------------------------------------------------------------------*/
+     if (key[KEY_SPACE]) {
+       if (!g_keypress_lockout[KEY_SPACE]) {
+        g_picture->pic_squares[(g_draw_position_y) * g_picture->w +
+                               (g_draw_position_x)].fill_value = g_cur_color;
+
+        g_components.render_draw_cursor = 1;
+        update = 1;
+        g_keypress_lockout[KEY_SPACE] = 1;
+       }
+     }
+     if(!key[KEY_SPACE] && g_keypress_lockout[KEY_SPACE]) {
+       g_keypress_lockout[KEY_SPACE] = 0;
+     }
 
     return update;
 }

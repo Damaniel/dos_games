@@ -234,19 +234,31 @@ void render_palette_item_at(BITMAP *dest, int palette_index, int change_page) {
 void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
                                int off_x, int off_y) {
   ColorSquare c;
-  int pal_offset;
+  int pal_offset, color_offset;
 
   c = g_picture->pic_squares[(tl_y + off_y) * g_picture->w + (tl_x +off_x)];
   pal_offset = c.pal_entry;  
+  color_offset = c.fill_value;
 
-  blit(g_numbers, 
-      dest, 
-      pal_offset * NUMBER_BOX_WIDTH,
-      0,
-      DRAW_AREA_X + (off_x * NUMBER_BOX_RENDER_X_OFFSET),
-      DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET),
-      NUMBER_BOX_WIDTH, 
-      NUMBER_BOX_HEIGHT);
+  if(color_offset == 0) {
+    blit(g_numbers, 
+        dest, 
+        pal_offset * NUMBER_BOX_WIDTH,
+        0, 
+        DRAW_AREA_X + (off_x * NUMBER_BOX_RENDER_X_OFFSET),
+        DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET),
+        NUMBER_BOX_WIDTH, 
+        NUMBER_BOX_HEIGHT);
+  } else {
+    blit(g_large_pal, 
+        dest, 
+        color_offset * NUMBER_BOX_WIDTH,
+        0, 
+        DRAW_AREA_X + (off_x * NUMBER_BOX_RENDER_X_OFFSET),
+        DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET),
+        NUMBER_BOX_WIDTH, 
+        NUMBER_BOX_HEIGHT);    
+  }
 }
 
 /*=============================================================================
@@ -303,7 +315,7 @@ void render_screen(BITMAP *dest, RenderComponents c) {
     render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, 
                                g_old_draw_cursor_x, g_old_draw_cursor_y);
     render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, 
-                               g_draw_cursor_x, g_old_draw_cursor_y);    
+                               g_draw_cursor_x, g_draw_cursor_y);    
     /* Draw the cursor itself */                          
     draw_sprite(dest, g_draw_cursor,
                 DRAW_AREA_X + DRAW_CURSOR_WIDTH * g_draw_cursor_x, 
