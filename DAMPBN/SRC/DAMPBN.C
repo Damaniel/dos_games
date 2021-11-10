@@ -21,12 +21,13 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/dampbn.h"
-#include "../include/palette.h"
-#include "../include/uiconsts.h"
-#include "../include/render.h"
-#include "../include/util.h"
-#include "../include/input.h"
+#include "../include/globals.h"
+
+RenderComponents g_components;
+Picture *g_picture;
+State g_state;
+State g_prev_state;
+int g_game_done;
 
 /*=============================================================================
  * main
@@ -73,6 +74,8 @@ int main(void) {
   render_screen(buffer, g_components);
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);
 
+  g_game_timer_running = 1;
+  
   while(!g_game_done) {  
     process_input(g_state);
     if (g_update_screen)

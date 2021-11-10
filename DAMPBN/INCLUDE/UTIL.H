@@ -22,11 +22,30 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
-volatile unsigned long g_int_counter;
-volatile unsigned int g_elapsed_time;
+typedef struct {
+  /* The color this square should be */
+  char pal_entry;
+  /* 0 = not filled in, x = value actually filled in */
+  char fill_value;
+  /* The order in which this square was *correctly* filled in */
+  int  order;
+} ColorSquare;
 
-#define NUM_CATEGORIES 8
-extern char *g_categories[NUM_CATEGORIES];
+typedef struct {
+  /* The x and y position of the Nth square filled in correctly */
+  int x;
+  int y;
+} OrderItem;
+
+typedef struct {
+  char image_name[32];
+  short w;
+  short h;
+  unsigned char category;
+  unsigned char num_colors;
+  ColorSquare *pic_squares;
+  OrderItem *draw_order;
+} Picture;
 
 /*=============================================================================
  * load_picture_file
@@ -58,20 +77,5 @@ void int_handler(void);
  * Resets various variables to their default values
  *============================================================================*/
 void init_defaults(void);
-
-/*=============================================================================
- * load_graphics
- *
- * Load in-game graphics into bitmap objects.  All graphics are stored in the
- * PCX format.
- *============================================================================*/
-int load_graphics(void);
-
-/*=============================================================================
- * destroy_graphics
- *
- * Free memory used by loaded bitmaps.
- *============================================================================*/
-void destroy_graphics(void);
 
 #endif

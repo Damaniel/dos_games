@@ -19,10 +19,9 @@
    DEALINGS IN THE SOFTWARE.
  */
 #include <allegro.h>
-#include "../include/dampbn.h"
-#include "../include/uiconsts.h"
-#include "../include/render.h"
-#include "../include/input.h"
+#include "../include/globals.h"
+
+unsigned char g_keypress_lockout[128];
 
 /*=============================================================================
  * process_input

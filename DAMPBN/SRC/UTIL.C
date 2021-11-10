@@ -21,11 +21,13 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/dampbn.h"
-#include "../include/palette.h"
-#include "../include/uiconsts.h"
-#include "../include/render.h"
-#include "../include/util.h"
+#include "../include/globals.h"
+
+#define NUM_CATEGORIES 8
+
+volatile unsigned long g_int_counter;
+volatile unsigned int g_elapsed_time;
+int g_game_timer_running;
 
 char *g_categories[NUM_CATEGORIES] = {
     "Uncategorized",
@@ -141,92 +143,16 @@ void free_picture_file(Picture *p) {
     free(p);
 }
 
-
-/*=============================================================================
- * load_graphics
- *============================================================================*/
-int load_graphics(void) {
-  PALETTE res_pal;
-  int result;
-
-  result = 0;
-
-  g_numbers  = load_pcx("RES/NUMBERS.PCX", res_pal);
-  if(g_numbers == NULL) {
-    result = - 1;
-  }
-  g_bg_lower = load_pcx("RES/BG_LOWER.PCX", res_pal);
-  if(g_bg_lower == NULL) {
-    result = -1;
-  }
-  g_bg_right = load_pcx("RES/BG_RIGHT.PCX", res_pal);
-  if(g_bg_right == NULL) {
-    result = -1;
-  }
-  g_mainarea = load_pcx("RES/MAINAREA.PCX", res_pal);
-  if(g_mainarea == NULL) {
-    result = -1;
-  }
-  g_pal_col  = load_pcx("RES/PAL_COL.PCX", res_pal);
-  if(g_pal_col == NULL) {
-    result = -1;
-  }
-  g_draw_cursor = load_pcx("RES/DRAWCURS.PCX", res_pal);
-  if(g_draw_cursor == NULL) {
-    result = -1;
-  }
-  g_small_pal = load_pcx("RES/SM_PAL.PCX", res_pal);
-  if(g_small_pal == NULL) {
-    result = -1;
-  }
-  g_large_pal = load_pcx("RES/LG_PAL.PCX", res_pal);
-  if(g_large_pal == NULL) {
-    result = -1;
-  }
-  g_pal_cursor = load_pcx("RES/PALCURS.PCX", res_pal);
-  if(g_pal_cursor == NULL) {
-    result = -1;
-  }  
-  g_wrong = load_pcx("RES/WRONG.PCX", res_pal);
-  if(g_wrong == NULL) {
-    result = -1;
-  }
-  g_page_buttons = load_pcx("RES/PAGEBUTN.PCX", res_pal);
-  if(g_page_buttons == NULL ) {
-    result = -1;
-  }
-  g_prop_font = load_pcx("RES/PROPFONT.PCX", res_pal);
-  if(g_prop_font == NULL ) {
-      result = -1;
-  }
-  return result;
-}
-
-/*=============================================================================
- * destroy_graphics
- *============================================================================*/
-void destroy_graphics(void) {
-  destroy_bitmap(g_numbers);
-  destroy_bitmap(g_bg_lower);
-  destroy_bitmap(g_bg_right);
-  destroy_bitmap(g_mainarea);
-  destroy_bitmap(g_pal_col);
-  destroy_bitmap(g_draw_cursor);
-  destroy_bitmap(g_small_pal);
-  destroy_bitmap(g_large_pal);
-  destroy_bitmap(g_pal_cursor);
-  destroy_bitmap(g_wrong);
-  destroy_bitmap(g_page_buttons);
-  destroy_bitmap(g_prop_font);
-}
-
 /*=============================================================================
  * int_handler
  *============================================================================*/
 void int_handler(void) {
   /* do animation stuff here */
   g_int_counter++;
+
   if(g_int_counter >= FRAME_RATE) {
+    if(g_game_timer_running == 0) 
+        return;      
     g_elapsed_time++;
     g_int_counter=0;
     g_components.render_status_text = 1;
@@ -254,6 +180,7 @@ void init_defaults(void) {
   g_elapsed_time = 0;
   g_int_counter = 0;
   g_update_screen = 1;
+  g_game_timer_running = 0;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;

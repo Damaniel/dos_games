@@ -20,11 +20,7 @@
  */
 #include <allegro.h>
 #include <stdio.h>
-#include "../include/dampbn.h"
-#include "../include/render.h"
-#include "../include/uiconsts.h"
-#include "../include/palette.h"
-#include "../include/util.h"
+#include "../include/globals.h"
 
 /* Some stuff to cut down the executable size */
 BEGIN_GFX_DRIVER_LIST
@@ -38,10 +34,12 @@ END_COLOR_DEPTH_LIST
 BEGIN_JOYSTICK_DRIVER_LIST
 END_JOYSTICK_DRIVER_LIST
 
+#define FONT_ENTRIES    96
+
 /* Width and height of all characters from ASCII values 32 to 127 in the
    proportional font*/
 
-int prop_font_width[FONT_ENTRIES] = {
+int g_prop_font_width[FONT_ENTRIES] = {
   3, 1, 3, 5, 5, 5, 5, 1, 2, 2, 3, 5, 2, 5, 1, 3,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 2, 3, 3, 3, 5,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -50,9 +48,9 @@ int prop_font_width[FONT_ENTRIES] = {
   5, 5, 4, 5, 4, 5, 5, 5, 5, 5, 5, 3, 1, 3, 5, 5
 };
 
-int prop_font_height = 7;
+int g_prop_font_height = 7;
 
-int prop_font_offset[FONT_ENTRIES] = {
+int g_prop_font_offset[FONT_ENTRIES] = {
   0,     4,   5,   8,  13,  18,  23,  28,  29,  31,  33,  36,  41,  43,  48,  49, 
    52,  57,  62,  67,  72,  77,  82,  87,  92,  97, 102, 103, 105, 108, 111, 114, 
   119, 124, 129, 134, 139, 144, 149, 154, 159, 164, 169, 174, 179, 184, 189, 194,
@@ -62,6 +60,35 @@ int prop_font_offset[FONT_ENTRIES] = {
 };
 
 int g_update_screen;
+
+int g_draw_cursor_x;
+int g_draw_cursor_y;
+
+int g_old_draw_cursor_x;
+int g_old_draw_cursor_y;
+
+int g_pic_render_x;
+int g_pic_render_y;
+
+int g_draw_position_x;
+int g_draw_position_y;
+
+int g_palette_page;
+int g_cur_color;
+int g_prev_color;
+
+BITMAP *g_numbers;
+BITMAP *g_bg_lower;
+BITMAP *g_bg_right;
+BITMAP *g_mainarea;
+BITMAP *g_pal_col;
+BITMAP *g_draw_cursor;
+BITMAP *g_small_pal;
+BITMAP *g_large_pal;
+BITMAP *g_pal_cursor;
+BITMAP *g_wrong;
+BITMAP *g_page_buttons;
+BITMAP *g_prop_font;
 
 /*=============================================================================
  * clear_render_components
@@ -196,7 +223,7 @@ void render_status_text(BITMAP *dest) {
   char render_text[40];
 
   rectfill(dest, 1, 170, 209, 199, 194);
-  
+
   /* Render the category */
   sprintf(render_text, "Category : %s", g_categories[g_picture->category]);
   render_prop_text(dest, render_text, 5, 172);    
@@ -352,8 +379,86 @@ void render_prop_text(BITMAP *dest, char *text, int x_pos, int y_pos) {
 
 	while (*cur != 0) {
 		offset = (*cur++) - 32;
-		masked_blit(g_prop_font, dest, prop_font_offset[offset],
-		     0, x, y_pos, prop_font_width[offset], prop_font_height);
-		x += prop_font_width[offset] + 1;
+		masked_blit(g_prop_font, dest, g_prop_font_offset[offset],
+		     0, x, y_pos, g_prop_font_width[offset], g_prop_font_height);
+		x += g_prop_font_width[offset] + 1;
 	}
+}
+
+/*=============================================================================
+ * load_graphics
+ *============================================================================*/
+int load_graphics(void) {
+  PALETTE res_pal;
+  int result;
+
+  result = 0;
+
+  g_numbers  = load_pcx("RES/NUMBERS.PCX", res_pal);
+  if(g_numbers == NULL) {
+    result = - 1;
+  }
+  g_bg_lower = load_pcx("RES/BG_LOWER.PCX", res_pal);
+  if(g_bg_lower == NULL) {
+    result = -1;
+  }
+  g_bg_right = load_pcx("RES/BG_RIGHT.PCX", res_pal);
+  if(g_bg_right == NULL) {
+    result = -1;
+  }
+  g_mainarea = load_pcx("RES/MAINAREA.PCX", res_pal);
+  if(g_mainarea == NULL) {
+    result = -1;
+  }
+  g_pal_col  = load_pcx("RES/PAL_COL.PCX", res_pal);
+  if(g_pal_col == NULL) {
+    result = -1;
+  }
+  g_draw_cursor = load_pcx("RES/DRAWCURS.PCX", res_pal);
+  if(g_draw_cursor == NULL) {
+    result = -1;
+  }
+  g_small_pal = load_pcx("RES/SM_PAL.PCX", res_pal);
+  if(g_small_pal == NULL) {
+    result = -1;
+  }
+  g_large_pal = load_pcx("RES/LG_PAL.PCX", res_pal);
+  if(g_large_pal == NULL) {
+    result = -1;
+  }
+  g_pal_cursor = load_pcx("RES/PALCURS.PCX", res_pal);
+  if(g_pal_cursor == NULL) {
+    result = -1;
+  }  
+  g_wrong = load_pcx("RES/WRONG.PCX", res_pal);
+  if(g_wrong == NULL) {
+    result = -1;
+  }
+  g_page_buttons = load_pcx("RES/PAGEBUTN.PCX", res_pal);
+  if(g_page_buttons == NULL ) {
+    result = -1;
+  }
+  g_prop_font = load_pcx("RES/PROPFONT.PCX", res_pal);
+  if(g_prop_font == NULL ) {
+      result = -1;
+  }
+  return result;
+}
+
+/*=============================================================================
+ * destroy_graphics
+ *============================================================================*/
+void destroy_graphics(void) {
+  destroy_bitmap(g_numbers);
+  destroy_bitmap(g_bg_lower);
+  destroy_bitmap(g_bg_right);
+  destroy_bitmap(g_mainarea);
+  destroy_bitmap(g_pal_col);
+  destroy_bitmap(g_draw_cursor);
+  destroy_bitmap(g_small_pal);
+  destroy_bitmap(g_large_pal);
+  destroy_bitmap(g_pal_cursor);
+  destroy_bitmap(g_wrong);
+  destroy_bitmap(g_page_buttons);
+  destroy_bitmap(g_prop_font);
 }

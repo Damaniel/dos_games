@@ -21,20 +21,29 @@
 #ifndef __RENDER_H__
 #define __RENDER_H__
 
-#define FONT_ENTRIES    96
-
-/* Width and height of all characters from ASCII values 32 to 127 in the
-   standard proportional font*/
-extern int prop_font_width[FONT_ENTRIES];
-
-extern int prop_font_height;
-
-// Offsets into the font bitmap for each character (based on the character widths
-// defined in prop_font_width)
-extern int prop_font_offset[FONT_ENTRIES];
-
-extern int g_update_screen;
-
+/* A list of areas of the screen to update when calling render_screen() */
+typedef struct {
+  /* The visible part of the work area*/
+  int render_main_area_squares;
+  /* The palette columns on the right */
+  int render_palette_area;
+  /* The numbers/colors in the palette */
+  int render_palette;
+  /* All static UI elements */
+  int render_ui_components;
+  /* The overview area in the top right */
+  int render_overview_display;
+  /* The time/progress text at the bottom */
+  int render_status_text;
+  /* Update the draw cursor */
+  int render_draw_cursor;
+  /* Update the palette cursor */
+  int render_palette_cursor;
+  /* Render everything - convenience function */
+  int render_all;
+  /* Render debug text.  Must be explicitly set or cleared */
+  int render_debug;
+} RenderComponents;
 
 /*=============================================================================
  * clear_render_components
@@ -108,5 +117,20 @@ void render_screen(BITMAP *dest, RenderComponents c);
  * Writes a string using the proportional font
  *============================================================================*/
 void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos);
+
+/*=============================================================================
+ * load_graphics
+ *
+ * Load in-game graphics into bitmap objects.  All graphics are stored in the
+ * PCX format.
+ *============================================================================*/
+int load_graphics(void);
+
+/*=============================================================================
+ * destroy_graphics
+ *
+ * Free memory used by loaded bitmaps.
+ *============================================================================*/
+void destroy_graphics(void);
 
 #endif
