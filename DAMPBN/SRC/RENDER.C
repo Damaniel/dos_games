@@ -222,20 +222,20 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
 void render_status_text(BITMAP *dest) {
   char render_text[40];
 
-  rectfill(dest, 1, 170, 209, 199, 194);
+  rectfill(dest, 1, 170, 208, 198, 194);
 
   /* Render the category */
   sprintf(render_text, "Category : %s", g_categories[g_picture->category]);
-  render_prop_text(dest, render_text, 5, 172);    
+  render_prop_text(dest, render_text, CATEGORY_TEXT_X, CATEGORY_TEXT_Y);    
   /* Render elapsed time */
   sprintf(render_text, "Elapsed : %d", g_elapsed_time);
-  render_prop_text(dest, render_text, 5, 181);
+  render_prop_text(dest, render_text, ELAPSED_TEXT_X, ELAPSED_TEXT_Y);
   /* Render mistake count */
   sprintf(render_text, "Mistakes :  %d", 0);
-  render_prop_text(dest, render_text, 133, 181);
+  render_prop_text(dest, render_text, MISTAKES_X, MISTAKES_Y);
   /* Render progress text */
   sprintf(render_text, "Progress :  %d / %d  ( %.2f%% )", 11000, 64000, 17.23);
-  render_prop_text(dest, render_text, 5, 190);
+  render_prop_text(dest, render_text, PROGRESS_X, PROGRESS_Y);
 }
 
 /*=============================================================================
@@ -369,6 +369,9 @@ void load_palette_swatches(void) {
 
 }
 
+/*=============================================================================
+ * render_prop_text
+ *============================================================================*/
 void render_prop_text(BITMAP *dest, char *text, int x_pos, int y_pos) {
 	int x;
 	int offset;

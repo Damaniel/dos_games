@@ -91,6 +91,7 @@
 #define PAGE_2_BUTTON_Y             69
 #define PAGE_BUTTON_WIDTH           25
 #define PAGE_BUTTON_HEIGHT          11
+
 /*==============================================
  * Cursors
  *==============================================*/
@@ -98,6 +99,18 @@
 #define DRAW_CURSOR_HEIGHT          10
 #define PALETTE_CURSOR_WIDTH        16
 #define PALETTE_CURSOR_HEIGHT       11
- 
+
+#define CATEGORY_TEXT_X              5
+#define CATEGORY_TEXT_Y            172
+
+#define ELAPSED_TEXT_X               5
+#define ELAPSED_TEXT_Y             181
+
+#define MISTAKES_X                 133
+#define MISTAKES_Y                 181
+
+#define PROGRESS_X                   5
+#define PROGRESS_Y                 190
+
 #endif
  
