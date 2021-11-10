@@ -51,7 +51,8 @@ Keys:
   - up/down/left/right - move cursor inside the draw area
   - SHIFT + up/down/left/right - move draw area by one page (20 tiles) inside 
     the draw area
-  - Space or Enter - color the current draw location with the selected color
+  - Space - color the current draw location with the selected color, or erase
+            the color if it already exists.
   - Backspace - remove the color from the draw location
   - [ / ] - move up and down through the palette
   - P - switch palette pages

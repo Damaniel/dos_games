@@ -44,6 +44,7 @@
 #define COMPRESSION_NONE   0
 #define COMPRESSION_RLE    1
 
+/* Bitmaps */
 BITMAP *g_numbers;
 BITMAP *g_bg_lower;
 BITMAP *g_bg_right;
@@ -53,6 +54,7 @@ BITMAP *g_draw_cursor;
 BITMAP *g_small_pal;
 BITMAP *g_large_pal;
 BITMAP *g_pal_cursor;
+BITMAP *g_wrong;
 
 /* The position of the cursor within the draw area */
 int g_draw_cursor_x;

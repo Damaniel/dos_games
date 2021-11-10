@@ -306,8 +306,15 @@ int process_input(int state) {
      *------------------------------------------------------------------------*/
      if (key[KEY_SPACE]) {
        if (!g_keypress_lockout[KEY_SPACE]) {
-        g_picture->pic_squares[(g_draw_position_y) * g_picture->w +
+        /* If unfilled, fill with the active color.  If filled, unfill it. */
+        if(g_picture->pic_squares[(g_draw_position_y) * g_picture->w +
+                               (g_draw_position_x)].fill_value != 0) {
+           g_picture->pic_squares[(g_draw_position_y) * g_picture->w +
+                               (g_draw_position_x)].fill_value = 0;
+        } else {
+           g_picture->pic_squares[(g_draw_position_y) * g_picture->w +
                                (g_draw_position_x)].fill_value = g_cur_color;
+        }
 
         g_components.render_draw_cursor = 1;
         update = 1;

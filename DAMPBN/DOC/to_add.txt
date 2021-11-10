@@ -1,0 +1,11 @@
+Next things to do
+
+- Refactor some of the code 
+   - Create render.c 
+   - Find opportunities to remove duplicated code   
+- Scrollbars on the draw area
+- Page 1 / Page 2 buttons
+- Add 'states'.  Just one state (in game) for now 
+- Add structures and support for the overview/progress window
+- Add support for proportional text (borrow from SLAC)
+- Add text to bottom of screen (use sprintf/text render code from above)

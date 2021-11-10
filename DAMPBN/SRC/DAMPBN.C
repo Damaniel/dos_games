@@ -258,6 +258,12 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
         DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET),
         NUMBER_BOX_WIDTH, 
         NUMBER_BOX_HEIGHT);    
+    /* Is it marked with the correct color?  If not, draw an X on it */
+    if (pal_offset != color_offset) {
+      draw_sprite(dest, g_wrong, 
+                  DRAW_AREA_X + (off_x * NUMBER_BOX_RENDER_X_OFFSET),
+                  DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET));
+    }
   }
 }
 
@@ -411,7 +417,10 @@ int load_graphics(void) {
   if(g_pal_cursor == NULL) {
     result = -1;
   }  
-  
+  g_wrong = load_pcx("RES/WRONG.PCX", res_pal);
+  if(g_wrong == NULL) {
+    result = -1;
+  }
   return result;
 }
 
@@ -428,6 +437,7 @@ void destroy_graphics(void) {
   destroy_bitmap(g_small_pal);
   destroy_bitmap(g_large_pal);
   destroy_bitmap(g_pal_cursor);
+  destroy_bitmap(g_wrong);
 }
 
 /*=============================================================================
@@ -480,7 +490,7 @@ int main(void) {
     allegro_exit();
     exit(1);
   }
-  g_picture = load_picture_file("RES/PICS/IMG3.PIC");
+  g_picture = load_picture_file("RES/PICS/IMG4.PIC");
   if (g_picture == NULL) {
     set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);    
     printf("Unable to load picture!\n");
