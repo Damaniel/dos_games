@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-O2
-DEPS=include/dampbn.h include/palette.h include/uiconsts.h
+DEPS=include/dampbn.h include/palette.h include/uiconsts.h include/render.h include/input.h include/util.h
 LIBS=-lalleg
 
 all: dampbn
@@ -8,8 +8,8 @@ all: dampbn
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-dampbn: src/dampbn.o src/input.o
-	$(CC) -o dampbn.exe src/dampbn.o src/input.o $(LIBS)
+dampbn: src/dampbn.o src/input.o src/render.o src/palette.o src/util.o
+	$(CC) -o dampbn.exe src/dampbn.o src/input.o src/render.o src/palette.o src/util.o $(LIBS)
 
 convert: tools/convert.o
 	$(CC) -o tools/convert.exe tools/convert.o $(LIBS)

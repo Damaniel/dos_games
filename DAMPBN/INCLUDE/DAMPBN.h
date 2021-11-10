@@ -55,6 +55,7 @@ BITMAP *g_small_pal;
 BITMAP *g_large_pal;
 BITMAP *g_pal_cursor;
 BITMAP *g_wrong;
+BITMAP *g_page_buttons;
 
 /* The position of the cursor within the draw area */
 int g_draw_cursor_x;
@@ -137,123 +138,17 @@ typedef struct {
   OrderItem *draw_order;
 } Picture;
 
+typedef enum {
+  STATE_TITLE,
+  STATE_GAME,
+  STATE_LOAD,
+  STATE_SAVE,
+  STATE_HELP,
+  STATE_OPTS
+} State;
+
 RenderComponents g_components;
 Picture *g_picture;
-
-/* == Functions from input.c == */
-
-/*=============================================================================
- * process_input
- *
- * Take keypresses and perform the appropriate actions.  'Appropriate' actions
- * vary based on the game state.
- *============================================================================*/
-int process_input(int state);
-
-/* == Functions from dampbn.c == */
-
-/*=============================================================================
- * load_picture_file
- *
- * Loads an image created using the dampbn convert tool into an appropriate
- * instance of the Picture data structure.  
- *============================================================================*/
-Picture *load_picture_file(char *filename);
-
-/*=============================================================================
- * free_picture_file
- *
- * Deallocates all objects associated with a picture file.
- *============================================================================*/
-void free_picture_file(Picture *p);
-
-/*=============================================================================
- * clear_render_components
- *
- * Resets all of the render flags for the display.  
- *============================================================================*/
-void clear_render_components(RenderComponents *c);
-
-/*=============================================================================
- * load_palette_swatches
- *
- * Populates the 2 palette swatch bitmaps (one for the main draw area, one
- * for the color select area) with the colors used by the current Picture.  
- *============================================================================*/
-void load_palette_swatches(void);
-
-/*=============================================================================
- * int_handler
- *
- * An interrupt handler called 30 times per second.  Not currently used for
- * anything but will be used for progress timing.
- *============================================================================*/
-void int_handler(void);
-
-/*=============================================================================
- * init_defaults
- *
- * Resets various variables to their default values
- *============================================================================*/
-void init_defaults(void);
-
-/*=============================================================================
- * render_main_area_squares
- *
- * Draws content for each of the squares of the play area (either a number,
- * if the square isn't filled in, otherwise a block of color respresenting the
- * color that has been filled in).
- * 
- * - x_off and y_off refer to the position of the picture that makes up the
- *   upper left part of the play area
- *============================================================================*/
-void render_main_area_squares(BITMAP *dest, int x_off, int y_off);
-
-/*=============================================================================
- * render_main_area_square_at
- *
- * Draws content of a specific square of the play area (either a number if
- * the square isn't filled in, otherwise a block of color representing the
- * color that has been filled in).
- * 
- * - tl_x and tl_y refer to the position of the picture that makes up the upper
- *   left part of the play area
- * - off_x and off_y refer to the position within the play area to draw
- *============================================================================*/
-void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
-                               int off_x, int off_y);
-
-/*=============================================================================
- * render_palette_item_at
- *
- * Draws content of a specific index of the palette.  If change_page is set,
- * the page will be adjusted as well.  Otherwise, it will just draw the
- * specified index number and swatch at the place where it would normally go.
- *============================================================================*/
-
-void render_palette_item_at(BITMAP *dest, int palette_index, int change_page);
-
-/*=============================================================================
- * render_screen
- *
- * Draws screen components.  The components that are drawn is dictated by
- * the global RenderComponents object.
- *============================================================================*/
-void render_screen(BITMAP *dest, RenderComponents c);
-
-/*=============================================================================
- * load_graphics
- *
- * Load in-game graphics into bitmap objects.  All graphics are stored in the
- * PCX format.
- *============================================================================*/
-int load_graphics(void);
-
-/*=============================================================================
- * destroy_graphics
- *
- * Free memory used by loaded bitmaps.
- *============================================================================*/
-void destroy_graphics(void);
+State g_state;
 
 #endif

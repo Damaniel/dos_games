@@ -83,6 +83,15 @@
 #define PALETTE_COLUMN_Y            83
 
 /*==============================================
+ * Buttons
+ *==============================================*/
+#define PAGE_1_BUTTON_X            237
+#define PAGE_1_BUTTON_Y             69
+#define PAGE_2_BUTTON_X            266
+#define PAGE_2_BUTTON_Y             69
+#define PAGE_BUTTON_WIDTH           25
+#define PAGE_BUTTON_HEIGHT          11
+/*==============================================
  * Cursors
  *==============================================*/
 #define DRAW_CURSOR_WIDTH           10

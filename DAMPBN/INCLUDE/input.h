@@ -18,17 +18,22 @@
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
    DEALINGS IN THE SOFTWARE.
  */
-#ifndef __PALETTE_H__
-#define __PALETTE_H__
+#ifndef __INPUT_H__
+#define __INPUT_H__
 
-/* The palette used by the paint by number game.  The palette is divided as
-   follows:
+/*=============================================================================
+ * process_input
+ *
+ * Take keypresses and perform the appropriate actions.  'Appropriate' actions
+ * vary based on the game state.
+ *============================================================================*/
+int process_input(int state);
 
-   * 64 entries - the primary palette of the image
-   * 64 entries - reserved for light highlights of the primary palette
-   * 64 entries - reserved for dark highlights of the primary palette
-   * 64 entries - the 'system' palette, used by UI elements.
-*/
-extern PALETTE game_pal;
+/*=============================================================================
+ * input_state_game
+ *
+ * Process input for the in game state (g_state = STATE_GAME)
+ *============================================================================*/
+int input_state_game(void);
 
 #endif

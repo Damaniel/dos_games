@@ -19,15 +19,32 @@
    DEALINGS IN THE SOFTWARE.
  */
 #include <allegro.h>
-#include "../INCLUDE/DAMPBN.H"
-#include "../INCLUDE/UICONSTS.H"
+#include "../include/dampbn.h"
+#include "../include/uiconsts.h"
 
+/*=============================================================================
+ * process_input
+ *============================================================================*/
 int process_input(int state) {
 
-    ColorSquare c;
     int update;
 
     /* By default, don't update any graphics */
+    update = 0;
+    if (state == STATE_GAME) {
+      update = input_state_game();
+    }
+
+    return update;
+}
+
+/*=============================================================================
+ * input_state_game
+ *============================================================================*/
+int input_state_game(void) {
+    ColorSquare c;
+    int update;
+
     update = 0;
 
     /*-------------------------------------------------------------------------
@@ -322,8 +339,8 @@ int process_input(int state) {
        }
      }
      if(!key[KEY_SPACE] && g_keypress_lockout[KEY_SPACE]) {
-       g_keypress_lockout[KEY_SPACE] = 0;
+      g_keypress_lockout[KEY_SPACE] = 0;
      }
+  return update;
 
-    return update;
 }
