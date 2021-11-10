@@ -221,14 +221,20 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
  *============================================================================*/
 void render_status_text(BITMAP *dest) {
   char render_text[40];
+  int hours, minutes, seconds;
 
+  /* Clear the box entirely */
   rectfill(dest, 1, 170, 208, 198, 194);
+
+  hours = g_elapsed_time / 3600;
+  minutes = (g_elapsed_time - hours * 3600) / 60;
+  seconds = (g_elapsed_time - hours * 3600) % 60;
 
   /* Render the category */
   sprintf(render_text, "Category : %s", g_categories[g_picture->category]);
   render_prop_text(dest, render_text, CATEGORY_TEXT_X, CATEGORY_TEXT_Y);    
   /* Render elapsed time */
-  sprintf(render_text, "Elapsed : %d", g_elapsed_time);
+  sprintf(render_text, "Elapsed : %02d:%02d:%02d", hours, minutes, seconds);
   render_prop_text(dest, render_text, ELAPSED_TEXT_X, ELAPSED_TEXT_Y);
   /* Render mistake count */
   sprintf(render_text, "Mistakes :  %d", 0);

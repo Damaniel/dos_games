@@ -149,14 +149,15 @@ void free_picture_file(Picture *p) {
 void int_handler(void) {
   /* do animation stuff here */
   g_int_counter++;
-
   if(g_int_counter >= FRAME_RATE) {
-    if(g_game_timer_running == 0) 
-        return;      
-    g_elapsed_time++;
-    g_int_counter=0;
-    g_components.render_status_text = 1;
-    g_update_screen = 1;
+    g_int_counter = 0;
+    if(g_game_timer_running == 0) {
+        return; 
+    } else {
+        g_elapsed_time++;
+        g_components.render_status_text = 1;
+        g_update_screen = 1;
+    }
   }
 }
 END_OF_FUNCTION(int_handler);
