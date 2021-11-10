@@ -19,10 +19,12 @@
    DEALINGS IN THE SOFTWARE.
  */
 #include <allegro.h>
+#include <stdio.h>
 #include "../include/dampbn.h"
 #include "../include/render.h"
 #include "../include/uiconsts.h"
 #include "../include/palette.h"
+#include "../include/util.h"
 
 /* Some stuff to cut down the executable size */
 BEGIN_GFX_DRIVER_LIST
@@ -35,6 +37,31 @@ END_COLOR_DEPTH_LIST
 
 BEGIN_JOYSTICK_DRIVER_LIST
 END_JOYSTICK_DRIVER_LIST
+
+/* Width and height of all characters from ASCII values 32 to 127 in the
+   proportional font*/
+
+int prop_font_width[FONT_ENTRIES] = {
+  3, 1, 3, 5, 5, 5, 5, 1, 2, 2, 3, 5, 2, 5, 1, 3,
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 2, 3, 3, 3, 5,
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2, 3, 2, 3, 5,
+  2, 5, 5, 4, 5, 5, 4, 5, 4, 2, 3, 4, 2, 5, 5, 5,
+  5, 5, 4, 5, 4, 5, 5, 5, 5, 5, 5, 3, 1, 3, 5, 5
+};
+
+int prop_font_height = 7;
+
+int prop_font_offset[FONT_ENTRIES] = {
+  0,     4,   5,   8,  13,  18,  23,  28,  29,  31,  33,  36,  41,  43,  48,  49, 
+   52,  57,  62,  67,  72,  77,  82,  87,  92,  97, 102, 103, 105, 108, 111, 114, 
+  119, 124, 129, 134, 139, 144, 149, 154, 159, 164, 169, 174, 179, 184, 189, 194,
+  199, 204, 209, 214, 219, 224, 229, 234, 239, 244, 249, 254, 256, 259, 261, 264, 
+  269, 271, 276, 281, 285, 290, 295, 299, 304, 308, 310, 313, 317, 319, 324, 329, 
+  334, 339, 344, 348, 353, 357, 362, 367, 372, 377, 382, 387, 390, 391, 394, 399
+};
+
+int g_update_screen;
 
 /*=============================================================================
  * clear_render_components
@@ -163,12 +190,35 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
 }
 
 /*=============================================================================
+ * render_status_text
+ *============================================================================*/
+void render_status_text(BITMAP *dest) {
+  char render_text[40];
+
+  rectfill(dest, 1, 170, 209, 199, 194);
+  
+  /* Render the category */
+  sprintf(render_text, "Category : %s", g_categories[g_picture->category]);
+  render_prop_text(dest, render_text, 5, 172);    
+  /* Render elapsed time */
+  sprintf(render_text, "Elapsed : %d", g_elapsed_time);
+  render_prop_text(dest, render_text, 5, 181);
+  /* Render mistake count */
+  sprintf(render_text, "Mistakes :  %d", 0);
+  render_prop_text(dest, render_text, 133, 181);
+  /* Render progress text */
+  sprintf(render_text, "Progress :  %d / %d  ( %.2f%% )", 11000, 64000, 17.23);
+  render_prop_text(dest, render_text, 5, 190);
+}
+
+/*=============================================================================
  * render_screen
  *============================================================================*/
 void render_screen(BITMAP *dest, RenderComponents c) {
   int start_index, palette_color, square_x, square_y;
   int swatch_x, swatch_y, pal_index, pal_x, pal_y;
   int i, j;
+  char render_text[40];
 
   /* Draw the static UI components */
   if (c.render_ui_components || c.render_all) {
@@ -219,6 +269,7 @@ void render_screen(BITMAP *dest, RenderComponents c) {
 
   /* Draw updated status text in the lower left part of the display */
   if (c.render_status_text || c.render_all) {
+    render_status_text(dest);
   }
 
   /* Draw the squares in the play area */
@@ -266,6 +317,10 @@ void render_screen(BITMAP *dest, RenderComponents c) {
                g_draw_position_x, g_draw_position_y);  
   }
 
+  /* Clear the render flags */
+  clear_render_components(&g_components);
+  g_update_screen = 0;
+
 }
 
 /*=============================================================================
@@ -285,4 +340,20 @@ void load_palette_swatches(void) {
               NUMBER_BOX_INTERIOR_HEIGHT, i);
   }
 
+}
+
+void render_prop_text(BITMAP *dest, char *text, int x_pos, int y_pos) {
+	int x;
+	int offset;
+	char *cur;
+
+  cur = text;
+  x = x_pos;
+
+	while (*cur != 0) {
+		offset = (*cur++) - 32;
+		masked_blit(g_prop_font, dest, prop_font_offset[offset],
+		     0, x, y_pos, prop_font_width[offset], prop_font_height);
+		x += prop_font_width[offset] + 1;
+	}
 }

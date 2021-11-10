@@ -27,6 +27,16 @@
 #include "../include/render.h"
 #include "../include/util.h"
 
+char *g_categories[NUM_CATEGORIES] = {
+    "Uncategorized",
+    "Miscellaneous",
+    "Landscape",
+    "Animals",
+    "Fantasy",
+    "Abstract",
+    "Pattern"
+};
+
 /*=============================================================================
  * load_picture_file
  *============================================================================*/
@@ -185,6 +195,10 @@ int load_graphics(void) {
   if(g_page_buttons == NULL ) {
     result = -1;
   }
+  g_prop_font = load_pcx("RES/PROPFONT.PCX", res_pal);
+  if(g_prop_font == NULL ) {
+      result = -1;
+  }
   return result;
 }
 
@@ -203,6 +217,7 @@ void destroy_graphics(void) {
   destroy_bitmap(g_pal_cursor);
   destroy_bitmap(g_wrong);
   destroy_bitmap(g_page_buttons);
+  destroy_bitmap(g_prop_font);
 }
 
 /*=============================================================================
@@ -210,7 +225,15 @@ void destroy_graphics(void) {
  *============================================================================*/
 void int_handler(void) {
   /* do animation stuff here */
+  g_int_counter++;
+  if(g_int_counter >= FRAME_RATE) {
+    g_elapsed_time++;
+    g_int_counter=0;
+    g_components.render_status_text = 1;
+    g_update_screen = 1;
+  }
 }
+END_OF_FUNCTION(int_handler);
 
 /*=============================================================================
  * init_defaults
@@ -228,9 +251,19 @@ void init_defaults(void) {
   g_palette_page = 0;
   g_cur_color = 1;
   g_prev_color = 1;
+  g_elapsed_time = 0;
+  g_int_counter = 0;
+  g_update_screen = 1;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;
+
+  /* Variables used in the interrupt handler */
+  LOCK_VARIABLE(g_elapsed_time);
+  LOCK_VARIABLE(g_int_counter);
+  LOCK_VARIABLE(g_components);
+  LOCK_VARIABLE(g_update_screen);
+  LOCK_FUNCTION(int_handler);
 
   g_state = STATE_GAME;
 }

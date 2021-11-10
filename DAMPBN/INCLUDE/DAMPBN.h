@@ -56,6 +56,7 @@ BITMAP *g_large_pal;
 BITMAP *g_pal_cursor;
 BITMAP *g_wrong;
 BITMAP *g_page_buttons;
+BITMAP *g_prop_font;
 
 /* The position of the cursor within the draw area */
 int g_draw_cursor_x;

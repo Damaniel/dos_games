@@ -21,31 +21,23 @@
 #include <allegro.h>
 #include "../include/dampbn.h"
 #include "../include/uiconsts.h"
+#include "../include/render.h"
+#include "../include/input.h"
 
 /*=============================================================================
  * process_input
  *============================================================================*/
-int process_input(int state) {
-
-    int update;
-
-    /* By default, don't update any graphics */
-    update = 0;
+void process_input(int state) {
     if (state == STATE_GAME) {
-      update = input_state_game();
+      input_state_game();
     }
-
-    return update;
 }
 
 /*=============================================================================
  * input_state_game
  *============================================================================*/
-int input_state_game(void) {
+void input_state_game(void) {
     ColorSquare c;
-    int update;
-
-    update = 0;
 
     /*-------------------------------------------------------------------------
      * ESC - exit the game
@@ -92,7 +84,7 @@ int input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
         
         g_components.render_draw_cursor = 1;
-        update = 1;
+        g_update_screen = 1;
         g_keypress_lockout[KEY_LEFT] = 1;
       }
     }
@@ -131,7 +123,7 @@ int input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
 
         g_components.render_draw_cursor = 1;
-        update = 1;
+        g_update_screen = 1;
         g_keypress_lockout[KEY_RIGHT] = 1;
       }
     }
@@ -170,7 +162,7 @@ int input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
 
         g_components.render_draw_cursor = 1;
-        update = 1;
+        g_update_screen = 1;
         g_keypress_lockout[KEY_UP] = 1;
       }
     }
@@ -209,7 +201,7 @@ int input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
 
         g_components.render_draw_cursor = 1;
-        update = 1;
+        g_update_screen = 1;
         g_keypress_lockout[KEY_DOWN] = 1;
       }
     }
@@ -246,7 +238,7 @@ int input_state_game(void) {
         clear_render_components(&g_components);
         g_components.render_palette_area = 1;
         g_components.render_palette_cursor = 1;
-        update = 1;
+        g_update_screen = 1;
         g_keypress_lockout[KEY_P] = 1;
       }
     }
@@ -278,7 +270,7 @@ int input_state_game(void) {
 
         clear_render_components(&g_components);
         g_components.render_palette_cursor = 1;
-        update = 1;
+        g_update_screen = 1;
         g_keypress_lockout[KEY_OPENBRACE] = 1;
       }
     }
@@ -310,7 +302,7 @@ int input_state_game(void) {
 
         clear_render_components(&g_components);
         g_components.render_palette_cursor = 1;
-        update = 1;
+        g_update_screen = 1;
         g_keypress_lockout[KEY_CLOSEBRACE] = 1;
       }
     }
@@ -332,15 +324,14 @@ int input_state_game(void) {
            g_picture->pic_squares[(g_draw_position_y) * g_picture->w +
                                (g_draw_position_x)].fill_value = g_cur_color;
         }
-
+        clear_render_components(&g_components);
         g_components.render_draw_cursor = 1;
-        update = 1;
+        g_update_screen = 1;
         g_keypress_lockout[KEY_SPACE] = 1;
        }
      }
      if(!key[KEY_SPACE] && g_keypress_lockout[KEY_SPACE]) {
       g_keypress_lockout[KEY_SPACE] = 0;
      }
-  return update;
 
 }

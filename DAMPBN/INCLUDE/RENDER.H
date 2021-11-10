@@ -21,6 +21,21 @@
 #ifndef __RENDER_H__
 #define __RENDER_H__
 
+#define FONT_ENTRIES    96
+
+/* Width and height of all characters from ASCII values 32 to 127 in the
+   standard proportional font*/
+extern int prop_font_width[FONT_ENTRIES];
+
+extern int prop_font_height;
+
+// Offsets into the font bitmap for each character (based on the character widths
+// defined in prop_font_width)
+extern int prop_font_offset[FONT_ENTRIES];
+
+extern int g_update_screen;
+
+
 /*=============================================================================
  * clear_render_components
  *
@@ -73,11 +88,25 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
 void render_palette_item_at(BITMAP *dest, int palette_index, int change_page);
 
 /*=============================================================================
+ * render_status text
+ *
+ * Draws the status text in the lower portion of the screen 
+ *============================================================================*/
+void render_status_text(BITMAP *dest);
+
+/*=============================================================================
  * render_screen
  *
  * Draws screen components.  The components that are drawn is dictated by
  * the global RenderComponents object.
  *============================================================================*/
 void render_screen(BITMAP *dest, RenderComponents c);
+
+/*=============================================================================
+ * render_prop_text
+ *
+ * Writes a string using the proportional font
+ *============================================================================*/
+void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos);
 
 #endif

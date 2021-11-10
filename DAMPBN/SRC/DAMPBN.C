@@ -33,7 +33,9 @@
  *============================================================================*/
 int main(void) {
   int status, i;
-  int done, update_components;
+  int done;
+
+  BITMAP *buffer;
 
   allegro_init();
   install_keyboard();
@@ -42,6 +44,8 @@ int main(void) {
   install_int(int_handler, 1000/FRAME_RATE);
 
   set_gfx_mode(GFX_VGA, 320, 200, 0, 0);
+
+  buffer = create_bitmap(320, 200);
 
   status = load_graphics();
   if (status != 0) {
@@ -65,18 +69,20 @@ int main(void) {
 
   clear_render_components(&g_components);
   g_components.render_all = 1;
-  g_components.render_debug = 1;
 
-  render_screen(screen, g_components);
+  render_screen(buffer, g_components);
+  blit(buffer, screen, 0, 0, 0, 0, 320, 200);
 
   while(!g_game_done) {  
-    update_components = process_input(g_state);
-    if (update_components)
-      render_screen(screen, g_components);
+    process_input(g_state);
+    if (g_update_screen)
+      render_screen(buffer, g_components);
+      blit(buffer, screen, 0, 0, 0, 0, 320, 200);
   }
 
   free_picture_file(g_picture);
   destroy_graphics();
+  destroy_bitmap(buffer);
   set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);
   allegro_exit();
 

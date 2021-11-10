@@ -27,13 +27,13 @@
  * Take keypresses and perform the appropriate actions.  'Appropriate' actions
  * vary based on the game state.
  *============================================================================*/
-int process_input(int state);
+void process_input(int state);
 
 /*=============================================================================
  * input_state_game
  *
  * Process input for the in game state (g_state = STATE_GAME)
  *============================================================================*/
-int input_state_game(void);
+void input_state_game(void);
 
 #endif

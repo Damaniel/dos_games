@@ -22,6 +22,12 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
+volatile unsigned long g_int_counter;
+volatile unsigned int g_elapsed_time;
+
+#define NUM_CATEGORIES 8
+extern char *g_categories[NUM_CATEGORIES];
+
 /*=============================================================================
  * load_picture_file
  *
