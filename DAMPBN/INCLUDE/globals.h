@@ -88,6 +88,7 @@ extern BITMAP *g_large_pal;
 extern BITMAP *g_pal_cursor;
 extern BITMAP *g_wrong;
 extern BITMAP *g_page_buttons;
+extern BITMAP *g_main_buttons;
 extern BITMAP *g_prop_font;
 
 /* The parts of the screen to render */

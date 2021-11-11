@@ -380,6 +380,7 @@ void input_state_game(void) {
         clear_render_components(&g_components);
         g_components.render_main_area_squares = 1;
         g_components.render_draw_cursor = 1;
+        g_components.render_buttons = 1;
         g_update_screen = 1;
         g_keypress_lockout[KEY_M] = 1;
       }

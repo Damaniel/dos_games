@@ -100,6 +100,7 @@ BITMAP *g_large_pal;
 BITMAP *g_pal_cursor;
 BITMAP *g_wrong;
 BITMAP *g_page_buttons;
+BITMAP *g_main_buttons;
 BITMAP *g_prop_font;
 
 RenderComponents g_components;
@@ -212,6 +213,7 @@ void clear_render_components(RenderComponents *c) {
   c->render_palette_area = 0;
   c->render_palette = 0;
   c->render_ui_components = 0;
+  c->render_buttons = 0;
   c->render_overview_display = 0;
   c->render_status_text = 0;
   c->render_draw_cursor = 0;
@@ -357,6 +359,64 @@ void render_status_text(BITMAP *dest) {
 }
 
 /*=============================================================================
+ * render_primary_ui
+ *============================================================================*/
+void render_primary_ui(BITMAP *dest) {
+  /* Draw the background parts */
+    blit(g_bg_right, dest, 0, 0, RIGHT_SIDE_PANEL_X, RIGHT_SIDE_PANEL_Y,
+         g_bg_right->w, g_bg_right->h);
+    blit(g_bg_lower, dest, 0, 0, BOTTOM_PANEL_X, BOTTOM_PANEL_Y,
+         g_bg_lower->w, g_bg_lower->h);
+    blit(g_mainarea, dest, 0, 0, MAIN_AREA_X, MAIN_AREA_Y, 
+         g_mainarea->w, g_mainarea->h);
+
+}
+
+void render_menu_buttons(BITMAP *dest) {
+  /* Draw the buttons */
+
+  /* Save */
+  blit(g_main_buttons, dest, SAVE_BUTTON_X_OFFSET, SAVE_BUTTON_Y_OFFSET,
+       SAVE_BUTTON_X, SAVE_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+  /* Style */
+  blit(g_main_buttons, dest, STYLE_BUTTON_X_OFFSET, STYLE_BUTTON_Y_OFFSET,
+       STYLE_BUTTON_X, STYLE_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+  /* Options */
+  blit(g_main_buttons, dest, OPTS_BUTTON_X_OFFSET, OPTS_BUTTON_Y_OFFSET,
+       OPTS_BUTTON_X, OPTS_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+  /* Help */
+  blit(g_main_buttons, dest, HELP_BUTTON_X_OFFSET, HELP_BUTTON_Y_OFFSET,
+       HELP_BUTTON_X, HELP_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+
+  /* Load */
+  blit(g_main_buttons, dest, LOAD_BUTTON_X_OFFSET, LOAD_BUTTON_Y_OFFSET,
+       LOAD_BUTTON_X, LOAD_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);   
+
+  /* Mark */
+  if(g_mark_current == 1) {
+    blit(g_main_buttons, dest, MARK_BUTTON_X_OFFSET, 
+         BUTTON_PRESSED_OFFSET + MARK_BUTTON_Y_OFFSET, 
+         MARK_BUTTON_X, MARK_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);           
+  }
+  else {
+    blit(g_main_buttons, dest, MARK_BUTTON_X_OFFSET, 
+         BUTTON_DEFAULT_OFFSET + MARK_BUTTON_Y_OFFSET, 
+         MARK_BUTTON_X, MARK_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);      
+  }  
+
+  /* Map */
+  blit(g_main_buttons, dest, MAP_BUTTON_X_OFFSET, MAP_BUTTON_Y_OFFSET,
+       MAP_BUTTON_X, MAP_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);  
+
+  /* Exit */
+  blit(g_main_buttons, dest, EXIT_BUTTON_X_OFFSET, EXIT_BUTTON_Y_OFFSET,
+      EXIT_BUTTON_X, EXIT_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);          
+}
+
+/*=============================================================================
  * render_screen
  *============================================================================*/
 void render_screen(BITMAP *dest, RenderComponents c) {
@@ -366,13 +426,8 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   char render_text[40];
 
   /* Draw the static UI components */
-  if (c.render_ui_components || c.render_all) {
-    blit(g_bg_right, dest, 0, 0, RIGHT_SIDE_PANEL_X, RIGHT_SIDE_PANEL_Y,
-         g_bg_right->w, g_bg_right->h);
-    blit(g_bg_lower, dest, 0, 0, BOTTOM_PANEL_X, BOTTOM_PANEL_Y,
-         g_bg_lower->w, g_bg_lower->h);
-    blit(g_mainarea, dest, 0, 0, MAIN_AREA_X, MAIN_AREA_Y, 
-         g_mainarea->w, g_mainarea->h);
+  if (c.render_ui_components || c.render_all) {  
+    render_primary_ui(dest);
   }
 
   /* Draw the palette columns */
@@ -426,6 +481,10 @@ void render_screen(BITMAP *dest, RenderComponents c) {
         render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, i, j);
       }
     }
+  }
+
+  if(c.render_buttons | c.render_all ) {
+    render_menu_buttons(dest);
   }
 
   /* Draw the various cursors */
@@ -567,7 +626,11 @@ int load_graphics(void) {
   }
   g_prop_font = load_pcx("RES/PROPFONT.PCX", res_pal);
   if(g_prop_font == NULL ) {
-      result = -1;
+    result = -1;
+  }
+  g_main_buttons = load_pcx("RES/BUTTONS.PCX", res_pal);
+  if(g_main_buttons == NULL) {
+    result = -1;
   }
   return result;
 }
@@ -588,4 +651,5 @@ void destroy_graphics(void) {
   destroy_bitmap(g_wrong);
   destroy_bitmap(g_page_buttons);
   destroy_bitmap(g_prop_font);
+  destroy_bitmap(g_main_buttons);
 }

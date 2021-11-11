@@ -129,5 +129,64 @@
 #define SCROLLBAR_INTERIOR_COLOR   202
 #define SCROLLBAR_BORDER_COLOR     208
 
+
+/* Pick the button set depending on whether a button  is pressed or not */
+#define BUTTON_DEFAULT_OFFSET      0
+#define BUTTON_PRESSED_OFFSET      22
+
+/* The size of a menu button */
+#define MENU_BUTTON_WIDTH         25
+#define MENU_BUTTON_HEIGHT        11
+
+/* Offsets of the button within the source bitmap */
+#define SAVE_BUTTON_X_OFFSET       0
+#define SAVE_BUTTON_Y_OFFSET       0
+
+#define STYLE_BUTTON_X_OFFSET     25
+#define STYLE_BUTTON_Y_OFFSET      0
+
+#define OPTS_BUTTON_X_OFFSET      50
+#define OPTS_BUTTON_Y_OFFSET       0
+
+#define HELP_BUTTON_X_OFFSET      75
+#define HELP_BUTTON_Y_OFFSET       0
+
+#define LOAD_BUTTON_X_OFFSET       0
+#define LOAD_BUTTON_Y_OFFSET      11
+
+#define MARK_BUTTON_X_OFFSET      25
+#define MARK_BUTTON_Y_OFFSET      11
+
+#define MAP_BUTTON_X_OFFSET       50
+#define MAP_BUTTON_Y_OFFSET       11
+
+#define EXIT_BUTTON_X_OFFSET      75
+#define EXIT_BUTTON_Y_OFFSET      11
+
+/* Positions where the buttons go on the screen itself */
+#define SAVE_BUTTON_X              215
+#define SAVE_BUTTON_Y              174
+
+#define STYLE_BUTTON_X             239
+#define STYLE_BUTTON_Y             174
+
+#define OPTS_BUTTON_X              263
+#define OPTS_BUTTON_Y              174
+
+#define HELP_BUTTON_X              287
+#define HELP_BUTTON_Y              174
+
+#define LOAD_BUTTON_X              215
+#define LOAD_BUTTON_Y              184
+
+#define MARK_BUTTON_X              239
+#define MARK_BUTTON_Y              184
+
+#define MAP_BUTTON_X               263
+#define MAP_BUTTON_Y               184
+
+#define EXIT_BUTTON_X              287
+#define EXIT_BUTTON_Y              184
+
 #endif
  

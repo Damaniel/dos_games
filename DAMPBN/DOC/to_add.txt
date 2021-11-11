@@ -2,7 +2,6 @@ Next things to do
 
 - Refactor some of the code 
    - Find opportunities to remove duplicated code  
-- Scrollbars on the draw area
 - Add structures and support for the overview/progress window
 - Add loading screen.  Keep count of loaded elements, use interrupt to draw
 - In progress preview (i.e. press M and see your overall progress in 

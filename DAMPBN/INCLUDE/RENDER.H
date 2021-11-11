@@ -31,6 +31,8 @@ typedef struct {
   int render_palette;
   /* All static UI elements */
   int render_ui_components;
+  /* Menu buttons */
+  int render_buttons;
   /* The overview area in the top right */
   int render_overview_display;
   /* The time/progress text at the bottom */
@@ -101,11 +103,25 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
 void render_palette_item_at(BITMAP *dest, int palette_index, int change_page);
 
 /*=============================================================================
- * render_status text
+ * render_status_text
  *
  * Draws the status text in the lower portion of the screen 
  *============================================================================*/
 void render_status_text(BITMAP *dest);
+
+/*=============================================================================
+ * render_primary_ui
+ *
+ * Draws all components that aren't dynamic somehow
+ *============================================================================*/
+void render_primary_ui(BITMAP *dest);
+
+/*=============================================================================
+ * render_menu_buttons
+ *
+ * Draws all buttons in the lower right corner of the screen
+ *============================================================================*/
+void render_menu_buttons(BITMAP *dest);
 
 /*=============================================================================
  * render_screen
