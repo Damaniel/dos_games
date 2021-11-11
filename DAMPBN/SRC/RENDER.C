@@ -213,7 +213,14 @@ void render_status_text(BITMAP *dest) {
   sprintf(render_text, "Category : %s", g_categories[g_picture->category]);
   render_prop_text(dest, render_text, CATEGORY_TEXT_X, CATEGORY_TEXT_Y);    
   /* Render elapsed time */
-  sprintf(render_text, "Elapsed : %02d:%02d:%02d", hours, minutes, seconds);
+  /* If over 1000 hours, just cap the display at 999:59:59 */
+  /* if over 100 hours, use a 3 digit hour counter, otherwise use 2. */
+  if (g_elapsed_time >= 3600000)
+    sprintf(render_text, "Elapsed : 999:59:59");  
+  else if(g_elapsed_time >= 360000)
+    sprintf(render_text, "Elapsed : %03d:%02d:%02d", hours, minutes, seconds);
+  else 
+    sprintf(render_text, "Elapsed : %02d:%02d:%02d", hours, minutes, seconds);
   render_prop_text(dest, render_text, ELAPSED_TEXT_X, ELAPSED_TEXT_Y);
   /* Render mistake count */
   sprintf(render_text, "Mistakes :  %d", g_mistake_count);
