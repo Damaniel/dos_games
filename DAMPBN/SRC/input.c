@@ -320,14 +320,13 @@ void input_state_game(void) {
          fill_val = g_picture->pic_squares[square_offset].fill_value;
          pal_val = g_picture->pic_squares[square_offset].pal_entry;
 
-        /* If unfilled, fill with the active color.  If filled, unfill it. */
+        /* If unfilled, fill with the active color.  If filled, unfill it,
+           but only if it's the incorrect color. */
         if(fill_val != 0) {
-           g_picture->pic_squares[square_offset].fill_value = 0;
-           /* Update mistake/progress counters */
-           if (fill_val != pal_val)
+           if (fill_val != pal_val) {
+             g_picture->pic_squares[square_offset].fill_value = 0;           
              g_mistake_count--;
-           else
-             g_correct_count--;
+           }
         } else {
            g_picture->pic_squares[square_offset].fill_value = g_cur_color;
            /* Update mistake/progress counters */           

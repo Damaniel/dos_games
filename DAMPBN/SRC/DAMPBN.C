@@ -30,7 +30,7 @@ int g_game_done;
 /*=============================================================================
  * main
  *============================================================================*/
-int main(void) {
+int main(int argc, char *argv[]) {
   int status, i;
   int done;
   BITMAP *buffer;
@@ -53,7 +53,7 @@ int main(void) {
     exit(1);
   }
 
-  g_picture = load_picture_file("RES/PICS/IMG5B.PIC");
+  g_picture = load_picture_file(argv[1]);
   if (g_picture == NULL) {
     set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);    
     printf("Unable to load picture!\n");
