@@ -1,10 +1,9 @@
 Next things to do
 
 - Refactor some of the code 
-   - Find opportunities to remove duplicated code   
+   - Find opportunities to remove duplicated code  
 - Scrollbars on the draw area
 - Add structures and support for the overview/progress window
-- Add support for proportional text (borrow from SLAC)
-- Add text to bottom of screen (use sprintf/text render code from above)
 - Add loading screen.  Keep count of loaded elements, use interrupt to draw
+
 

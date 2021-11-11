@@ -61,18 +61,6 @@ void clear_render_components(RenderComponents *c);
 void load_palette_swatches(void);
 
 /*=============================================================================
- * render_main_area_squares
- *
- * Draws content for each of the squares of the play area (either a number,
- * if the square isn't filled in, otherwise a block of color respresenting the
- * color that has been filled in).
- * 
- * - x_off and y_off refer to the position of the picture that makes up the
- *   upper left part of the play area
- *============================================================================*/
-void render_main_area_squares(BITMAP *dest, int x_off, int y_off);
-
-/*=============================================================================
  * render_main_area_square_at
  *
  * Draws content of a specific square of the play area (either a number if

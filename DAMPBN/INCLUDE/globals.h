@@ -31,9 +31,8 @@
 #define COMPRESSION_NONE   0
 #define COMPRESSION_RLE    1
 
-/* The size of the area the player colors in, in squares */
-#define PLAY_AREA_W       20
-#define PLAY_AREA_H       16
+#define MAX_PLAY_AREA_WIDTH  20
+#define MAX_PLAY_AREA_HEIGHT 16
 
 /* The maximum number of colors in the palette */
 #define MAX_COLORS        64
@@ -130,5 +129,24 @@ extern int g_cur_color;
 
 /* The last color selected.  Used to limit what's being drawn/erased */
 extern int g_prev_color;
+
+/* Number of squares marked incorrectly */
+extern int g_mistake_count;
+
+/* Number of squares marked correctly */
+extern int g_correct_count;
+
+/* Total number of squares in the picture (for convenience) */
+extern int g_total_picture_squares;
+
+/* The parts of the screen to render */
+extern RenderComponents g_components;
+
+/* The active Picture */
+extern Picture *g_picture;
+
+extern int g_play_area_w;
+
+extern int g_play_area_h;
 
 #endif

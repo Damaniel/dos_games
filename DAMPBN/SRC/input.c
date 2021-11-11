@@ -37,6 +37,7 @@ void process_input(int state) {
  *============================================================================*/
 void input_state_game(void) {
     ColorSquare c;
+    int square_offset, fill_val, pal_val;
 
     /*-------------------------------------------------------------------------
      * ESC - exit the game
@@ -63,7 +64,7 @@ void input_state_game(void) {
         g_old_draw_cursor_y = g_draw_cursor_y;        
         /* If the SHIFT key is held, move a page.  Don't move cursor */
         if (key_shifts & KB_SHIFT_FLAG) {
-          g_pic_render_x -= PLAY_AREA_W;
+          g_pic_render_x -= g_play_area_w;
           g_components.render_main_area_squares = 1;          
         } else {
           /* Move the cursor, move the page if on the edge */
@@ -102,20 +103,20 @@ void input_state_game(void) {
         g_old_draw_cursor_y = g_draw_cursor_y;             
         /* If the SHIFT key is held, move a page. Don't move cursor */
         if (key_shifts & KB_SHIFT_FLAG) {
-          g_pic_render_x += PLAY_AREA_W;
+          g_pic_render_x += g_play_area_w;
           g_components.render_main_area_squares = 1;            
         } else {
           /* Move the cursor, move the page if on the edge */
           g_draw_cursor_x++;
-          if(g_draw_cursor_x >= PLAY_AREA_W) {
-            g_draw_cursor_x = PLAY_AREA_W -1;
+          if(g_draw_cursor_x >= g_play_area_w) {
+            g_draw_cursor_x = g_play_area_w - 1;
             g_pic_render_x++;
             g_components.render_main_area_squares = 1;              
           }
         }
         /* Check to make sure the visible area is fully in the picture */
-        if (g_pic_render_x >= g_picture->w - PLAY_AREA_W) {
-          g_pic_render_x = g_picture->w - PLAY_AREA_W;
+        if (g_pic_render_x >= g_picture->w - g_play_area_w) {
+          g_pic_render_x = g_picture->w - g_play_area_w;
         }
         /* Calculate where we'll be drawing within the whole picture */        
         g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
@@ -141,7 +142,7 @@ void input_state_game(void) {
         g_old_draw_cursor_y = g_draw_cursor_y;              
         /* If the SHIFT key is held, move a page.  Don't move cursor */
         if (key_shifts & KB_SHIFT_FLAG) {
-          g_pic_render_y -= PLAY_AREA_H;
+          g_pic_render_y -= g_play_area_h;
           g_components.render_main_area_squares = 1;              
         } else {
           /* Move the cursor, move the page if on the edge */
@@ -181,19 +182,19 @@ void input_state_game(void) {
         
         /* If the SHIFT key is held, move a page.  Don't move cursor */
         if (key_shifts & KB_SHIFT_FLAG) {
-          g_pic_render_y += PLAY_AREA_H;
+          g_pic_render_y += g_play_area_h;
           g_components.render_main_area_squares = 1;
         } else {
           g_draw_cursor_y++;
-          if(g_draw_cursor_y >= PLAY_AREA_H) {
-            g_draw_cursor_y = PLAY_AREA_H -1;
+          if(g_draw_cursor_y >= g_play_area_h) {
+            g_draw_cursor_y = g_play_area_h -1;
             g_pic_render_y++;
             g_components.render_main_area_squares = 1;
           }
         }
         /* Check to make sure the visible area is fully in the picture */
-        if (g_pic_render_y >= g_picture->h - PLAY_AREA_H) {
-          g_pic_render_y = g_picture->h - PLAY_AREA_H;
+        if (g_pic_render_y >= g_picture->h - g_play_area_h) {
+          g_pic_render_y = g_picture->h - g_play_area_h;
         }
         /* Calculate where we'll be drawing within the whole picture */        
         g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
@@ -314,17 +315,30 @@ void input_state_game(void) {
      *------------------------------------------------------------------------*/
      if (key[KEY_SPACE]) {
        if (!g_keypress_lockout[KEY_SPACE]) {
+         square_offset = (g_draw_position_y * g_picture->w) +
+                          g_draw_position_x;
+         fill_val = g_picture->pic_squares[square_offset].fill_value;
+         pal_val = g_picture->pic_squares[square_offset].pal_entry;
+
         /* If unfilled, fill with the active color.  If filled, unfill it. */
-        if(g_picture->pic_squares[(g_draw_position_y) * g_picture->w +
-                               (g_draw_position_x)].fill_value != 0) {
-           g_picture->pic_squares[(g_draw_position_y) * g_picture->w +
-                               (g_draw_position_x)].fill_value = 0;
+        if(fill_val != 0) {
+           g_picture->pic_squares[square_offset].fill_value = 0;
+           /* Update mistake/progress counters */
+           if (fill_val != pal_val)
+             g_mistake_count--;
+           else
+             g_correct_count--;
         } else {
-           g_picture->pic_squares[(g_draw_position_y) * g_picture->w +
-                               (g_draw_position_x)].fill_value = g_cur_color;
+           g_picture->pic_squares[square_offset].fill_value = g_cur_color;
+           /* Update mistake/progress counters */           
+           if (g_cur_color != pal_val)
+             g_mistake_count++;
+           else
+             g_correct_count++;           
         }
         clear_render_components(&g_components);
         g_components.render_draw_cursor = 1;
+        g_components.render_status_text = 1;
         g_update_screen = 1;
         g_keypress_lockout[KEY_SPACE] = 1;
        }

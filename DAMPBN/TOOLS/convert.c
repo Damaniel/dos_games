@@ -74,6 +74,7 @@ int get_rle_size(BITMAP *b) {
     /* The RLE encoder shouldn't save color indices higher than 64 */
     if(run_val >=64) {
       printf("Invalid index for palette!  All colors must be between 0-63!\n");
+      printf("Run value detected is %d\n", run_val);
       allegro_exit();
       exit(1);
     }
@@ -144,9 +145,10 @@ int main(int argc, char *argv[]) {
   allegro_init();
 
   /* get the input image (and the palette) */
-  b = load_pcx(infile, p);
+  b = load_bitmap(infile, p);
   if(b == NULL) {
     printf("Unable to open %s!\n", infile);
+    printf("%d\n", errno);
     allegro_exit();
     exit(1);
   }

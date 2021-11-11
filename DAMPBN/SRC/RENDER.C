@@ -77,6 +77,9 @@ int g_palette_page;
 int g_cur_color;
 int g_prev_color;
 
+int g_play_area_w;
+int g_play_area_h;
+
 BITMAP *g_numbers;
 BITMAP *g_bg_lower;
 BITMAP *g_bg_right;
@@ -89,6 +92,8 @@ BITMAP *g_pal_cursor;
 BITMAP *g_wrong;
 BITMAP *g_page_buttons;
 BITMAP *g_prop_font;
+
+RenderComponents g_components;
 
 /*=============================================================================
  * clear_render_components
@@ -103,32 +108,6 @@ void clear_render_components(RenderComponents *c) {
   c->render_draw_cursor = 0;
   c->render_palette_cursor = 0;
   c->render_all = 0;
-}
-
-/*=============================================================================
- * render_main_area_squares
- *============================================================================*/
-void render_main_area_squares(BITMAP *dest, int x_off, int y_off) {
-  int i,j;
-  int pal_offset;
-  ColorSquare c;
-
-  /* Iterate through each square of the visible area of the picture and
-     draw either the related color number or color swatch for that square */
-  for (j = y_off; j < y_off + PLAY_AREA_H; j++) {
-    for (i = x_off; i < x_off + PLAY_AREA_W; i++) {
-      c = g_picture->pic_squares[j * g_picture->w + i];
-      pal_offset = c.pal_entry;
-      blit(g_numbers, 
-           dest, 
-           pal_offset * NUMBER_BOX_WIDTH,
-           0,
-           DRAW_AREA_X + ((i-x_off) * NUMBER_BOX_RENDER_X_OFFSET),
-           DRAW_AREA_Y + ((j-y_off) * NUMBER_BOX_RENDER_Y_OFFSET),
-           NUMBER_BOX_WIDTH, 
-           NUMBER_BOX_HEIGHT);
-    }
-  }
 }
 
 /*=============================================================================
@@ -237,10 +216,12 @@ void render_status_text(BITMAP *dest) {
   sprintf(render_text, "Elapsed : %02d:%02d:%02d", hours, minutes, seconds);
   render_prop_text(dest, render_text, ELAPSED_TEXT_X, ELAPSED_TEXT_Y);
   /* Render mistake count */
-  sprintf(render_text, "Mistakes :  %d", 0);
+  sprintf(render_text, "Mistakes :  %d", g_mistake_count);
   render_prop_text(dest, render_text, MISTAKES_X, MISTAKES_Y);
   /* Render progress text */
-  sprintf(render_text, "Progress :  %d / %d  ( %.2f%% )", 11000, 64000, 17.23);
+  sprintf(render_text, "Progress :  %d / %d  ( %.2f%% )", g_correct_count,
+          g_total_picture_squares, 
+          (float)g_correct_count / g_total_picture_squares * 100.0);
   render_prop_text(dest, render_text, PROGRESS_X, PROGRESS_Y);
 }
 
@@ -248,7 +229,7 @@ void render_status_text(BITMAP *dest) {
  * render_screen
  *============================================================================*/
 void render_screen(BITMAP *dest, RenderComponents c) {
-  int start_index, palette_color, square_x, square_y;
+  int start_index, palette_color, square_x, square_y, area_w, area_h;
   int swatch_x, swatch_y, pal_index, pal_x, pal_y;
   int i, j;
   char render_text[40];
@@ -307,8 +288,10 @@ void render_screen(BITMAP *dest, RenderComponents c) {
 
   /* Draw the squares in the play area */
   if(c.render_main_area_squares || c.render_all) {
-    for(i = 0; i < PLAY_AREA_W; i++) {
-      for(j = 0; j < PLAY_AREA_H; j++) {
+    /* If the picture is smaller than the play area, only draw the smaller
+       area */
+    for(i = 0; i < g_play_area_w; i++) {
+      for(j = 0; j < g_play_area_h; j++) {
         render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, i, j);
       }
     }
@@ -345,9 +328,8 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   }
 
   if(c.render_debug) {
-    textprintf(dest, font, 5, 171, 209, "draw index = %d   ", g_cur_color);    
-    textprintf(dest, font, 5, 181, 209, "draw pos = %d, %d     ",
-               g_draw_position_x, g_draw_position_y);  
+    textprintf(dest, font, 5, 171, 209, "g_pic_render_x = %d   ", g_pic_render_x);    
+    textprintf(dest, font, 5, 181, 209, "g_pic_render_y = %d   ", g_pic_render_y);
   }
 
   /* Clear the render flags */

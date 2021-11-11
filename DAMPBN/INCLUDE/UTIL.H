@@ -62,6 +62,13 @@ Picture *load_picture_file(char *filename);
  *============================================================================*/
 void free_picture_file(Picture *p);
 
+/*=============================================================================
+ * check_completion
+ *
+ * Checks to see if the correct square count matches the total number of 
+ * squares in the picture
+ *============================================================================*/
+int check_completion(void);
 
 /*=============================================================================
  * int_handler

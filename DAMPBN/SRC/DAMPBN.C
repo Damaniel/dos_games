@@ -23,8 +23,6 @@
 #include <stdlib.h>
 #include "../include/globals.h"
 
-RenderComponents g_components;
-Picture *g_picture;
 State g_state;
 State g_prev_state;
 int g_game_done;
@@ -35,7 +33,6 @@ int g_game_done;
 int main(void) {
   int status, i;
   int done;
-
   BITMAP *buffer;
 
   allegro_init();
@@ -55,7 +52,8 @@ int main(void) {
     allegro_exit();
     exit(1);
   }
-  g_picture = load_picture_file("RES/PICS/IMG4.PIC");
+
+  g_picture = load_picture_file("RES/PICS/IMG5B.PIC");
   if (g_picture == NULL) {
     set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);    
     printf("Unable to load picture!\n");
@@ -63,7 +61,9 @@ int main(void) {
     exit(1);
   }
   
+
   set_palette(game_pal);
+
   load_palette_swatches();
 
   init_defaults();
@@ -75,9 +75,14 @@ int main(void) {
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);
 
   g_game_timer_running = 1;
-  
+
   while(!g_game_done) {  
     process_input(g_state);
+
+    done = check_completion();
+    if(done)
+      g_game_done = 1;
+
     if (g_update_screen)
       render_screen(buffer, g_components);
       blit(buffer, screen, 0, 0, 0, 0, 320, 200);

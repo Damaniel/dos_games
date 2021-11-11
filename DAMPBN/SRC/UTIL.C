@@ -29,6 +29,13 @@ volatile unsigned long g_int_counter;
 volatile unsigned int g_elapsed_time;
 int g_game_timer_running;
 
+int g_mistake_count;
+int g_correct_count;
+
+int g_total_picture_squares;
+
+Picture *g_picture;
+
 char *g_categories[NUM_CATEGORIES] = {
     "Uncategorized",
     "Miscellaneous",
@@ -81,12 +88,19 @@ Picture *load_picture_file(char *filename) {
     dummy = fgetc(fp);
   }
 
+  /* Set the total square count for progress purposes */
+  g_total_picture_squares = pic->w * pic->h;
+
   /* Set the image portion of the global palette */
   for (i=0; i<64; i++) {
     game_pal[i].r = pic_pal[i].r;
     game_pal[i].g = pic_pal[i].g;
     game_pal[i].b = pic_pal[i].b;
   }
+
+  /* Set the size of the play area */
+  g_play_area_w = pic->w < MAX_PLAY_AREA_WIDTH ? pic->w : MAX_PLAY_AREA_WIDTH;
+  g_play_area_h = pic->h < MAX_PLAY_AREA_HEIGHT ? pic->h : MAX_PLAY_AREA_HEIGHT;
 
   /* Create required Picture arrays */
   pic->pic_squares = (ColorSquare *)malloc(pic->w * pic->h *
@@ -144,6 +158,15 @@ void free_picture_file(Picture *p) {
 }
 
 /*=============================================================================
+ * check_completion
+ *============================================================================*/
+int check_completion(void) {
+  if (g_correct_count >= g_total_picture_squares)
+    return 1;
+  return 0;
+}
+
+/*=============================================================================
  * int_handler
  *============================================================================*/
 void int_handler(void) {
@@ -182,6 +205,8 @@ void init_defaults(void) {
   g_int_counter = 0;
   g_update_screen = 1;
   g_game_timer_running = 0;
+  g_mistake_count = 0;
+  g_correct_count = 0;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;
