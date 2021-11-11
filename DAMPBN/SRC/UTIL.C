@@ -37,8 +37,8 @@ int g_total_picture_squares;
 Picture *g_picture;
 
 char *g_categories[NUM_CATEGORIES] = {
-    "Uncategorized",
-    "Miscellaneous",
+    "Misc.",
+    "Other",
     "Landscape",
     "Animals",
     "Fantasy",
@@ -208,6 +208,10 @@ void init_defaults(void) {
   g_mistake_count = 0;
   g_correct_count = 0;
   g_mark_current = 0;
+  g_across_scrollbar_x = 0;
+  g_across_scrollbar_width = 0;
+  g_down_scrollbar_y = 0;
+  g_down_scrollbar_height = 0;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;

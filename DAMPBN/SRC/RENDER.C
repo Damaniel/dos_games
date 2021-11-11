@@ -82,6 +82,12 @@ int g_play_area_h;
 
 int g_mark_current;
 
+int g_across_scrollbar_x;
+int g_across_scrollbar_width;
+
+int g_down_scrollbar_y;
+int g_down_scrollbar_height;
+
 BITMAP *g_numbers;
 BITMAP *g_highlight_numbers;
 BITMAP *g_bg_lower;
@@ -99,6 +105,106 @@ BITMAP *g_prop_font;
 RenderComponents g_components;
 
 /*=============================================================================
+ * update_scrollbar_positions
+ *============================================================================*/
+void update_scrollbar_positions(void) {
+    /* For the x scrollbar:
+       - The x position = (percentage of picture at left side of area
+         * width of bar)
+
+         For example, a 320 width picture with pixel 72 at the left side of the
+         play area:
+             72 / 320 * 199 = 44.775 - round down to 44
+
+        - The width = (percentage of picture displayed / width of bar)
+
+         For the same example above:
+             20 / 320 * 199 = 12.43 - round down to 12
+
+         Width should be capped at scrollbar area width.
+
+         If the width of the picture is <= play area width, draw a full
+         width scrollbar
+    */
+
+   /* If the picture width is smaller than the screen width, draw a full 
+      length scrollbar */
+
+   float across_scroll_x, across_scroll_w, down_scroll_y, down_scroll_h;
+
+   if (g_picture->h <= g_play_area_h) {
+     g_down_scrollbar_y = 0;
+     g_down_scrollbar_height = Y_SCROLLBAR_AREA_HEIGHT - 1;
+   } 
+   else {
+     down_scroll_y = (float)g_pic_render_y / (float)g_picture->h *
+                      Y_SCROLLBAR_AREA_HEIGHT;
+     down_scroll_h = (float)g_play_area_h / (float)g_picture->h *
+                      Y_SCROLLBAR_AREA_HEIGHT;
+
+     g_down_scrollbar_y = (int)down_scroll_y;
+     g_down_scrollbar_height = (int)down_scroll_h;
+   }
+
+   if (g_picture->w <= g_play_area_w) {
+    g_across_scrollbar_x = 0;
+    g_across_scrollbar_width = X_SCROLLBAR_AREA_WIDTH - 1;
+   }
+   else {
+     across_scroll_x = (float)g_pic_render_x / (float)g_picture->w *
+                        X_SCROLLBAR_AREA_WIDTH;
+     across_scroll_w = (float)g_play_area_w / (float)g_picture->w *
+                        X_SCROLLBAR_AREA_WIDTH;
+
+     g_across_scrollbar_x = (int)across_scroll_x;                           
+     g_across_scrollbar_width = (int)across_scroll_w;
+   }
+
+}
+
+/*=============================================================================
+ * render_scrollbars
+ *============================================================================*/
+void render_scrollbars(BITMAP *dest) {
+  /* Clear the existing scrollbar areas */
+  rectfill(dest, X_SCROLLBAR_AREA_X, X_SCROLLBAR_AREA_Y,
+          X_SCROLLBAR_AREA_X + X_SCROLLBAR_AREA_WIDTH - 1,
+          X_SCROLLBAR_AREA_Y + X_SCROLLBAR_AREA_HEIGHT - 1,
+          SCROLLBAR_BG_COLOR);
+
+  rectfill(dest, Y_SCROLLBAR_AREA_X, Y_SCROLLBAR_AREA_Y,
+          Y_SCROLLBAR_AREA_X + Y_SCROLLBAR_AREA_WIDTH - 1,
+          Y_SCROLLBAR_AREA_Y + Y_SCROLLBAR_AREA_HEIGHT - 1,
+          SCROLLBAR_BG_COLOR);
+
+  /* Draw the across scrollbar */
+  rectfill(dest, X_SCROLLBAR_AREA_X + g_across_scrollbar_x, 
+           X_SCROLLBAR_AREA_Y,
+           g_across_scrollbar_x + g_across_scrollbar_width + 
+           X_SCROLLBAR_AREA_X, 
+           X_SCROLLBAR_AREA_Y + X_SCROLLBAR_AREA_HEIGHT - 1, 
+           SCROLLBAR_INTERIOR_COLOR);
+  rect(dest, 
+       X_SCROLLBAR_AREA_X + g_across_scrollbar_x - 1, 
+       X_SCROLLBAR_AREA_Y - 1,
+       g_across_scrollbar_x + g_across_scrollbar_width + X_SCROLLBAR_AREA_X + 1, 
+       X_SCROLLBAR_AREA_Y + X_SCROLLBAR_AREA_HEIGHT, 
+       SCROLLBAR_BORDER_COLOR);
+
+  /* Draw the down scrollbar */
+  rectfill(dest, Y_SCROLLBAR_AREA_X, 
+           Y_SCROLLBAR_AREA_Y + g_down_scrollbar_y,
+           Y_SCROLLBAR_AREA_X + Y_SCROLLBAR_AREA_WIDTH - 1,
+           g_down_scrollbar_y + g_down_scrollbar_height + Y_SCROLLBAR_AREA_Y,
+           SCROLLBAR_INTERIOR_COLOR);  
+  rect(dest, Y_SCROLLBAR_AREA_X - 1, 
+       Y_SCROLLBAR_AREA_Y + g_down_scrollbar_y - 1,
+       Y_SCROLLBAR_AREA_X + Y_SCROLLBAR_AREA_WIDTH,
+       g_down_scrollbar_y + g_down_scrollbar_height + Y_SCROLLBAR_AREA_Y +1,
+       SCROLLBAR_BORDER_COLOR);             
+}
+
+/*=============================================================================
  * clear_render_components
  *============================================================================*/
 void clear_render_components(RenderComponents *c) {
@@ -110,6 +216,7 @@ void clear_render_components(RenderComponents *c) {
   c->render_status_text = 0;
   c->render_draw_cursor = 0;
   c->render_palette_cursor = 0;
+  c->render_scrollbars = 0;
   c->render_all = 0;
 }
 
@@ -233,15 +340,18 @@ void render_status_text(BITMAP *dest) {
   if (g_elapsed_time >= 3600000)
     sprintf(render_text, "Elapsed : 999:59:59");  
   else if(g_elapsed_time >= 360000)
-    sprintf(render_text, "Elapsed : %03d:%02d:%02d", hours, minutes, seconds);
+    sprintf(render_text, "Time : %03d:%02d:%02d", hours, minutes, seconds);
   else 
-    sprintf(render_text, "Elapsed : %02d:%02d:%02d", hours, minutes, seconds);
+    sprintf(render_text, "Time : %02d:%02d:%02d", hours, minutes, seconds);
   render_prop_text(dest, render_text, ELAPSED_TEXT_X, ELAPSED_TEXT_Y);
+  /* Render picture size */
+  sprintf(render_text, "Size: %dx%d", g_picture->w, g_picture->h);
+  render_prop_text(dest, render_text, SIZE_TEXT_X, SIZE_TEXT_Y);
   /* Render mistake count */
-  sprintf(render_text, "Mistakes :  %d", g_mistake_count);
+  sprintf(render_text, "Mistakes : %d", g_mistake_count);
   render_prop_text(dest, render_text, MISTAKES_X, MISTAKES_Y);
   /* Render progress text */
-  sprintf(render_text, "Progress :  %d / %d   ", g_correct_count,
+  sprintf(render_text, "Progress : %d / %d   ", g_correct_count,
           g_total_picture_squares);
   render_prop_text(dest, render_text, PROGRESS_X, PROGRESS_Y);
 }
@@ -331,6 +441,11 @@ void render_screen(BITMAP *dest, RenderComponents c) {
                 DRAW_AREA_Y + DRAW_CURSOR_WIDTH * g_draw_cursor_y);              
   }
 
+  if(c.render_scrollbars || c.render_all ) {
+    update_scrollbar_positions();
+    render_scrollbars(dest);
+  }
+
   if(c.render_palette_cursor || c.render_all) {
     if (g_palette_page == 1) 
       pal_index = g_cur_color - ( NUM_PALETTE_COLUMNS * NUM_PALETTE_ROWS) - 1;
@@ -349,8 +464,8 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   }
 
   if(c.render_debug) {
-    textprintf(dest, font, 5, 171, 209, "g_pic_render_x = %d   ", g_pic_render_x);    
-    textprintf(dest, font, 5, 181, 209, "g_pic_render_y = %d   ", g_pic_render_y);
+    textprintf(dest, font, 5, 171, 209, "%d %d     ", g_down_scrollbar_y, g_down_scrollbar_height);    
+    //textprintf(dest, font, 5, 181, 209, "g_pic_render_y = %d   ", g_pic_render_y);
   }
 
   /* Clear the render flags */

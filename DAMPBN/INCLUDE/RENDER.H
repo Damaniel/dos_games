@@ -39,6 +39,8 @@ typedef struct {
   int render_draw_cursor;
   /* Update the palette cursor */
   int render_palette_cursor;
+  /* Update the scrollbars */
+  int render_scrollbars;
   /* Render everything - convenience function */
   int render_all;
   /* Render debug text.  Must be explicitly set or cleared */
@@ -51,6 +53,20 @@ typedef struct {
  * Resets all of the render flags for the display.  
  *============================================================================*/
 void clear_render_components(RenderComponents *c);
+
+/*=============================================================================
+ * update_scrollbar_positions
+ *
+ * Determines where and how the scrollbars should be drawn
+ *============================================================================*/
+void update_scrollbar_positions(void);
+
+/*=============================================================================
+ * render_scrollbars
+ *
+ * Draws the scrollbars
+ *============================================================================*/
+void render_scrollbars(BITMAP *dest);
 
 /*=============================================================================
  * load_palette_swatches

@@ -84,6 +84,7 @@ void input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
         
         g_components.render_draw_cursor = 1;
+        g_components.render_scrollbars = 1;        
         g_update_screen = 1;
         g_keypress_lockout[KEY_LEFT] = 1;
       }
@@ -123,6 +124,7 @@ void input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
 
         g_components.render_draw_cursor = 1;
+        g_components.render_scrollbars = 1;
         g_update_screen = 1;
         g_keypress_lockout[KEY_RIGHT] = 1;
       }
@@ -162,6 +164,7 @@ void input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
 
         g_components.render_draw_cursor = 1;
+        g_components.render_scrollbars = 1;        
         g_update_screen = 1;
         g_keypress_lockout[KEY_UP] = 1;
       }
@@ -201,6 +204,7 @@ void input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
 
         g_components.render_draw_cursor = 1;
+        g_components.render_scrollbars = 1;        
         g_update_screen = 1;
         g_keypress_lockout[KEY_DOWN] = 1;
       }

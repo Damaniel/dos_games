@@ -103,14 +103,31 @@
 #define CATEGORY_TEXT_X              5
 #define CATEGORY_TEXT_Y            172
 
-#define ELAPSED_TEXT_X               5
-#define ELAPSED_TEXT_Y             181
+#define ELAPSED_TEXT_X              69
+#define ELAPSED_TEXT_Y             190
+
+#define SIZE_TEXT_X                133
+#define SIZE_TEXT_Y                172
 
 #define MISTAKES_X                 133
 #define MISTAKES_Y                 181
 
 #define PROGRESS_X                   5
-#define PROGRESS_Y                 190
+#define PROGRESS_Y                 181
+
+#define X_SCROLLBAR_AREA_WIDTH     199
+#define X_SCROLLBAR_AREA_HEIGHT      4
+#define X_SCROLLBAR_AREA_X           3
+#define X_SCROLLBAR_AREA_Y         163
+
+#define Y_SCROLLBAR_AREA_WIDTH       4
+#define Y_SCROLLBAR_AREA_HEIGHT    159
+#define Y_SCROLLBAR_AREA_X         203
+#define Y_SCROLLBAR_AREA_Y           3
+
+#define SCROLLBAR_BG_COLOR         192
+#define SCROLLBAR_INTERIOR_COLOR   202
+#define SCROLLBAR_BORDER_COLOR     208
 
 #endif
  

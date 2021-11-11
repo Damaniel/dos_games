@@ -149,11 +149,18 @@ extern Picture *g_picture;
    these values will be set to the size of the picture, otherwise they will
    be set to the size of the visible play area */
 extern int g_play_area_w;
-
 extern int g_play_area_h;
 
 /* If set, all squares of the active color will be highlighted for easy
    identification. */
 extern int g_mark_current;
+
+/* Size and position of the play area scrollbar in the x direction */
+extern int g_across_scrollbar_x;
+extern int g_across_scrollbar_width;
+
+/* Size and position of the play area scrollbar in the y direction */
+extern int g_down_scrollbar_y;
+extern int g_down_scrollbar_height;
 
 #endif

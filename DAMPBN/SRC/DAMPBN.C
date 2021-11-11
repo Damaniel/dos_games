@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
 
   clear_render_components(&g_components);
   g_components.render_all = 1;
+  //g_components.render_debug = 1;
 
   render_screen(buffer, g_components);
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);
