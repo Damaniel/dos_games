@@ -207,6 +207,7 @@ void init_defaults(void) {
   g_game_timer_running = 0;
   g_mistake_count = 0;
   g_correct_count = 0;
+  g_mark_current = 0;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;

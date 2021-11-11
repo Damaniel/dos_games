@@ -61,6 +61,7 @@ Keys:
   - U - undo last color placement
   - R - redo last undone color placement
   - O - options screen
+  - M - mark all squares of the selected color with a highlight
   - T - reset image progress.  Requires confirmation!
   - H - Help screen
   - X / Escape - Exit to the main menu.  Prompts for save

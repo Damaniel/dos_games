@@ -236,6 +236,12 @@ void input_state_game(void) {
           g_cur_color = g_picture->num_colors;
 
         clear_render_components(&g_components);
+        /* If marking is turned on, redraw the play area to update the
+           highlights */
+        if (g_mark_current == 1 ) {
+          g_components.render_main_area_squares = 1;        
+          g_components.render_draw_cursor = 1;
+        }  
         g_components.render_palette_area = 1;
         g_components.render_palette_cursor = 1;
         g_update_screen = 1;
@@ -267,8 +273,14 @@ void input_state_game(void) {
            clamp it. */
         if (g_cur_color > g_picture->num_colors)
           g_cur_color = g_picture->num_colors;
-
+          
         clear_render_components(&g_components);
+        /* If marking is turned on, redraw the play area to update the
+           highlights */
+        if (g_mark_current == 1 ) {
+          g_components.render_main_area_squares = 1;        
+          g_components.render_draw_cursor = 1;
+        }    
         g_components.render_palette_cursor = 1;
         g_update_screen = 1;
         g_keypress_lockout[KEY_OPENBRACE] = 1;
@@ -301,6 +313,12 @@ void input_state_game(void) {
         }
 
         clear_render_components(&g_components);
+        /* If marking is turned on, redraw the play area to update the
+           highlights */        
+        if (g_mark_current == 1 ) {
+          g_components.render_main_area_squares = 1;        
+          g_components.render_draw_cursor = 1;
+        }                  
         g_components.render_palette_cursor = 1;
         g_update_screen = 1;
         g_keypress_lockout[KEY_CLOSEBRACE] = 1;
@@ -346,4 +364,23 @@ void input_state_game(void) {
       g_keypress_lockout[KEY_SPACE] = 0;
      }
 
+    /*-------------------------------------------------------------------------
+     * M - toggle highlighting of active color in the play area
+     *------------------------------------------------------------------------*/     
+    if (key[KEY_M]) {
+      if (!g_keypress_lockout[KEY_M]) {
+        if (g_mark_current == 0) 
+          g_mark_current = 1;
+        else
+          g_mark_current = 0;
+        clear_render_components(&g_components);
+        g_components.render_main_area_squares = 1;
+        g_components.render_draw_cursor = 1;
+        g_update_screen = 1;
+        g_keypress_lockout[KEY_M] = 1;
+      }
+    }
+    if (!key[KEY_M] && g_keypress_lockout[KEY_M]) {
+      g_keypress_lockout[KEY_M] = 0;
+    }
 }

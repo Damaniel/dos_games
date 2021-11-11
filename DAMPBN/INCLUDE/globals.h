@@ -78,10 +78,10 @@ extern unsigned char g_keypress_lockout[];
 
 /* Image bitmaps used by the game */
 extern BITMAP *g_numbers;
+extern BITMAP *g_highlight_numbers;
 extern BITMAP *g_bg_lower;
 extern BITMAP *g_bg_right;
 extern BITMAP *g_mainarea;
-extern BITMAP *g_pal_col;
 extern BITMAP *g_draw_cursor;
 extern BITMAP *g_small_pal;
 extern BITMAP *g_large_pal;
@@ -145,8 +145,15 @@ extern RenderComponents g_components;
 /* The active Picture */
 extern Picture *g_picture;
 
+/* The size of the play area.  If the picture is smaller than the visible area,
+   these values will be set to the size of the picture, otherwise they will
+   be set to the size of the visible play area */
 extern int g_play_area_w;
 
 extern int g_play_area_h;
+
+/* If set, all squares of the active color will be highlighted for easy
+   identification. */
+extern int g_mark_current;
 
 #endif

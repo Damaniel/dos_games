@@ -80,7 +80,10 @@ int g_prev_color;
 int g_play_area_w;
 int g_play_area_h;
 
+int g_mark_current;
+
 BITMAP *g_numbers;
+BITMAP *g_highlight_numbers;
 BITMAP *g_bg_lower;
 BITMAP *g_bg_right;
 BITMAP *g_mainarea;
@@ -169,14 +172,26 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
   color_offset = c.fill_value;
 
   if(color_offset == 0) {
-    blit(g_numbers, 
-        dest, 
-        pal_offset * NUMBER_BOX_WIDTH,
-        0, 
-        DRAW_AREA_X + (off_x * NUMBER_BOX_RENDER_X_OFFSET),
-        DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET),
-        NUMBER_BOX_WIDTH, 
-        NUMBER_BOX_HEIGHT);
+    if (g_cur_color == pal_offset & g_mark_current == 1) {
+      blit(g_highlight_numbers, 
+          dest, 
+          pal_offset * NUMBER_BOX_WIDTH,
+          0, 
+          DRAW_AREA_X + (off_x * NUMBER_BOX_RENDER_X_OFFSET),
+          DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET),
+          NUMBER_BOX_WIDTH, 
+          NUMBER_BOX_HEIGHT);
+    }
+    else {
+      blit(g_numbers, 
+          dest, 
+          pal_offset * NUMBER_BOX_WIDTH,
+          0, 
+          DRAW_AREA_X + (off_x * NUMBER_BOX_RENDER_X_OFFSET),
+          DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET),
+          NUMBER_BOX_WIDTH, 
+          NUMBER_BOX_HEIGHT);
+    }
   } else {
     blit(g_large_pal, 
         dest, 
@@ -395,6 +410,10 @@ int load_graphics(void) {
   if(g_numbers == NULL) {
     result = - 1;
   }
+  g_highlight_numbers  = load_pcx("RES/NUMS_HI.PCX", res_pal);
+  if(g_highlight_numbers == NULL) {
+    result = - 1;
+  }
   g_bg_lower = load_pcx("RES/BG_LOWER.PCX", res_pal);
   if(g_bg_lower == NULL) {
     result = -1;
@@ -405,10 +424,6 @@ int load_graphics(void) {
   }
   g_mainarea = load_pcx("RES/MAINAREA.PCX", res_pal);
   if(g_mainarea == NULL) {
-    result = -1;
-  }
-  g_pal_col  = load_pcx("RES/PAL_COL.PCX", res_pal);
-  if(g_pal_col == NULL) {
     result = -1;
   }
   g_draw_cursor = load_pcx("RES/DRAWCURS.PCX", res_pal);
@@ -447,10 +462,10 @@ int load_graphics(void) {
  *============================================================================*/
 void destroy_graphics(void) {
   destroy_bitmap(g_numbers);
+  destroy_bitmap(g_highlight_numbers);
   destroy_bitmap(g_bg_lower);
   destroy_bitmap(g_bg_right);
   destroy_bitmap(g_mainarea);
-  destroy_bitmap(g_pal_col);
   destroy_bitmap(g_draw_cursor);
   destroy_bitmap(g_small_pal);
   destroy_bitmap(g_large_pal);
