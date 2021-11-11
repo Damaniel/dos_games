@@ -30,6 +30,16 @@ void process_input(int state) {
     if (state == STATE_GAME) {
       input_state_game();
     }
+    if (state == STATE_MAP) {
+      input_state_map();
+    }
+}
+
+/*=============================================================================
+ * input_state_map
+ *============================================================================*/
+void input_state_map(void) {
+
 }
 
 /*=============================================================================
@@ -369,10 +379,10 @@ void input_state_game(void) {
      }
 
     /*-------------------------------------------------------------------------
-     * M - toggle highlighting of active color in the play area
+     * K - toggle highlighting of active color in the play area
      *------------------------------------------------------------------------*/     
-    if (key[KEY_M]) {
-      if (!g_keypress_lockout[KEY_M]) {
+    if (key[KEY_K]) {
+      if (!g_keypress_lockout[KEY_K]) {
         if (g_mark_current == 0) 
           g_mark_current = 1;
         else
@@ -382,10 +392,10 @@ void input_state_game(void) {
         g_components.render_draw_cursor = 1;
         g_components.render_buttons = 1;
         g_update_screen = 1;
-        g_keypress_lockout[KEY_M] = 1;
+        g_keypress_lockout[KEY_K] = 1;
       }
     }
-    if (!key[KEY_M] && g_keypress_lockout[KEY_M]) {
-      g_keypress_lockout[KEY_M] = 0;
+    if (!key[KEY_K] && g_keypress_lockout[KEY_K]) {
+      g_keypress_lockout[KEY_K] = 0;
     }
 }

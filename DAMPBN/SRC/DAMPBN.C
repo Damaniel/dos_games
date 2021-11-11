@@ -27,6 +27,20 @@ State g_state;
 State g_prev_state;
 int g_game_done;
 
+void change_state(State new_state, State prev_state) {
+
+  /* Do stuff */
+  g_state = new_state;
+  g_prev_state = prev_state;
+
+  if (g_state == STATE_GAME) {
+    clear_render_components(&g_components);
+    g_components.render_all = 1;
+    g_update_screen = 1;
+  }
+
+}
+
 /*=============================================================================
  * main
  *============================================================================*/
@@ -68,9 +82,7 @@ int main(int argc, char *argv[]) {
 
   init_defaults();
 
-  clear_render_components(&g_components);
-  g_components.render_all = 1;
-  //g_components.render_debug = 1;
+  change_state(STATE_GAME, STATE_NONE);
 
   render_screen(buffer, g_components);
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);

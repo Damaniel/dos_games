@@ -32,8 +32,15 @@ void process_input(int state);
 /*=============================================================================
  * input_state_game
  *
- * Process input for the in game state (g_state = STATE_GAME)
+ * Process input for the in game state (g_cur_state = STATE_GAME)
  *============================================================================*/
 void input_state_game(void);
+
+/*=============================================================================
+ * input_state_map
+ *
+ * Process input for the map state (g_cur_state = STATE_MAP)
+ *============================================================================*/
+void input_state_map(void);
 
 #endif

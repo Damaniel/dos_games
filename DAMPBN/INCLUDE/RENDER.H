@@ -124,10 +124,17 @@ void render_primary_ui(BITMAP *dest);
 void render_menu_buttons(BITMAP *dest);
 
 /*=============================================================================
+ * render_game_screen
+ *
+ * Draws screen components when the game is in the STATE_GAME state.
+ *============================================================================*/
+void render_game_screen(BITMAP *dest, RenderComponents c) ;
+
+/*=============================================================================
  * render_screen
  *
  * Draws screen components.  The components that are drawn is dictated by
- * the global RenderComponents object.
+ * the current state and the global RenderComponents object.
  *============================================================================*/
 void render_screen(BITMAP *dest, RenderComponents c);
 

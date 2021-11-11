@@ -372,6 +372,9 @@ void render_primary_ui(BITMAP *dest) {
 
 }
 
+/*=============================================================================
+ * render_menu_buttons
+ *============================================================================*/
 void render_menu_buttons(BITMAP *dest) {
   /* Draw the buttons */
 
@@ -417,10 +420,10 @@ void render_menu_buttons(BITMAP *dest) {
 }
 
 /*=============================================================================
- * render_screen
+ * render_game_screen
  *============================================================================*/
-void render_screen(BITMAP *dest, RenderComponents c) {
-  int start_index, palette_color, square_x, square_y, area_w, area_h;
+void render_game_screen(BITMAP *dest, RenderComponents c) {
+int start_index, palette_color, square_x, square_y, area_w, area_h;
   int swatch_x, swatch_y, pal_index, pal_x, pal_y;
   int i, j;
   char render_text[40];
@@ -526,11 +529,21 @@ void render_screen(BITMAP *dest, RenderComponents c) {
     textprintf(dest, font, 5, 171, 209, "%d %d     ", g_down_scrollbar_y, g_down_scrollbar_height);    
     //textprintf(dest, font, 5, 181, 209, "g_pic_render_y = %d   ", g_pic_render_y);
   }
+}
+
+/*=============================================================================
+ * render_screen
+ *============================================================================*/
+void render_screen(BITMAP *dest, RenderComponents c) {
+
+  switch(g_state) {
+    case STATE_GAME:
+      render_game_screen(dest, c);
+  }
 
   /* Clear the render flags */
   clear_render_components(&g_components);
   g_update_screen = 0;
-
 }
 
 /*=============================================================================

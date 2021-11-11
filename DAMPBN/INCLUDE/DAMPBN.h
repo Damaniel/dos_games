@@ -22,12 +22,16 @@
 #define __DAMPBN_H__
 
 typedef enum {
+  STATE_NONE,
   STATE_TITLE,
   STATE_GAME,
   STATE_LOAD,
   STATE_SAVE,
   STATE_HELP,
-  STATE_OPTS
+  STATE_OPTS,
+  STATE_MAP,
 } State;
+
+void change_state(State new_state, State prev_state);
 
 #endif
