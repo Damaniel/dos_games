@@ -44,8 +44,10 @@ void process_input(int state) {
  * input_state_title
  *============================================================================*/
 void input_state_logo(void) {
-    if(keypressed())
+    if(keypressed()) {
+      readkey();
       change_state(STATE_GAME, STATE_LOGO);
+    }
 }
 
 /*=============================================================================
