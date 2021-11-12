@@ -32,6 +32,20 @@ typedef enum {
   STATE_MAP
 } State;
 
+/*=============================================================================
+ * change_state
+ *
+ * Change state in the state machine 
+ *============================================================================*/
 void change_state(State new_state, State prev_state);
+
+/*=============================================================================
+ * per_second_update
+ *
+ * Once a second, the interrupt handler sets a flag.  This function does any
+ * processing required as a result of that flag change.  Currently it's just
+ * updating the status text.
+ *============================================================================*/
+void per_second_update(void);
 
 #endif

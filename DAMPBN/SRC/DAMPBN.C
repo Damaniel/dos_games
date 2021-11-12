@@ -48,6 +48,13 @@ void change_state(State new_state, State prev_state) {
 
 }
 
+void per_second_update(void) {
+  clear_render_components(&g_components);
+  g_components.render_status_text = 1;
+  g_update_screen = 1;      
+  g_seconds_update = 0;
+}
+
 /*=============================================================================
  * main
  *============================================================================*/
@@ -94,6 +101,9 @@ int main(int argc, char *argv[]) {
   g_game_timer_running = 1;
 
   while(!g_game_done) {  
+    if(g_seconds_update) {
+      per_second_update();
+    }
     process_input(g_state);
 
     done = check_completion();
@@ -103,6 +113,7 @@ int main(int argc, char *argv[]) {
     if (g_update_screen) {
       render_screen(buffer, g_components);
       blit(buffer, screen, 0, 0, 0, 0, 320, 200);
+      clear_render_components(&g_components);
     }
   }
 

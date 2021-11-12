@@ -35,6 +35,8 @@ int g_correct_count;
 
 int g_total_picture_squares;
 
+int g_seconds_update;
+
 Picture *g_picture;
 
 char *g_categories[NUM_CATEGORIES] = {
@@ -365,8 +367,7 @@ void int_handler(void) {
         return; 
     } else {
         g_elapsed_time++;
-        g_components.render_status_text = 1;
-        g_update_screen = 1;
+        g_seconds_update=1;
     }
   }
 }
@@ -401,6 +402,8 @@ void init_defaults(void) {
   g_down_scrollbar_height = 0;
   g_show_map_text = 0;
   g_draw_style = STYLE_SOLID;
+
+  g_seconds_update = 0;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;

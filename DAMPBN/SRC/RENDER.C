@@ -450,46 +450,51 @@ void render_map_screen(BITMAP *dest, RenderComponents c) {
     int i, j, x_pos, y_pos, color, row_1_width, row_2_width, center;
     char text[40];
 
-    x_pos = (SCREEN_W - g_picture->w) / 2;
-    y_pos = (SCREEN_H - g_picture->h) / 2;
+    if(c.render_map) {
+      x_pos = (SCREEN_W - g_picture->w) / 2;
+      y_pos = (SCREEN_H - g_picture->h) / 2;
 
-    clear_to_color(dest, 194);
-    for(j=0; j<g_picture->h; j++) {
-      for(i=0; i<g_picture->w; i++) {
-        color = g_picture->pic_squares[j * g_picture->w + i].fill_value;
-        if (color != 0) {
-          putpixel(dest, x_pos + i, y_pos + j, color - 1);
-        }
-        else {
-          putpixel(dest, x_pos + i, y_pos + j, 208);
+      /* Clear the map area */
+      clear_to_color(dest, 194);
+
+      /* Draw the pixels if colored, or background color if not */
+      for(j=0; j<g_picture->h; j++) {
+        for(i=0; i<g_picture->w; i++) {
+          color = g_picture->pic_squares[j * g_picture->w + i].fill_value;
+          if (color != 0) {
+            putpixel(dest, x_pos + i, y_pos + j, color - 1);
+          }
+          else {
+            putpixel(dest, x_pos + i, y_pos + j, 208);
+          }
         }
       }
-    }
 
+      /* If the picture is smaller than the screen, draw a border */
+      if(g_picture->w < SCREEN_W && g_picture->h < SCREEN_H) {
+        rect(dest, x_pos - 1, y_pos - 1, 
+            x_pos + g_picture->w, y_pos + g_picture->h, 203);
+      }
 
-    if(g_picture->w < SCREEN_W && g_picture->h < SCREEN_H) {
-      rect(dest, x_pos - 1, y_pos - 1, 
-           x_pos + g_picture->w, y_pos + g_picture->h, 203);
-    }
+      /* Display the map text if requested */
+      if(g_show_map_text == 1) {
+        center = SCREEN_W / 2;
+        sprintf(text, "Press C to toggle this message");
+        row_1_width = get_prop_text_width(text);
 
-    if(g_show_map_text == 1) {
-      center = SCREEN_W / 2;
-      sprintf(text, "Press C to toggle this message");
-      row_1_width = get_prop_text_width(text);
+        rectfill(dest, center - (row_1_width/2) - 2, 174,
+                center + (row_1_width/2) - 1, 192, 208);
 
-
-      rectfill(dest, center - (row_1_width/2) - 2, 174,
-              center + (row_1_width/2) - 1, 192, 208);
-
-      render_centered_prop_text(dest, text, SCREEN_W / 2, 176);    
-      sprintf(text, "Press M to exit map mode");
-      row_2_width = get_prop_text_width(text);
-      render_centered_prop_text(dest, text, SCREEN_W / 2, 185);
+        render_centered_prop_text(dest, text, SCREEN_W / 2, 176);    
+        sprintf(text, "Press M to exit map mode");
+        row_2_width = get_prop_text_width(text);
+        render_centered_prop_text(dest, text, SCREEN_W / 2, 185);
   
-      rect(dest, center - (row_1_width/2) - 2, 174,
-           center + (row_1_width/2) + 1, 193, 203);
+        rect(dest, center - (row_1_width/2) - 2, 174,
+             center + (row_1_width/2) + 1, 193, 203);
+      } 
+      clear_render_components(&g_components);
     }
-    
 }
 
 /*=============================================================================
@@ -501,7 +506,6 @@ int start_index, palette_color, square_x, square_y, area_w, area_h;
   int i, j;
   char render_text[40];
 
-  
   /* Draw the static UI components */
   if (c.render_ui_components || c.render_all) {  
     render_primary_ui(dest);

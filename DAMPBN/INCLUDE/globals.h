@@ -172,4 +172,8 @@ extern int g_show_map_text;
 /* The style of square to draw with */
 extern int g_draw_style;
 
+/* A flag to change stuff once a second rolls over - avoids doing work in
+   the interrupt handler */
+extern int g_seconds_update;
+
 #endif
