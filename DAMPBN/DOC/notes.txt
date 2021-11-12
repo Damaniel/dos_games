@@ -124,7 +124,8 @@ Header:
   - 4 bytes - elapsed time in seconds
   - 4 bytes - number of mistakes made
   - 4 bytes - progress (number of correctly placed colors)
-  - 34 bytes - padding to bring the total to 64 bytes
+  - 1 byte -  the drawing style set at the time of the save
+  - 33 bytes - padding to bring the total to 64 bytes
 
 Data:
   - (x * y ) * 4 bytes - an array of positions (x, y), specifying the order of

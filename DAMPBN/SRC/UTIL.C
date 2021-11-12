@@ -79,8 +79,10 @@ int save_progress_file(char *filename, Picture *p) {
   fwrite(&g_mistake_count, 1, sizeof(int), fp);
   fwrite(&g_correct_count, 1, sizeof(int), fp);
 
+  fwrite(&g_draw_style, 1, sizeof(char), fp);
+
   /* Write padding */
-  for(i = 0; i < 34; i++)
+  for(i = 0; i < 33; i++)
     fputc(0, fp);
   
   /* Write out move data */
@@ -159,8 +161,10 @@ int load_progress_file(char *filename, Picture *p) {
   fread(&progress, 1, sizeof(int), fp);
   g_correct_count = progress;
 
+  fread(&g_draw_style, 1, sizeof(char), fp);
+
   /* Load and discard padding */
-  for(i = 0; i < 34; i++)
+  for(i = 0; i < 33; i++)
     dummy = fgetc(fp);
 
   /* Check to see if the number of remaining bytes is enough to load the
