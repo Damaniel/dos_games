@@ -88,6 +88,8 @@ int g_across_scrollbar_width;
 int g_down_scrollbar_y;
 int g_down_scrollbar_height;
 
+int g_show_map_text;
+
 BITMAP *g_numbers;
 BITMAP *g_highlight_numbers;
 BITMAP *g_bg_lower;
@@ -219,6 +221,7 @@ void clear_render_components(RenderComponents *c) {
   c->render_draw_cursor = 0;
   c->render_palette_cursor = 0;
   c->render_scrollbars = 0;
+  c->render_map = 0;
   c->render_all = 0;
 }
 
@@ -420,6 +423,55 @@ void render_menu_buttons(BITMAP *dest) {
 }
 
 /*=============================================================================
+ * render_map_screen
+ *============================================================================*/
+void render_map_screen(BITMAP *dest, RenderComponents c) {
+    int i, j, x_pos, y_pos, color, row_1_width, row_2_width, center;
+    char text[40];
+
+    x_pos = (SCREEN_W - g_picture->w) / 2;
+    y_pos = (SCREEN_H - g_picture->h) / 2;
+
+    clear_to_color(dest, 194);
+    for(j=0; j<g_picture->h; j++) {
+      for(i=0; i<g_picture->w; i++) {
+        color = g_picture->pic_squares[j * g_picture->w + i].fill_value;
+        if (color != 0) {
+          putpixel(dest, x_pos + i, y_pos + j, color - 1);
+        }
+        else {
+          putpixel(dest, x_pos + i, y_pos + j, 208);
+        }
+      }
+    }
+
+
+    if(g_picture->w < SCREEN_W && g_picture->h < SCREEN_H) {
+      rect(dest, x_pos - 1, y_pos - 1, 
+           x_pos + g_picture->w, y_pos + g_picture->h, 203);
+    }
+
+    if(g_show_map_text == 1) {
+      center = SCREEN_W / 2;
+      sprintf(text, "Press C to toggle this message");
+      row_1_width = get_prop_text_width(text);
+
+
+      rectfill(dest, center - (row_1_width/2) - 2, 174,
+              center + (row_1_width/2) - 1, 192, 208);
+
+      render_centered_prop_text(dest, text, SCREEN_W / 2, 176);    
+      sprintf(text, "Press M to exit map mode");
+      row_2_width = get_prop_text_width(text);
+      render_centered_prop_text(dest, text, SCREEN_W / 2, 185);
+  
+      rect(dest, center - (row_1_width/2) - 2, 174,
+           center + (row_1_width/2) + 1, 193, 203);
+    }
+    
+}
+
+/*=============================================================================
  * render_game_screen
  *============================================================================*/
 void render_game_screen(BITMAP *dest, RenderComponents c) {
@@ -428,6 +480,7 @@ int start_index, palette_color, square_x, square_y, area_w, area_h;
   int i, j;
   char render_text[40];
 
+  
   /* Draw the static UI components */
   if (c.render_ui_components || c.render_all) {  
     render_primary_ui(dest);
@@ -487,7 +540,7 @@ int start_index, palette_color, square_x, square_y, area_w, area_h;
   }
 
   if(c.render_buttons | c.render_all ) {
-    render_menu_buttons(dest);
+    //render_menu_buttons(dest);
   }
 
   /* Draw the various cursors */
@@ -527,7 +580,7 @@ int start_index, palette_color, square_x, square_y, area_w, area_h;
 
   if(c.render_debug) {
     textprintf(dest, font, 5, 171, 209, "%d %d     ", g_down_scrollbar_y, g_down_scrollbar_height);    
-    //textprintf(dest, font, 5, 181, 209, "g_pic_render_y = %d   ", g_pic_render_y);
+    textprintf(dest, font, 5, 181, 209, "g_pic_render_y = %d   ", g_pic_render_y);
   }
 }
 
@@ -539,6 +592,10 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   switch(g_state) {
     case STATE_GAME:
       render_game_screen(dest, c);
+      break;
+    case STATE_MAP:
+      render_map_screen(dest, c);
+      break;
   }
 
   /* Clear the render flags */
@@ -563,6 +620,34 @@ void load_palette_swatches(void) {
               NUMBER_BOX_INTERIOR_HEIGHT, i);
   }
 
+}
+
+/*=============================================================================
+ * get_prop_text_width
+ *============================================================================*/
+int get_prop_text_width(char *text) {
+  int width, offset;
+  char *cur;
+
+  cur = text;
+  width = 0;
+	while (*cur != 0) {
+		offset = (*cur) - 32;    
+		width += g_prop_font_width[offset] + 1;
+    *cur++;
+	}  
+
+  return width;
+}
+
+/*=============================================================================
+ * render_centered_prop_text
+ *============================================================================*/
+int render_centered_prop_text(BITMAP *dest, char *text, int center, int y_pos) {
+  int width;
+
+  width = get_prop_text_width(text);
+  render_prop_text(dest, text, center - (width/2), y_pos);
 }
 
 /*=============================================================================

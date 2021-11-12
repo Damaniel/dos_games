@@ -43,6 +43,9 @@ typedef struct {
   int render_palette_cursor;
   /* Update the scrollbars */
   int render_scrollbars;
+  /* The map on the map screen */
+  int render_map;
+
   /* Render everything - convenience function */
   int render_all;
   /* Render debug text.  Must be explicitly set or cleared */
@@ -124,11 +127,18 @@ void render_primary_ui(BITMAP *dest);
 void render_menu_buttons(BITMAP *dest);
 
 /*=============================================================================
+ * render_map_screen
+ *
+ * Draws screen components when the game is in the STATE_MAP state.
+ *============================================================================*/
+void render_map_screen(BITMAP *dest, RenderComponents c);
+
+/*=============================================================================
  * render_game_screen
  *
  * Draws screen components when the game is in the STATE_GAME state.
  *============================================================================*/
-void render_game_screen(BITMAP *dest, RenderComponents c) ;
+void render_game_screen(BITMAP *dest, RenderComponents c);
 
 /*=============================================================================
  * render_screen
@@ -137,6 +147,20 @@ void render_game_screen(BITMAP *dest, RenderComponents c) ;
  * the current state and the global RenderComponents object.
  *============================================================================*/
 void render_screen(BITMAP *dest, RenderComponents c);
+
+/*=============================================================================
+ * get_prop_text_width
+ *
+ * Gets the width of a proportional string.
+ *============================================================================*/
+int get_prop_text_width(char *text);
+
+/*=============================================================================
+ * render_centered_prop_text
+ *
+ * Writes a string centered at 'center' using the proportional font.
+ *============================================================================*/
+int render_centered_prop_text(BITMAP *dest, char *text, int center, int y_pos);
 
 /*=============================================================================
  * render_prop_text

@@ -40,6 +40,32 @@ void process_input(int state) {
  *============================================================================*/
 void input_state_map(void) {
 
+    if (key[KEY_M]) {
+      if (!g_keypress_lockout[KEY_M]) {
+        change_state(STATE_GAME, STATE_MAP);
+        g_keypress_lockout[KEY_M] = 1;          
+      }
+    }
+    if (!key[KEY_M] && g_keypress_lockout[KEY_M]) {
+      g_keypress_lockout[KEY_M] = 0;
+    }    
+
+    if (key[KEY_C]) {
+      if (!g_keypress_lockout[KEY_C]) {
+        if (g_show_map_text == 0) {
+          g_show_map_text = 1;
+        } else {
+          g_show_map_text = 0;
+        }
+        clear_render_components(&g_components);
+        g_components.render_map = 1;
+        g_update_screen = 1;
+        g_keypress_lockout[KEY_C] = 1;          
+      }
+    }
+    if (!key[KEY_C] && g_keypress_lockout[KEY_C]) {
+      g_keypress_lockout[KEY_C] = 0;
+    }        
 }
 
 /*=============================================================================
@@ -398,4 +424,14 @@ void input_state_game(void) {
     if (!key[KEY_K] && g_keypress_lockout[KEY_K]) {
       g_keypress_lockout[KEY_K] = 0;
     }
+
+    if (key[KEY_M]) {
+      if (!g_keypress_lockout[KEY_M]) {    
+        change_state(STATE_MAP, STATE_GAME);
+        g_keypress_lockout[KEY_M] = 1;        
+      }
+    }
+    if (!key[KEY_M] && g_keypress_lockout[KEY_M]) {
+      g_keypress_lockout[KEY_M] = 0;
+    }    
 }

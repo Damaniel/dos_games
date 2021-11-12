@@ -164,4 +164,7 @@ extern int g_across_scrollbar_width;
 extern int g_down_scrollbar_y;
 extern int g_down_scrollbar_height;
 
+/* Should the text on the map display be shown? */
+extern int g_show_map_text;
+
 #endif

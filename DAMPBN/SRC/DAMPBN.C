@@ -28,15 +28,22 @@ State g_prev_state;
 int g_game_done;
 
 void change_state(State new_state, State prev_state) {
-
   /* Do stuff */
   g_state = new_state;
   g_prev_state = prev_state;
 
-  if (g_state == STATE_GAME) {
-    clear_render_components(&g_components);
-    g_components.render_all = 1;
-    g_update_screen = 1;
+  switch(g_state) {
+    case STATE_GAME:
+      clear_render_components(&g_components);
+      g_components.render_all = 1;
+      g_update_screen = 1;
+      break;
+    case STATE_MAP:
+      clear_render_components(&g_components);
+      g_components.render_map = 1;
+      g_show_map_text = 1;
+      g_update_screen = 1;    
+      break;
   }
 
 }
@@ -96,9 +103,10 @@ int main(int argc, char *argv[]) {
     if(done)
       g_game_done = 1;
 
-    if (g_update_screen)
+    if (g_update_screen) {
       render_screen(buffer, g_components);
       blit(buffer, screen, 0, 0, 0, 0, 320, 200);
+    }
   }
 
   free_picture_file(g_picture);

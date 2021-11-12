@@ -212,6 +212,7 @@ void init_defaults(void) {
   g_across_scrollbar_width = 0;
   g_down_scrollbar_y = 0;
   g_down_scrollbar_height = 0;
+  g_show_map_text = 0;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;
