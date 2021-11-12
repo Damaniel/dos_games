@@ -84,9 +84,6 @@ int main(int argc, char *argv[]) {
   
 
   set_palette(game_pal);
-
-  load_palette_swatches();
-
   init_defaults();
 
   change_state(STATE_GAME, STATE_NONE);

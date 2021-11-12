@@ -81,14 +81,6 @@ void update_scrollbar_positions(void);
 void render_scrollbars(BITMAP *dest);
 
 /*=============================================================================
- * load_palette_swatches
- *
- * Populates the 2 palette swatch bitmaps (one for the main draw area, one
- * for the color select area) with the colors used by the current Picture.  
- *============================================================================*/
-void load_palette_swatches(void);
-
-/*=============================================================================
  * render_main_area_square_at
  *
  * Draws content of a specific square of the play area (either a number if

@@ -625,25 +625,6 @@ void render_screen(BITMAP *dest, RenderComponents c) {
 }
 
 /*=============================================================================
- * load_palette_swatches
- *============================================================================*/
-void load_palette_swatches(void) {
-  int i, x, y;
-
-  for(i=0; i<MAX_COLORS; i++) {
-     x = ( (i + 1) * PALETTE_BOX_WIDTH) + 1;
-     rectfill(g_small_pal, x, 1,
-              x+(PALETTE_BOX_INTERIOR_WIDTH-1),
-              PALETTE_BOX_INTERIOR_HEIGHT, i);
-     x = ( (i + 1) * PALETTE_BOX_HEIGHT) + 1;
-     rectfill(g_large_pal, x, 1, 
-              x+(NUMBER_BOX_INTERIOR_WIDTH-1),
-              NUMBER_BOX_INTERIOR_HEIGHT, i);
-  }
-
-}
-
-/*=============================================================================
  * get_prop_text_width
  *============================================================================*/
 int get_prop_text_width(char *text) {
