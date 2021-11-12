@@ -425,6 +425,9 @@ void input_state_game(void) {
       g_keypress_lockout[KEY_K] = 0;
     }
 
+    /*-------------------------------------------------------------------------
+     * M - display progress map
+     *------------------------------------------------------------------------*/ 
     if (key[KEY_M]) {
       if (!g_keypress_lockout[KEY_M]) {    
         change_state(STATE_MAP, STATE_GAME);
@@ -434,4 +437,24 @@ void input_state_game(void) {
     if (!key[KEY_M] && g_keypress_lockout[KEY_M]) {
       g_keypress_lockout[KEY_M] = 0;
     }    
+
+    /*-------------------------------------------------------------------------
+     * T - toggle through tile types
+     *------------------------------------------------------------------------*/ 
+    if (key[KEY_T]) {
+      if(!g_keypress_lockout[KEY_T]) {
+        g_draw_style++;
+        if (g_draw_style >= NUM_STYLES) 
+          g_draw_style = 0;    
+
+        clear_render_components(&g_components);
+        g_components.render_main_area_squares = 1;
+        g_components.render_draw_cursor = 1;
+        g_update_screen = 1;
+        g_keypress_lockout[KEY_T] = 1;      
+      }
+    }
+    if(!key[KEY_T] && g_keypress_lockout[KEY_T]) {
+      g_keypress_lockout[KEY_T] = 0;
+    }
 }

@@ -52,6 +52,13 @@ typedef struct {
   int render_debug;
 } RenderComponents;
 
+typedef enum {
+  STYLE_SOLID,
+  STYLE_DIAMOND,
+  STYLE_CROSS,
+  NUM_STYLES
+} Style;
+
 /*=============================================================================
  * clear_render_components
  *

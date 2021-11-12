@@ -55,6 +55,7 @@ Picture *load_picture_file(char *filename) {
   unsigned char magic[2];
   unsigned char compression;
   int i, bytes_processed;
+  float pal_offset;
   RGB pic_pal[64];
   unsigned char dummy, first_byte, run_length;
 
@@ -96,6 +97,36 @@ Picture *load_picture_file(char *filename) {
     game_pal[i].r = pic_pal[i].r;
     game_pal[i].g = pic_pal[i].g;
     game_pal[i].b = pic_pal[i].b;
+  }
+  /* Make shading colors */
+  for(i=64; i<128; i++) {
+    pal_offset = (float)pic_pal[i-64].r * 0.5;
+    game_pal[i].r = (int)pal_offset;
+    pal_offset = (float)pic_pal[i-64].g * 0.5;    
+    game_pal[i].g = (int)pal_offset;
+    pal_offset = (float)pic_pal[i-64].b * 0.5;
+    game_pal[i].b = (int)pal_offset;
+  }
+
+  /* Make highlight colors */
+  for(i=128; i<192; i++) {
+    pal_offset = (float)pic_pal[i-128].r * 1.5;
+    if((int)pal_offset >63)
+      game_pal[i].r = 63;
+    else
+      game_pal[i].r = (int)pal_offset;
+
+    pal_offset = (float)pic_pal[i-128].g * 1.5;
+    if((int)pal_offset >63)
+      game_pal[i].g = 63;
+    else
+      game_pal[i].g = (int)pal_offset;
+
+    pal_offset = (float)pic_pal[i-128].b * 1.5;
+    if((int)pal_offset >63)
+      game_pal[i].b = 63;
+    else
+      game_pal[i].b = (int)pal_offset;      
   }
 
   /* Set the size of the play area */
@@ -213,6 +244,7 @@ void init_defaults(void) {
   g_down_scrollbar_y = 0;
   g_down_scrollbar_height = 0;
   g_show_map_text = 0;
+  g_draw_style = STYLE_SOLID;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;

@@ -4,6 +4,5 @@ Next things to do
    - Find opportunities to remove duplicated code  
 - Add structures and support for the overview/progress window
 - Add loading screen.  Keep count of loaded elements, use interrupt to draw
-- In progress preview (i.e. press M and see your overall progress in 
-  actual size)
-
+- Implement save
+- Implement load

@@ -90,6 +90,8 @@ int g_down_scrollbar_height;
 
 int g_show_map_text;
 
+int g_draw_style;
+
 BITMAP *g_numbers;
 BITMAP *g_highlight_numbers;
 BITMAP *g_bg_lower;
@@ -99,6 +101,8 @@ BITMAP *g_pal_col;
 BITMAP *g_draw_cursor;
 BITMAP *g_small_pal;
 BITMAP *g_large_pal;
+BITMAP *g_large_diamonds;
+BITMAP *g_large_crosses;
 BITMAP *g_pal_cursor;
 BITMAP *g_wrong;
 BITMAP *g_page_buttons;
@@ -279,6 +283,23 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
   ColorSquare c;
   int pal_offset, color_offset;
 
+  BITMAP *draw_style;
+
+  /* Pick the draw style */
+  switch (g_draw_style) {
+    case STYLE_SOLID:
+      draw_style = g_large_pal;
+      break;
+    case STYLE_DIAMOND:
+      draw_style = g_large_diamonds;
+      break;
+    case STYLE_CROSS:
+      draw_style = g_large_crosses;
+      break;
+    default:
+      draw_style = g_large_pal;
+      break;
+  }
   c = g_picture->pic_squares[(tl_y + off_y) * g_picture->w + (tl_x +off_x)];
   pal_offset = c.pal_entry;  
   color_offset = c.fill_value;
@@ -305,7 +326,7 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
           NUMBER_BOX_HEIGHT);
     }
   } else {
-    blit(g_large_pal, 
+    blit(draw_style, 
         dest, 
         color_offset * NUMBER_BOX_WIDTH,
         0, 
@@ -540,7 +561,7 @@ int start_index, palette_color, square_x, square_y, area_w, area_h;
   }
 
   if(c.render_buttons | c.render_all ) {
-    //render_menu_buttons(dest);
+    render_menu_buttons(dest);
   }
 
   /* Draw the various cursors */
@@ -710,6 +731,14 @@ int load_graphics(void) {
   if(g_large_pal == NULL) {
     result = -1;
   }
+  g_large_diamonds = load_pcx("RES/LG_DIA.PCX", res_pal);
+  if(g_large_diamonds == NULL) {
+    result = -1;
+  }
+  g_large_crosses = load_pcx("RES/LG_CROSS.PCX", res_pal);
+  if(g_large_crosses == NULL) {
+    result = -1;
+  }  
   g_pal_cursor = load_pcx("RES/PALCURS.PCX", res_pal);
   if(g_pal_cursor == NULL) {
     result = -1;
@@ -745,6 +774,8 @@ void destroy_graphics(void) {
   destroy_bitmap(g_draw_cursor);
   destroy_bitmap(g_small_pal);
   destroy_bitmap(g_large_pal);
+  destroy_bitmap(g_large_diamonds);
+  destroy_bitmap(g_large_crosses);
   destroy_bitmap(g_pal_cursor);
   destroy_bitmap(g_wrong);
   destroy_bitmap(g_page_buttons);

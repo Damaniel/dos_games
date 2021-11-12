@@ -85,6 +85,8 @@ extern BITMAP *g_mainarea;
 extern BITMAP *g_draw_cursor;
 extern BITMAP *g_small_pal;
 extern BITMAP *g_large_pal;
+extern BITMAP *g_large_diamonds;
+extern BITMAP *g_large_crosses;
 extern BITMAP *g_pal_cursor;
 extern BITMAP *g_wrong;
 extern BITMAP *g_page_buttons;
@@ -166,5 +168,8 @@ extern int g_down_scrollbar_height;
 
 /* Should the text on the map display be shown? */
 extern int g_show_map_text;
+
+/* The style of square to draw with */
+extern int g_draw_style;
 
 #endif
