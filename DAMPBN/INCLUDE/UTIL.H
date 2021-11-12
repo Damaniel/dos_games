@@ -33,8 +33,8 @@ typedef struct {
 
 typedef struct {
   /* The x and y position of the Nth square filled in correctly */
-  int x;
-  int y;
+  short x;
+  short y;
 } OrderItem;
 
 typedef struct {
@@ -45,7 +45,22 @@ typedef struct {
   unsigned char num_colors;
   ColorSquare *pic_squares;
   OrderItem *draw_order;
+  char *mistakes;
 } Picture;
+
+/*=============================================================================
+ * save_progress_file
+ *
+ * Dumps the player's progress to a file
+ *============================================================================*/
+int save_progress_file(char *filename, Picture *p);
+
+/*=============================================================================
+ * load_progress_file
+ *
+ * Load's the saved progress for a picture from a file.
+ *============================================================================*/
+int load_progress_file(char *filename, Picture *p);
 
 /*=============================================================================
  * load_picture_file

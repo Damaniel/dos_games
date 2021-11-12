@@ -121,60 +121,15 @@ Header:
   - 12 bytes - name of original picture file (just in case we need it)
   - 2 bytes - x resolution
   - 2 bytes - y resolution
-  - 3 bytes - elapsed time (hours, minutes, seconds), each one byte
+  - 4 bytes - elapsed time in seconds
   - 4 bytes - number of mistakes made
   - 4 bytes - progress (number of correctly placed colors)
-  - 35 bytes - padding to bring the total to 64 bytes
+  - 34 bytes - padding to bring the total to 64 bytes
 
 Data:
   - (x * y ) * 4 bytes - an array of positions (x, y), specifying the order of
     placement of *correct* colors.  Used to 'replay' the player's progress at the
     end of a successfully created puzzle.  
-    
-About the replay file:
-
-  Two arrays:
-    1: (x * y) * 4 array, each location represents numerical order
-    2: (x * y) * 4 array, each location represents an (x,y) location
-    
-  The two forms are used as follows:
-    - Array 1 is used to enforce ordering.  If a location (x,y) already has
-      an order value in it, then erasing or changing the color won't 
-      affect the order in any way (that is, the order is only set the first
-      time that the color is set)
-      
-    - Array 2 is an array indexed by order, with the (x,y) location specified by
-      that order.  This is used as a way to quickly iterate through the order that
-      colors were placed, so they can be replayed without having to iterate through
-      Array 1.
-      
-  The data in the replay file is based on Array 2.  When puzzle progress is loaded,
-  Array 1 is filled using data derived from Array 2.  As the image is filled in,
-  Array 1 is updated with ordering data, and Array 2 has location data added.
-  This 2 array setup could be done  more effectively with something like a hash table, 
-  but I'm writing this in C and I'd rather use an extra couple hundred K of RAM 
-  than implement a hash table to save some fraction of that.
-  
-  The main downside of the replay file is that it's pretty large.  For a 320x240 image,
-  it will always have a fixed size of 307,264 bytes (64 bytes of header + 307,000 
-  bytes of replay data).  I may choose to compress it at some point, or I may only
-  choose to only hold moves that have already been made - or possibly both.
-  
-  Example - a 3 x 3 array
-  
-  0 3 1
-  2 4 6
-  8 7 5
-  
-  Array 1 is 0x00000000, 0x00000003, 0x00000001, 
-             0x00000002, 0x00000004, 0x00000006,
-             0x00000008, 0x00000007, 0x00000005   - 36 bytes
-  Array 2 is 0x0000, 0x0000, 
-             0x0002, 0x0000, 
-             0x0000, 0x0001, 
-             0x0001, 0x0000,
-             0x0001, 0x0001, 
-             0x0002, 0x0002, 
-             0x0002, 0x0001, 
-             0x0001, 0x0002,
-             0x0000, 0x0002  - 36 bytes
+  - x * y bytes - an array of 'mistakes'.  For each position of the picture,
+    if the value is 0 then the square is correct, otherwise the value is the
+    color actually currently in the square.

@@ -21,6 +21,7 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../include/globals.h"
 
 #define NUM_CATEGORIES 8
@@ -45,6 +46,157 @@ char *g_categories[NUM_CATEGORIES] = {
     "Abstract",
     "Pattern"
 };
+
+/*=============================================================================
+ * save_progress_file
+ *============================================================================*/
+int save_progress_file(char *filename, Picture *p) {
+  FILE *fp;
+  int time, i;
+  char magic[2], dummy;
+
+  fp = fopen(filename, "wb");
+  if (fp == NULL)
+    return -1;
+
+  fprintf(fp, "PR");
+  
+  /* For now, don't save the file name in here.  */
+  for(i=0; i<12; i++)
+    fputc(0, fp);
+
+  /* Write the image size */
+  fwrite(&p->w, 1, sizeof(short), fp);
+  fwrite(&p->h, 1, sizeof(short), fp);
+
+  /* Write total elapsed time */
+  time = g_elapsed_time;
+  fwrite(&time, 1, sizeof(unsigned int), fp);
+
+  /* Write correct and wrong count */
+  fwrite(&g_mistake_count, 1, sizeof(int), fp);
+  fwrite(&g_correct_count, 1, sizeof(int), fp);
+
+  /* Write padding */
+  for(i = 0; i < 34; i++)
+    fputc(0, fp);
+  
+  /* Write out move data */
+  for(i = 0; i < g_correct_count; i++) {
+    fwrite(&(p->draw_order[i].x), 1, sizeof(short), fp);
+    fwrite(&(p->draw_order[i].y), 1, sizeof(short), fp);
+  }
+
+  /* Write out mistake data */
+  fwrite(p->mistakes, p->w * p->h , sizeof(char), fp);
+
+  fclose(fp);
+  return 0;
+}
+
+/*=============================================================================
+ * load_progress_file
+ *============================================================================*/
+int load_progress_file(char *filename, Picture *p) {
+  FILE *fp;
+  unsigned int e_time;
+  int i, j, mistakes, progress, size, target_size, offset;
+  short x, y;
+  short width, height;
+  char dummy, magic[2];
+
+  fp = fopen(filename, "rb");
+  if (fp == NULL) {
+    return -1;
+  }
+
+  /* Get the file size so we can do sanity checks */
+  size = 0;
+  while (!feof(fp)) {
+    dummy = fgetc(fp);
+    size++;
+  }
+  size--;
+  rewind(fp);
+
+  /* If the file is smaller than the size of a header, return */
+  if(size < 64) {
+    fclose(fp);
+    return -1;
+  }
+
+  /* If the first two bytes aren't PR', then return */
+  magic[0] = fgetc(fp);
+  magic[1] = fgetc(fp);
+  if(magic[0] != 'P' || magic[1] != 'R') {
+    fclose(fp);
+    return -1;
+  }
+
+  /* for now, ignore the file name data*/
+  for(i = 0; i < 12; i++) 
+    dummy = fgetc(fp);
+
+  /* Load the width and the height.  If they don't match the provided picture,
+     return an error */
+  fread(&width, 1, sizeof(short), fp);
+  fread(&height, 1, sizeof(short), fp);
+  if(width != p->w || height != p->h) {
+    return -1;
+  }
+
+  /* Load and set elapsed time */
+  fread(&e_time, 1, sizeof(unsigned int), fp);
+  g_elapsed_time = e_time;
+
+  /* Load and set mistake count */
+  fread(&mistakes, 1, sizeof(int), fp);
+  g_mistake_count = mistakes;
+
+  /* Load and set progress counter */
+  fread(&progress, 1, sizeof(int), fp);
+  g_correct_count = progress;
+
+  /* Load and discard padding */
+  for(i = 0; i < 34; i++)
+    dummy = fgetc(fp);
+
+  /* Check to see if the number of remaining bytes is enough to load the
+     buffer */
+  size -= 64;
+  target_size = (g_correct_count * 4) + (p->w * p->h);
+  if(target_size != size) {
+    fclose(fp);
+    return -1;
+  }
+
+  /* Load the progress data and update the picture structure*/
+  for(i = 0; i< g_correct_count; i++) {
+    fread(&x, 1, sizeof(short), fp);
+    fread(&y, 1, sizeof(short), fp);
+    offset = y * p->w + x;
+    p->draw_order[i].x = x;
+    p->draw_order[i].y = y;
+    p->pic_squares[offset].fill_value = p->pic_squares[offset].pal_entry;
+  }
+
+  /* Load mistake data */
+  fread(p->mistakes, p->w * p->h, sizeof(char), fp);
+
+  /* Loop through and update the picture structure with the mistake data */
+  for(j = 0; j < p->h; j++) {
+    for(i = 0;i < p->w; i++) {
+      offset = j * p->w + i;
+      if(p->mistakes[offset] != 0) {
+       p->pic_squares[offset].fill_value = p->mistakes[offset];
+      }
+    }
+  }
+
+  fclose(fp);
+  return 0;
+
+}
 
 /*=============================================================================
  * load_picture_file
@@ -138,6 +290,8 @@ Picture *load_picture_file(char *filename) {
                                            sizeof(ColorSquare));
   pic->draw_order = (OrderItem *)malloc(pic->w * pic->h *
                                         sizeof(OrderItem));
+  pic->mistakes = (char *)malloc(pic->w * pic->h * sizeof(char));
+  memset(pic->mistakes, 0x00, pic->w*pic->h);
 
   /* Check compression type and perform appropriate decompression */
   if(compression == COMPRESSION_NONE) {
@@ -184,6 +338,8 @@ void free_picture_file(Picture *p) {
     free(p->pic_squares);
   if(p->draw_order != NULL)
     free(p->draw_order);
+  if(p->mistakes != NULL)
+    free(p->mistakes);
   if(p != NULL)
     free(p);
 }

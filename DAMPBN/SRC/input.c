@@ -73,7 +73,7 @@ void input_state_map(void) {
  *============================================================================*/
 void input_state_game(void) {
     ColorSquare c;
-    int square_offset, fill_val, pal_val;
+    int square_offset, fill_val, pal_val, result;
 
     /*-------------------------------------------------------------------------
      * ESC - exit the game
@@ -383,15 +383,21 @@ void input_state_game(void) {
         if(fill_val != 0) {
            if (fill_val != pal_val) {
              g_picture->pic_squares[square_offset].fill_value = 0;           
+             g_picture->mistakes[square_offset] = 0;
              g_mistake_count--;
            }
         } else {
            g_picture->pic_squares[square_offset].fill_value = g_cur_color;
            /* Update mistake/progress counters */           
-           if (g_cur_color != pal_val)
+           if (g_cur_color != pal_val) {
+             g_picture->mistakes[square_offset] = g_cur_color;
              g_mistake_count++;
-           else
-             g_correct_count++;           
+           }
+           else {
+             g_picture->draw_order[g_correct_count].x = g_draw_position_x;
+             g_picture->draw_order[g_correct_count].y = g_draw_position_y;
+             g_correct_count++;
+           }
         }
         clear_render_components(&g_components);
         g_components.render_draw_cursor = 1;
@@ -457,4 +463,37 @@ void input_state_game(void) {
     if(!key[KEY_T] && g_keypress_lockout[KEY_T]) {
       g_keypress_lockout[KEY_T] = 0;
     }
+
+    /*-------------------------------------------------------------------------
+     * S - save a progress file
+     *------------------------------------------------------------------------*/ 
+    if (key[KEY_S]) {
+      if(!g_keypress_lockout[KEY_T]) {
+        save_progress_file("progress.dat", g_picture);
+        g_keypress_lockout[KEY_S] = 1;      
+      }
+    }
+    if(!key[KEY_S] && g_keypress_lockout[KEY_S]) {
+      g_keypress_lockout[KEY_S] = 0;
+    }    
+
+    /*-------------------------------------------------------------------------
+     * L - load a progress file
+     *------------------------------------------------------------------------*/ 
+    if (key[KEY_L]) {
+      if(!g_keypress_lockout[KEY_L]) {
+        result = load_progress_file("progress.dat", g_picture);
+        if(result != 0) {
+          printf("Unable to load progress file!\n");
+          g_game_done = 1;
+        }        
+        clear_render_components(&g_components);
+        g_components.render_all = 1;
+        g_update_screen = 1;
+        g_keypress_lockout[KEY_L] = 1;      
+      }
+    }
+    if(!key[KEY_L] && g_keypress_lockout[KEY_L]) {
+      g_keypress_lockout[KEY_L] = 0;
+    }    
 }
