@@ -23,6 +23,7 @@
 
 typedef enum {
   STATE_NONE,
+  STATE_LOGO,
   STATE_TITLE,
   STATE_GAME,
   STATE_LOAD,

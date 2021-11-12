@@ -30,6 +30,13 @@
 void process_input(int state);
 
 /*=============================================================================
+ * input_state_logo
+ *
+ * Process input for the logo state (g_cur_state = STATE_LOGO)
+ *============================================================================*/
+void input_state_logo(void);
+
+/*=============================================================================
  * input_state_game
  *
  * Process input for the in game state (g_cur_state = STATE_GAME)

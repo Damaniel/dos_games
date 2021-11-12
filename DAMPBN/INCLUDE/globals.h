@@ -77,6 +77,8 @@ extern char *g_categories[];
 extern unsigned char g_keypress_lockout[];
 
 /* Image bitmaps used by the game */
+extern BITMAP *g_logo;
+
 extern BITMAP *g_numbers;
 extern BITMAP *g_highlight_numbers;
 extern BITMAP *g_bg_lower;
@@ -176,4 +178,6 @@ extern int g_draw_style;
    the interrupt handler */
 extern int g_seconds_update;
 
+/* Timer to automatically move from logo to title screen if no key is pressed */
+extern int g_title_countdown;
 #endif

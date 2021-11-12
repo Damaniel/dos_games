@@ -92,6 +92,8 @@ int g_show_map_text;
 
 int g_draw_style;
 
+BITMAP *g_logo;
+
 BITMAP *g_numbers;
 BITMAP *g_highlight_numbers;
 BITMAP *g_bg_lower;
@@ -167,6 +169,21 @@ void update_scrollbar_positions(void) {
      g_across_scrollbar_width = (int)across_scroll_w;
    }
 
+}
+
+/*=============================================================================
+ * render_logo
+ *============================================================================*/
+void render_logo(BITMAP *dest, RenderComponents c) {
+  blit(g_logo, dest, 0, 0, 0, 0, g_logo->w, g_logo->h);
+}
+
+void render_title_screen(BITMAP *dest, RenderComponents c) {
+  int i, j;
+
+  for(i=0;i<32;i++) {
+    for (j=0;j<20;j++) {}
+  }
 }
 
 /*=============================================================================
@@ -615,6 +632,8 @@ int start_index, palette_color, square_x, square_y, area_w, area_h;
 void render_screen(BITMAP *dest, RenderComponents c) {
 
   switch(g_state) {
+    case STATE_LOGO:
+      render_logo(dest, c);
     case STATE_GAME:
       render_game_screen(dest, c);
       break;
@@ -676,10 +695,37 @@ void render_prop_text(BITMAP *dest, char *text, int x_pos, int y_pos) {
 }
 
 /*=============================================================================
+ * load_logo
+ *============================================================================*/
+int load_logo(void) {
+  PALETTE pal;
+  int result;
+  g_logo = load_pcx("RES/HOLYGOAT.PCX", pal);
+  if(g_logo == NULL) {
+    return -1;
+  }
+
+  /* Set the logo palette */
+  set_palette(pal);
+
+  return 0;
+}
+
+/*=============================================================================
+ * free_logo
+ *============================================================================*/
+void free_logo(void) {
+  /* Restore the original palette */
+  set_palette(game_pal);
+
+  destroy_bitmap(g_logo);
+}
+
+/*=============================================================================
  * load_graphics
  *============================================================================*/
 int load_graphics(void) {
-  PALETTE res_pal;
+ PALETTE res_pal;
   int result;
 
   result = 0;
@@ -765,5 +811,5 @@ void destroy_graphics(void) {
   destroy_bitmap(g_wrong);
   destroy_bitmap(g_page_buttons);
   destroy_bitmap(g_prop_font);
-  destroy_bitmap(g_main_buttons);
+  destroy_bitmap(g_main_buttons);  
 }

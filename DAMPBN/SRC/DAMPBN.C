@@ -33,10 +33,22 @@ void change_state(State new_state, State prev_state) {
   g_prev_state = prev_state;
 
   switch(g_state) {
+    case STATE_LOGO:
+      load_logo();
+      clear_render_components(&g_components);
+      g_components.render_title = 1;
+      g_update_screen = 1;
+      g_title_countdown = 3;
+      break;
     case STATE_GAME:
+      if (g_prev_state == STATE_LOGO)
+        free_logo();
       clear_render_components(&g_components);
       g_components.render_all = 1;
       g_update_screen = 1;
+      /* Start the timer */
+      g_int_counter = 0;
+      g_game_timer_running = 1;      
       break;
     case STATE_MAP:
       clear_render_components(&g_components);
@@ -49,10 +61,23 @@ void change_state(State new_state, State prev_state) {
 }
 
 void per_second_update(void) {
-  clear_render_components(&g_components);
-  g_components.render_status_text = 1;
-  g_update_screen = 1;      
-  g_seconds_update = 0;
+  switch (g_state) {
+    case STATE_LOGO:
+      g_title_countdown--;
+      if (g_title_countdown <= 0) {
+        change_state(STATE_GAME, STATE_LOGO);
+      }
+      g_seconds_update = 0;
+      break;
+    case STATE_GAME:
+      clear_render_components(&g_components);
+      g_components.render_status_text = 1;
+      g_update_screen = 1;      
+      g_seconds_update = 0;    
+      break;
+  }
+
+
 }
 
 /*=============================================================================
@@ -93,12 +118,10 @@ int main(int argc, char *argv[]) {
   set_palette(game_pal);
   init_defaults();
 
-  change_state(STATE_GAME, STATE_NONE);
-
+  change_state(STATE_LOGO, STATE_NONE);
+  
   render_screen(buffer, g_components);
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);
-
-  g_game_timer_running = 1;
 
   while(!g_game_done) {  
     if(g_seconds_update) {

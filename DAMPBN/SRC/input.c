@@ -27,12 +27,25 @@ unsigned char g_keypress_lockout[128];
  * process_input
  *============================================================================*/
 void process_input(int state) {
-    if (state == STATE_GAME) {
+  switch(state) {
+    case STATE_LOGO:
+      input_state_logo();
+      break;
+    case STATE_GAME:
       input_state_game();
-    }
-    if (state == STATE_MAP) {
+      break;
+    case STATE_MAP:
       input_state_map();
-    }
+      break;
+  }
+}
+
+/*=============================================================================
+ * input_state_title
+ *============================================================================*/
+void input_state_logo(void) {
+    if(keypressed())
+      change_state(STATE_GAME, STATE_LOGO);
 }
 
 /*=============================================================================
@@ -486,11 +499,14 @@ void input_state_game(void) {
         if(result != 0) {
           printf("Unable to load progress file!\n");
           g_game_done = 1;
-        }        
-        clear_render_components(&g_components);
-        g_components.render_all = 1;
-        g_update_screen = 1;
-        g_keypress_lockout[KEY_L] = 1;      
+        } else {         
+          /* Reset the timer so it counts up correctly */
+          g_int_counter = 0;
+          clear_render_components(&g_components);
+          g_components.render_all = 1;
+          g_update_screen = 1;
+          g_keypress_lockout[KEY_L] = 1;      
+        }
       }
     }
     if(!key[KEY_L] && g_keypress_lockout[KEY_L]) {

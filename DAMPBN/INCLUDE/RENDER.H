@@ -23,6 +23,9 @@
 
 /* A list of areas of the screen to update when calling render_screen() */
 typedef struct {
+  /* The title screen */
+  int render_title;
+
   /* The visible part of the work area*/
   int render_main_area_squares;
   /* The palette columns on the right */
@@ -65,6 +68,13 @@ typedef enum {
  * Resets all of the render flags for the display.  
  *============================================================================*/
 void clear_render_components(RenderComponents *c);
+
+/*=============================================================================
+ * render_logo
+ *
+ * Draws the logo.
+ *============================================================================*/
+void render_logo(BITMAP *dest, RenderComponents c);
 
 /*=============================================================================
  * update_scrollbar_positions
@@ -167,6 +177,20 @@ int render_centered_prop_text(BITMAP *dest, char *text, int center, int y_pos);
  * Writes a string using the proportional font
  *============================================================================*/
 void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos);
+
+/*=============================================================================
+ * load_logo
+ *
+ * Load logo graphics.
+ *============================================================================*/
+int load_logo(void);
+
+/*=============================================================================
+ * free_logo
+ *
+ * Deallocate logo graphics.
+ *============================================================================*/
+void free_logo(void);
 
 /*=============================================================================
  * load_graphics

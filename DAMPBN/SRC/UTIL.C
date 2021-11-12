@@ -30,6 +30,8 @@ volatile unsigned long g_int_counter;
 volatile unsigned int g_elapsed_time;
 int g_game_timer_running;
 
+int g_title_countdown;
+
 int g_mistake_count;
 int g_correct_count;
 
@@ -365,15 +367,17 @@ int check_completion(void) {
 void int_handler(void) {
   /* do animation stuff here */
   g_int_counter++;
+
   if(g_int_counter >= FRAME_RATE) {
     g_int_counter = 0;
+    g_seconds_update=1;    
     if(g_game_timer_running == 0) {
         return; 
     } else {
         g_elapsed_time++;
-        g_seconds_update=1;
     }
   }
+  
 }
 END_OF_FUNCTION(int_handler);
 
