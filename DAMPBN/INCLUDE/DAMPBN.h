@@ -53,6 +53,15 @@ void change_state(State new_state, State prev_state);
 void game_timer_set(int status);
 
 /*=============================================================================
+ * do_render
+ *
+ * Update the display.  Done 30 times per second, or can be forced on demand.
+ * (An example is any dialog that shows transiently as part of a state change.
+ *  The 'Saving' message that's rendered in the STATE_SAVE state is does this.)
+ *============================================================================*/
+void do_render(void);
+
+/*=============================================================================
  * process_timing_stuff
  *
  * Decrement counters and do things when they expire

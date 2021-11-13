@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "../include/globals.h"
 
 #define NUM_CATEGORIES 8
@@ -40,6 +41,8 @@ int g_correct_count;
 
 int g_total_picture_squares;
 
+char g_picture_file_basename[8];
+
 Picture *g_picture;
 
 char *g_categories[NUM_CATEGORIES] = {
@@ -55,11 +58,14 @@ char *g_categories[NUM_CATEGORIES] = {
 /*=============================================================================
  * save_progress_file
  *============================================================================*/
-int save_progress_file(char *filename, Picture *p) {
+int save_progress_file(Picture *p) {
   FILE *fp;
   int time, i;
+  char progress_file[12];
 
-  fp = fopen(filename, "wb");
+  sprintf(progress_file, "%s.pro",  g_picture_file_basename);
+
+  fp = fopen(progress_file, "wb");
   if (fp == NULL)
     return -1;
 
@@ -97,21 +103,25 @@ int save_progress_file(char *filename, Picture *p) {
   fwrite(p->mistakes, p->w * p->h , sizeof(char), fp);
 
   fclose(fp);
+
   return 0;
 }
 
 /*=============================================================================
  * load_progress_file
  *============================================================================*/
-int load_progress_file(char *filename, Picture *p) {
+int load_progress_file(Picture *p) {
   FILE *fp;
   unsigned int e_time;
   int i, j, mistakes, progress, size, target_size, offset;
   short x, y;
   short width, height;
   char dummy, magic[2];
+  char progress_file[12];
 
-  fp = fopen(filename, "rb");
+  sprintf(progress_file, "%s.pro",  g_picture_file_basename);
+
+  fp = fopen(progress_file, "rb");
   if (fp == NULL) {
     return -1;
   }
@@ -212,6 +222,7 @@ int load_progress_file(char *filename, Picture *p) {
 Picture *load_picture_file(char *filename) {
   FILE *fp;
   Picture *pic;
+  char *base_filename, *base_no_ext;
   unsigned char magic[2];
   unsigned char compression;
   int i, bytes_processed;
@@ -332,6 +343,10 @@ Picture *load_picture_file(char *filename) {
       }
     } 
   }
+
+  base_filename = basename(filename);
+  base_no_ext = strtok(base_filename, ".");
+  strncpy(g_picture_file_basename, base_no_ext, 8);
 
   fclose(fp);
   return pic;

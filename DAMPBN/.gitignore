@@ -2,5 +2,5 @@
 *.o
 *.bak
 *.json
-progress.dat
+*.pro
 .vscode/

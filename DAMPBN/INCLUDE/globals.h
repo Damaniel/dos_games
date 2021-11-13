@@ -104,12 +104,17 @@ extern BITMAP *g_wrong;
 extern BITMAP *g_page_buttons;
 extern BITMAP *g_main_buttons;
 extern BITMAP *g_prop_font;
+extern BITMAP *g_save_notice;
+extern BITMAP *g_load_notice;
 
 /* The parts of the screen to render */
 extern RenderComponents g_components;
 
 /* The currently active Picture */
 extern Picture *g_picture;
+
+/* The on-disk name of the picture file (used to name the progress file) */
+extern char g_picture_file_basename[];
 
 /* The current game state */
 extern State g_state;

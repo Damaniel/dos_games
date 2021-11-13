@@ -59,7 +59,7 @@ void process_input(int state) {
  *============================================================================*/
 void input_state_logo(void) {
     if(keypressed()) {
-      readkey();
+      clear_keybuf();
       change_state(STATE_TITLE, STATE_LOGO);
     }
 }
@@ -69,7 +69,7 @@ void input_state_logo(void) {
  *============================================================================*/
 void input_state_title(void) {
     if(keypressed()) {
-      readkey();
+      clear_keybuf();
       change_state(STATE_GAME, STATE_TITLE);
     }
 }
@@ -121,7 +121,7 @@ void input_state_map(void) {
  * input_state_game
  *============================================================================*/
 void input_state_game(void) {
-    int square_offset, fill_val, pal_val, result;
+    int square_offset, fill_val, pal_val;
     int moved;
 
     moved = 0;
@@ -522,8 +522,8 @@ void input_state_game(void) {
      * S - save a progress file
      *------------------------------------------------------------------------*/ 
     if (key[KEY_S]) {
-      if(!g_keypress_lockout[KEY_T]) {
-        save_progress_file("progress.dat", g_picture);
+      if(!g_keypress_lockout[KEY_S]) {
+        change_state(STATE_SAVE, STATE_GAME);
         g_keypress_lockout[KEY_S] = 1;      
       }
     }
@@ -536,18 +536,8 @@ void input_state_game(void) {
      *------------------------------------------------------------------------*/ 
     if (key[KEY_L]) {
       if(!g_keypress_lockout[KEY_L]) {
-        game_timer_set(0);
-        result = load_progress_file("progress.dat", g_picture);
-        if(result != 0) {
-          printf("Unable to load progress file!\n");
-          g_game_done = 1;
-        } else {         
-          game_timer_set(1);
-          clear_render_components(&g_components);
-          g_components.render_all = 1;
-          g_update_screen = 1;
+          change_state(STATE_LOAD, STATE_GAME);
           g_keypress_lockout[KEY_L] = 1;      
-        }
       }
     }
     if(!key[KEY_L] && g_keypress_lockout[KEY_L]) {

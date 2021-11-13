@@ -25,6 +25,7 @@
 #include <dpmi.h>
 #include "../include/globals.h"
 
+BITMAP *buffer;
 State g_state;
 State g_prev_state;
 int g_game_done;
@@ -69,8 +70,22 @@ void change_state(State new_state, State prev_state) {
       game_timer_set(0);
       break;
     case STATE_LOAD:
+      game_timer_set(0);
+      clear_render_components(&g_components);
+      g_update_screen = 1;
+      /* Force display of loading dialog */
+      do_render();
+      load_progress_file(g_picture);
+      change_state(STATE_GAME, STATE_LOAD);
       break;
     case STATE_SAVE:
+      game_timer_set(0);
+      clear_render_components(&g_components);
+      g_update_screen = 1;      
+      /* Force display of saving dialog */
+      do_render();
+      save_progress_file(g_picture);
+      change_state(STATE_GAME, STATE_SAVE);      
       break;
     case STATE_HELP:
       break;
@@ -80,6 +95,15 @@ void change_state(State new_state, State prev_state) {
       break;
   }
 
+}
+
+void do_render(void) {
+  if(g_update_screen) {
+    render_screen(buffer, g_components);
+    blit(buffer, screen, 0, 0, 0, 0, 320, 200);
+    clear_render_components(&g_components);
+    g_update_screen = 0;
+  }  
 }
 
 /*=============================================================================
@@ -95,6 +119,7 @@ void process_timing_stuff(void) {
     }
   }
 
+  /* Update the animations on the title screen */
   if (g_state == STATE_TITLE) {
     g_title_anim.new_color_counter--;
     g_title_anim.color_start_counter--;
@@ -121,6 +146,9 @@ void process_timing_stuff(void) {
     g_components.render_status_text = 1;
     g_update_screen = 1;
   }
+
+  /* Actually update the screen */
+  do_render();
 }
 
 /*=============================================================================
@@ -144,7 +172,6 @@ void print_mem_free(void) {
  *============================================================================*/
 int main(int argc, char *argv[]) {
   int status, done;
-  BITMAP *buffer;
 
   //print_mem_free();
   
@@ -203,13 +230,6 @@ int main(int argc, char *argv[]) {
     done = check_completion();
     if (done)
       g_game_done = 1;
-
-    /* Update the display */
-    if(g_update_screen) {
-      render_screen(buffer, g_components);
-      blit(buffer, screen, 0, 0, 0, 0, 320, 200);
-      clear_render_components(&g_components);
-    }
 
     /* Done in the loop, wait for the next frame */
     g_next_frame = 0;

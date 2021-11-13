@@ -114,6 +114,8 @@ BITMAP *g_wrong;
 BITMAP *g_page_buttons;
 BITMAP *g_main_buttons;
 BITMAP *g_prop_font;
+BITMAP *g_save_notice;
+BITMAP *g_load_notice;
 
 RenderComponents g_components;
 TitleAnimation g_title_anim;
@@ -681,8 +683,10 @@ void render_screen(BITMAP *dest, RenderComponents c) {
       render_map_screen(dest, c);
       break;
     case STATE_LOAD:
+      render_load_dialog(dest, c);
       break;
     case STATE_SAVE:
+      render_save_dialog(dest, c);
       break;
     case STATE_HELP:
       break;
@@ -695,6 +699,14 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   /* Clear the render flags */
   clear_render_components(&g_components);
   g_update_screen = 0;
+}
+
+void render_save_dialog(BITMAP *dest, RenderComponents c) {
+  draw_sprite(dest, g_save_notice, SAVING_MESSAGE_X, SAVING_MESSAGE_Y);
+}
+
+void render_load_dialog(BITMAP *dest, RenderComponents c) {
+  draw_sprite(dest, g_load_notice, LOADING_MESSAGE_X, LOADING_MESSAGE_Y);
 }
 
 /*=============================================================================
@@ -858,6 +870,14 @@ int load_graphics(void) {
   if(g_main_buttons == NULL) {
     result = -1;
   }
+  g_save_notice = load_pcx("RES/SAVING.PCX", res_pal);
+  if(g_save_notice == NULL) {
+    result = -1;
+  }
+  g_load_notice = load_pcx("RES/LOADING.PCX", res_pal);
+  if(g_load_notice == NULL) {
+    result = -1;
+  }
   return result;
 }
 
@@ -880,4 +900,6 @@ void destroy_graphics(void) {
   destroy_bitmap(g_page_buttons);
   destroy_bitmap(g_prop_font);
   destroy_bitmap(g_main_buttons);  
+  destroy_bitmap(g_save_notice);
+  destroy_bitmap(g_load_notice);
 }

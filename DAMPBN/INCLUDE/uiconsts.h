@@ -129,6 +129,11 @@
 #define SCROLLBAR_INTERIOR_COLOR   202
 #define SCROLLBAR_BORDER_COLOR     208
 
+#define SAVING_MESSAGE_X           144
+#define SAVING_MESSAGE_Y           146
+
+#define LOADING_MESSAGE_X          138
+#define LOADING_MESSAGE_Y          146
 
 /* Pick the button set depending on whether a button  is pressed or not */
 #define BUTTON_DEFAULT_OFFSET      0

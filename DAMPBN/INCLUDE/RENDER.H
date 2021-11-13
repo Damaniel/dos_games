@@ -191,6 +191,20 @@ void render_centered_prop_text(BITMAP *dest, char *text, int center, int y_pos);
 void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos);
 
 /*=============================================================================
+ * render_save_dialog
+ *
+ * Displays the 'saving' message
+ *============================================================================*/
+void render_save_dialog(BITMAP *dest, RenderComponents c);
+
+/*=============================================================================
+ * render_load_dialog
+ *
+ * Displays the 'loading' message
+ *============================================================================*/
+void render_load_dialog(BITMAP *dest, RenderComponents c);
+
+/*=============================================================================
  * load_title
  *
  * Load title graphics.

@@ -56,14 +56,14 @@ typedef struct {
  *
  * Dumps the player's progress to a file
  *============================================================================*/
-int save_progress_file(char *filename, Picture *p);
+int save_progress_file(Picture *p);
 
 /*=============================================================================
  * load_progress_file
  *
  * Load's the saved progress for a picture from a file.
  *============================================================================*/
-int load_progress_file(char *filename, Picture *p);
+int load_progress_file(Picture *p);
 
 /*=============================================================================
  * load_picture_file
