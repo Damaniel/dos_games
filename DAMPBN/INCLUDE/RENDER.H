@@ -23,9 +23,6 @@
 
 /* A list of areas of the screen to update when calling render_screen() */
 typedef struct {
-  /* The title screen */
-  int render_title;
-
   /* The visible part of the work area*/
   int render_main_area_squares;
   /* The palette columns on the right */
@@ -54,6 +51,14 @@ typedef struct {
   /* Render debug text.  Must be explicitly set or cleared */
   int render_debug;
 } RenderComponents;
+
+typedef struct {
+  char update_background;
+  char new_color_counter;
+  char color_start_counter;
+  char update_title_color;
+  char color_start;
+} TitleAnimation;
 
 typedef enum {
   STYLE_SOLID,
@@ -143,6 +148,13 @@ void render_menu_buttons(BITMAP *dest);
 void render_map_screen(BITMAP *dest, RenderComponents c);
 
 /*=============================================================================
+ * render_title_screen
+ *
+ * Draws screen components when the game is in the STATE_TITLE state.
+ *============================================================================*/
+void render_title_screen(BITMAP *dest, RenderComponents c);
+
+/*=============================================================================
  * render_game_screen
  *
  * Draws screen components when the game is in the STATE_GAME state.
@@ -177,6 +189,20 @@ void render_centered_prop_text(BITMAP *dest, char *text, int center, int y_pos);
  * Writes a string using the proportional font
  *============================================================================*/
 void render_prop_text(BITMAP *destination, char *text, int x_pos, int y_pos);
+
+/*=============================================================================
+ * load_title
+ *
+ * Load title graphics.
+ *============================================================================*/
+int load_title(void);
+
+/*=============================================================================
+ * free_title
+ *
+ * Deallocate title graphics.
+ *============================================================================*/
+void free_title(void);
 
 /*=============================================================================
  * load_logo

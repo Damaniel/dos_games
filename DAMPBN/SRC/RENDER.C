@@ -20,6 +20,7 @@
  */
 #include <allegro.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "../include/globals.h"
 
 /* Some stuff to cut down the executable size */
@@ -94,6 +95,9 @@ int g_draw_style;
 
 BITMAP *g_logo;
 
+BITMAP *g_title_area;
+BITMAP *g_title_box;
+
 BITMAP *g_numbers;
 BITMAP *g_highlight_numbers;
 BITMAP *g_bg_lower;
@@ -112,6 +116,7 @@ BITMAP *g_main_buttons;
 BITMAP *g_prop_font;
 
 RenderComponents g_components;
+TitleAnimation g_title_anim;
 
 /*=============================================================================
  * update_scrollbar_positions
@@ -179,11 +184,44 @@ void render_logo(BITMAP *dest, RenderComponents c) {
 }
 
 void render_title_screen(BITMAP *dest, RenderComponents c) {
-  int i, j;
+  int i,j;
+  if(g_title_anim.update_background == 1) {      
+    /* Restore the original palette */
+    clear_to_color(g_title_area, 208);    
+    for(i=0;i<32;i++) {
+      for (j=3; j<17; j++) {
+        blit(g_numbers, g_title_area, 
+             (rand() % 64 + 1) * NUMBER_BOX_WIDTH, 
+             0,
+             i * (NUMBER_BOX_WIDTH - 1),
+             j * (NUMBER_BOX_HEIGHT - 1),
+             NUMBER_BOX_WIDTH,
+             NUMBER_BOX_HEIGHT);
+      }
+    }
+    hline(g_title_area, 0, 29, 319, 205);
+    hline(g_title_area, 0, 171, 319, 205);
 
-  for(i=0;i<32;i++) {
-    for (j=0;j<20;j++) {}
+    render_centered_prop_text(g_title_area, "Copyright 2021 Shaun Brandt / Holy Meatgoat Productions", 160, 12);
+    render_centered_prop_text(g_title_area, "-- Press any key to play! --", 160, 182);    
+    g_title_anim.update_background = 0;
   }
+
+  if(g_title_anim.update_title_color == 1 && g_title_anim.color_start == 1) {
+    for (i=0; i< 40; i++) {
+      blit(g_large_pal, g_title_area,
+        (rand() % 64 + 1) * NUMBER_BOX_WIDTH,
+        0,
+        (rand() % 32) * (NUMBER_BOX_WIDTH - 1),
+        ((rand() % 14) + 3) * (NUMBER_BOX_HEIGHT - 1),
+        NUMBER_BOX_WIDTH,
+        NUMBER_BOX_HEIGHT);
+    }
+    g_title_anim.update_title_color = 0;
+  }
+
+  blit(g_title_box, g_title_area, 0, 0, 80, 60, g_title_box->w, g_title_box->h);
+  blit(g_title_area, dest, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
 }
 
 /*=============================================================================
@@ -634,6 +672,7 @@ void render_screen(BITMAP *dest, RenderComponents c) {
       render_logo(dest, c);
       break;
     case STATE_TITLE:
+      render_title_screen(dest, c);
       break;
     case STATE_GAME:
       render_game_screen(dest, c);
@@ -705,11 +744,32 @@ void render_prop_text(BITMAP *dest, char *text, int x_pos, int y_pos) {
 	}
 }
 
+int load_title(void) {
+  PALETTE pal;
+
+  set_palette(game_pal);  
+  clear_to_color(screen, 208);
+
+  g_title_area = create_bitmap(SCREEN_W, SCREEN_H);
+  g_title_box = load_pcx("RES/TITLEBOX.PCX", pal);
+  if (g_title_box == NULL ) {
+    return -1;
+  }
+
+  return 0;
+}
+
+void free_title(void) {
+  destroy_bitmap(g_title_box);
+  destroy_bitmap(g_title_area);
+}
+
 /*=============================================================================
  * load_logo
  *============================================================================*/
 int load_logo(void) {
   PALETTE pal;
+
 
   g_logo = load_pcx("RES/HOLYGOAT.PCX", pal);
   if(g_logo == NULL) {
@@ -726,9 +786,6 @@ int load_logo(void) {
  * free_logo
  *============================================================================*/
 void free_logo(void) {
-  /* Restore the original palette */
-  set_palette(game_pal);
-
   destroy_bitmap(g_logo);
 }
 

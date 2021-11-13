@@ -48,6 +48,9 @@ typedef struct {
   char *mistakes;
 } Picture;
 
+#define NEW_COLOR_COUNT   1
+#define NEW_NUMBER_COUNT  12
+
 /*=============================================================================
  * save_progress_file
  *

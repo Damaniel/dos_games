@@ -21,6 +21,7 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "../include/globals.h"
 
 State g_state;
@@ -35,16 +36,21 @@ void change_state(State new_state, State prev_state) {
   switch(g_state) {
     case STATE_LOGO:
       load_logo();
-      clear_render_components(&g_components);
-      g_components.render_title = 1;
+      clear_render_components(&g_components);      
       g_update_screen = 1;
       g_title_countdown = 3 * FRAME_RATE;
       break;
     case STATE_TITLE:
+      if (g_prev_state == STATE_LOGO)
+        free_logo(); 
+      load_title();
+      g_title_anim.color_start_counter = FRAME_RATE / 2;
+      g_title_anim.update_background = 1;  
+      g_update_screen = 1;
       break;
     case STATE_GAME:
-      if (g_prev_state == STATE_LOGO)
-        free_logo();
+      if (g_prev_state == STATE_TITLE)
+        free_title();
       clear_render_components(&g_components);
       g_components.render_all = 1;
       g_update_screen = 1;
@@ -78,8 +84,25 @@ void process_timing_stuff(void) {
   if (g_state == STATE_LOGO) {
     g_title_countdown--;
     if (g_title_countdown <= 0) {
-      change_state(STATE_GAME, STATE_LOGO);
+      change_state(STATE_TITLE, STATE_LOGO);
     }
+  }
+
+  if (g_state == STATE_TITLE) {
+    g_title_anim.new_color_counter--;
+    g_title_anim.color_start_counter--;
+
+    if(g_title_anim.color_start_counter <= 0 && g_title_anim.color_start == 0 ){
+      g_title_anim.color_start = 1;
+      g_update_screen = 1;
+    }
+
+    if(g_title_anim.new_color_counter <= 0) {
+      g_title_anim.update_title_color = 1;
+      g_title_anim.new_color_counter = NEW_COLOR_COUNT;
+      g_update_screen = 1;
+    }
+
   }
 
   /* Update the elapsed time counter for the on-screen display */
@@ -111,7 +134,11 @@ int main(int argc, char *argv[]) {
 
   install_int(int_handler, 1000/FRAME_RATE);
 
+  srand(time(NULL));
+
   set_gfx_mode(GFX_VGA, 320, 200, 0, 0);
+
+  set_palette(game_pal);
 
   buffer = create_bitmap(320, 200);
 
@@ -131,12 +158,10 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   
-  set_palette(game_pal);
   init_defaults();
 
   change_state(STATE_LOGO, STATE_NONE);
   
-  render_screen(buffer, g_components);
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);
 
   while(!g_game_done) {  

@@ -32,22 +32,45 @@ void process_input(int state) {
     case STATE_LOGO:
       input_state_logo();
       break;
+    case STATE_TITLE:
+      input_state_title();
+      break;
     case STATE_GAME:
       input_state_game();
       break;
     case STATE_MAP:
       input_state_map();
       break;
+    case STATE_SAVE:
+      break;
+    case STATE_LOAD:
+      break;
+    case STATE_HELP:
+      break;
+    case STATE_OPTS:
+      break;
+    default:
+      break;
   }
+}
+
+/*=============================================================================
+ * input_state_logo
+ *============================================================================*/
+void input_state_logo(void) {
+    if(keypressed()) {
+      readkey();
+      change_state(STATE_TITLE, STATE_LOGO);
+    }
 }
 
 /*=============================================================================
  * input_state_title
  *============================================================================*/
-void input_state_logo(void) {
+void input_state_title(void) {
     if(keypressed()) {
       readkey();
-      change_state(STATE_GAME, STATE_LOGO);
+      change_state(STATE_GAME, STATE_TITLE);
     }
 }
 

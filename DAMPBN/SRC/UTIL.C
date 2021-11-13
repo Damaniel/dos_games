@@ -40,7 +40,6 @@ int g_correct_count;
 
 int g_total_picture_squares;
 
-
 Picture *g_picture;
 
 char *g_categories[NUM_CATEGORIES] = {
@@ -402,7 +401,7 @@ void init_defaults(void) {
   g_draw_style = STYLE_SOLID;
   g_next_frame = 0;
   g_time_to_update_elapsed = FRAME_RATE;
-  
+
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;
 
