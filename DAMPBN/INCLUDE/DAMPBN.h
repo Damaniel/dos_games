@@ -33,6 +33,11 @@ typedef enum {
   STATE_MAP
 } State;
 
+/* Definitions from dpmi.h */
+unsigned long _go32_dpmi_remaining_physical_memory(void);
+unsigned long _go32_dpmi_remaining_virtual_memory(void);
+
+
 /*=============================================================================
  * change_state
  *
@@ -53,5 +58,12 @@ void game_timer_set(int status);
  * Decrement counters and do things when they expire
  *============================================================================*/
 void process_timing_stuff(void);
+
+/*=============================================================================
+ * print_mem_free
+ *
+ * Debug function.  Show free DPMI memory (physical + virtual)
+ *============================================================================*/
+void print_mem_free(void);
 
 #endif

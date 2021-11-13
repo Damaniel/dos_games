@@ -22,12 +22,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <dpmi.h>
 #include "../include/globals.h"
 
 State g_state;
 State g_prev_state;
 int g_game_done;
 
+/*=============================================================================
+ * change_state
+ *============================================================================*/
 void change_state(State new_state, State prev_state) {
   /* Do stuff */
   g_state = new_state;
@@ -78,6 +82,9 @@ void change_state(State new_state, State prev_state) {
 
 }
 
+/*=============================================================================
+ * process_timing_stuff
+ *============================================================================*/
 void process_timing_stuff(void) {
 
   /* Update the timer for the logo screen */
@@ -116,10 +123,21 @@ void process_timing_stuff(void) {
   }
 }
 
+/*=============================================================================
+ * game_timer_set
+ *============================================================================*/
 void game_timer_set(int status) {
   g_game_timer_running = status;
 }
 
+/*=============================================================================
+ * print_mem_free
+ *============================================================================*/
+void print_mem_free(void) {
+    printf("free phys: %d bytes\nfree virtual: %d bytes\n",
+          (int)_go32_dpmi_remaining_physical_memory(),
+          (int)_go32_dpmi_remaining_virtual_memory());
+}
 
 /*=============================================================================
  * main
@@ -128,6 +146,8 @@ int main(int argc, char *argv[]) {
   int status, done;
   BITMAP *buffer;
 
+  //print_mem_free();
+  
   allegro_init();
   install_keyboard();
   install_timer();
@@ -135,6 +155,8 @@ int main(int argc, char *argv[]) {
   install_int(int_handler, 1000/FRAME_RATE);
 
   srand(time(NULL));
+
+  //print_mem_free();
 
   set_gfx_mode(GFX_VGA, 320, 200, 0, 0);
 
@@ -192,6 +214,8 @@ int main(int argc, char *argv[]) {
     /* Done in the loop, wait for the next frame */
     g_next_frame = 0;
   }
+
+  //print_mem_free();
 
   free_picture_file(g_picture);
   destroy_graphics();

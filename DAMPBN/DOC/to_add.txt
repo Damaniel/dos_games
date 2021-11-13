@@ -2,8 +2,17 @@ Next things to do
 
 - Refactor some of the code 
    - Find opportunities to remove duplicated code  
-- Add structures and support for the overview/progress window
 - Add loading screen.  Keep count of loaded elements, use interrupt to draw
+- Figure out something to do with the upper right area of the screen 
 
 (in progress) Make a better game loop!
 Add 'or ESC' text to the map screen
+
+Help screen
+Save complete dialog
+Load image screen
+Completed picture replay screen
+
+Logo -> Title -> Select Image -> Game -> Complete |
+                     ^                            |
+                     -----------------------------|
