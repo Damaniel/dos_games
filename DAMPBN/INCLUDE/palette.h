@@ -30,5 +30,6 @@
    * 64 entries - the 'system' palette, used by UI elements.
 */
 extern PALETTE game_pal;
-
+extern PALETTE logo_pal;
+extern PALETTE title_pal;
 #endif

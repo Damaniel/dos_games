@@ -26,6 +26,8 @@
 #include "../include/globals.h"
 
 BITMAP *buffer;
+DATAFILE *g_res;
+
 State g_state;
 State g_prev_state;
 int g_game_done;
@@ -41,21 +43,20 @@ void change_state(State new_state, State prev_state) {
   switch(g_state) {
     case STATE_LOGO:
       load_logo();
+      set_palette(logo_pal);      
       clear_render_components(&g_components);      
       g_update_screen = 1;
       g_title_countdown = 3 * FRAME_RATE;
       break;
     case STATE_TITLE:
-      if (g_prev_state == STATE_LOGO)
-        free_logo(); 
       load_title();
+      set_palette(title_pal);
       g_title_anim.color_start_counter = FRAME_RATE / 2;
       g_title_anim.update_background = 1;  
       g_update_screen = 1;
       break;
     case STATE_GAME:
-      if (g_prev_state == STATE_TITLE)
-        free_title();
+      set_palette(game_pal);
       clear_render_components(&g_components);
       g_components.render_all = 1;
       g_update_screen = 1;
@@ -171,7 +172,7 @@ void print_mem_free(void) {
  * main
  *============================================================================*/
 int main(int argc, char *argv[]) {
-  int status, done;
+  int done;
 
   //print_mem_free();
   
@@ -187,17 +188,18 @@ int main(int argc, char *argv[]) {
 
   set_gfx_mode(GFX_VGA, 320, 200, 0, 0);
 
-  set_palette(game_pal);
-
   buffer = create_bitmap(320, 200);
 
-  status = load_graphics();
-  if (status != 0) {
+  g_res = load_datafile("RES/DAMPBN.DAT");
+  if(g_res == NULL) {
     set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);
-    printf("Unable to load all graphics!\n");
+    printf("Unable to load data!\n");
+    destroy_bitmap(buffer);
     allegro_exit();
     exit(1);
   }
+
+  load_graphics();
 
   g_picture = load_picture_file(argv[1]);
   if (g_picture == NULL) {
@@ -238,7 +240,8 @@ int main(int argc, char *argv[]) {
   //print_mem_free();
 
   free_picture_file(g_picture);
-  destroy_graphics();
+  
+  unload_datafile(g_res);
   destroy_bitmap(buffer);
   set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);
   allegro_exit();

@@ -757,149 +757,44 @@ void render_prop_text(BITMAP *dest, char *text, int x_pos, int y_pos) {
 }
 
 int load_title(void) {
-  PALETTE pal;
-
-  set_palette(game_pal);  
   clear_to_color(screen, 208);
 
   g_title_area = create_bitmap(SCREEN_W, SCREEN_H);
-  g_title_box = load_pcx("RES/TITLEBOX.PCX", pal);
-  if (g_title_box == NULL ) {
-    return -1;
-  }
-
+  g_title_box = (BITMAP *)g_res[RES_TITLEBOX].dat;
   return 0;
-}
-
-void free_title(void) {
-  destroy_bitmap(g_title_box);
-  destroy_bitmap(g_title_area);
 }
 
 /*=============================================================================
  * load_logo
  *============================================================================*/
 int load_logo(void) {
-  PALETTE pal;
-
-
-  g_logo = load_pcx("RES/HOLYGOAT.PCX", pal);
-  if(g_logo == NULL) {
-    return -1;
-  }
-
-  /* Set the logo palette */
-  set_palette(pal);
-
+  g_logo = (BITMAP *)g_res[RES_HOLYGOAT].dat;
   return 0;
-}
-
-/*=============================================================================
- * free_logo
- *============================================================================*/
-void free_logo(void) {
-  destroy_bitmap(g_logo);
 }
 
 /*=============================================================================
  * load_graphics
  *============================================================================*/
 int load_graphics(void) {
- PALETTE res_pal;
-  int result;
 
-  result = 0;
+  g_numbers = (BITMAP *)g_res[RES_NUMBERS].dat;
+  g_highlight_numbers = (BITMAP *)g_res[RES_NUMS_HI].dat;
+  g_bg_lower = (BITMAP *)g_res[RES_BG_LOWER].dat;
+  g_bg_right = (BITMAP *)g_res[RES_BG_RIGHT].dat;
+  g_mainarea = (BITMAP *)g_res[RES_MAINAREA].dat;
+  g_draw_cursor = (BITMAP *)g_res[RES_DRAWCURS].dat;
+  g_small_pal = (BITMAP *)g_res[RES_SM_PAL].dat;
+  g_large_pal = (BITMAP *)g_res[RES_LG_PAL].dat;
+  g_large_diamonds = (BITMAP *)g_res[RES_LG_DIA].dat;
+  g_large_crosses = (BITMAP *)g_res[RES_LG_CROSS].dat;
+  g_pal_cursor = (BITMAP *)g_res[RES_PALCURS].dat;
+  g_wrong = (BITMAP *)g_res[RES_WRONG].dat;
+  g_page_buttons = (BITMAP *)g_res[RES_PAGEBUTN].dat;
+  g_prop_font = (BITMAP *)g_res[RES_PROPFONT].dat;
+  g_main_buttons = (BITMAP *)g_res[RES_BUTTONS].dat;
+  g_save_notice = (BITMAP *)g_res[RES_SAVING].dat;
+  g_load_notice = (BITMAP *)g_res[RES_LOADING].dat;
 
-  g_numbers  = load_pcx("RES/NUMBERS.PCX", res_pal);
-  if(g_numbers == NULL) {
-    result = - 1;
-  }
-  g_highlight_numbers  = load_pcx("RES/NUMS_HI.PCX", res_pal);
-  if(g_highlight_numbers == NULL) {
-    result = - 1;
-  }
-  g_bg_lower = load_pcx("RES/BG_LOWER.PCX", res_pal);
-  if(g_bg_lower == NULL) {
-    result = -1;
-  }
-  g_bg_right = load_pcx("RES/BG_RIGHT.PCX", res_pal);
-  if(g_bg_right == NULL) {
-    result = -1;
-  }
-  g_mainarea = load_pcx("RES/MAINAREA.PCX", res_pal);
-  if(g_mainarea == NULL) {
-    result = -1;
-  }
-  g_draw_cursor = load_pcx("RES/DRAWCURS.PCX", res_pal);
-  if(g_draw_cursor == NULL) {
-    result = -1;
-  }
-  g_small_pal = load_pcx("RES/SM_PAL.PCX", res_pal);
-  if(g_small_pal == NULL) {
-    result = -1;
-  }
-  g_large_pal = load_pcx("RES/LG_PAL.PCX", res_pal);
-  if(g_large_pal == NULL) {
-    result = -1;
-  }
-  g_large_diamonds = load_pcx("RES/LG_DIA.PCX", res_pal);
-  if(g_large_diamonds == NULL) {
-    result = -1;
-  }
-  g_large_crosses = load_pcx("RES/LG_CROSS.PCX", res_pal);
-  if(g_large_crosses == NULL) {
-    result = -1;
-  }  
-  g_pal_cursor = load_pcx("RES/PALCURS.PCX", res_pal);
-  if(g_pal_cursor == NULL) {
-    result = -1;
-  }  
-  g_wrong = load_pcx("RES/WRONG.PCX", res_pal);
-  if(g_wrong == NULL) {
-    result = -1;
-  }
-  g_page_buttons = load_pcx("RES/PAGEBUTN.PCX", res_pal);
-  if(g_page_buttons == NULL ) {
-    result = -1;
-  }
-  g_prop_font = load_pcx("RES/PROPFONT.PCX", res_pal);
-  if(g_prop_font == NULL ) {
-    result = -1;
-  }
-  g_main_buttons = load_pcx("RES/BUTTONS.PCX", res_pal);
-  if(g_main_buttons == NULL) {
-    result = -1;
-  }
-  g_save_notice = load_pcx("RES/SAVING.PCX", res_pal);
-  if(g_save_notice == NULL) {
-    result = -1;
-  }
-  g_load_notice = load_pcx("RES/LOADING.PCX", res_pal);
-  if(g_load_notice == NULL) {
-    result = -1;
-  }
-  return result;
-}
+  return 0;
 
-/*=============================================================================
- * destroy_graphics
- *============================================================================*/
-void destroy_graphics(void) {
-  destroy_bitmap(g_numbers);
-  destroy_bitmap(g_highlight_numbers);
-  destroy_bitmap(g_bg_lower);
-  destroy_bitmap(g_bg_right);
-  destroy_bitmap(g_mainarea);
-  destroy_bitmap(g_draw_cursor);
-  destroy_bitmap(g_small_pal);
-  destroy_bitmap(g_large_pal);
-  destroy_bitmap(g_large_diamonds);
-  destroy_bitmap(g_large_crosses);
-  destroy_bitmap(g_pal_cursor);
-  destroy_bitmap(g_wrong);
-  destroy_bitmap(g_page_buttons);
-  destroy_bitmap(g_prop_font);
-  destroy_bitmap(g_main_buttons);  
-  destroy_bitmap(g_save_notice);
-  destroy_bitmap(g_load_notice);
 }

@@ -220,7 +220,7 @@ int load_progress_file(Picture *p) {
  * load_picture_file
  *============================================================================*/
 Picture *load_picture_file(char *filename) {
-  FILE *fp;
+  FILE *fp, *fp2;
   Picture *pic;
   char *base_filename, *base_no_ext;
   unsigned char magic[2];
@@ -233,6 +233,8 @@ Picture *load_picture_file(char *filename) {
   fp = fopen(filename, "rb");
     if (fp == NULL)
       return NULL;
+
+  fp2 = fopen("pal.txt", "w");
 
   /* Check for magic bytes */
   fscanf(fp, "%c%c", &magic[0], &magic[1]);
@@ -255,7 +257,9 @@ Picture *load_picture_file(char *filename) {
     pic_pal[i].r = fgetc(fp);
     pic_pal[i].g = fgetc(fp);
     pic_pal[i].b = fgetc(fp);
+    fprintf(fp2, "\t{%d, %d, %d}\n", pic_pal[i].r, pic_pal[i].g, pic_pal[i].b);
   }
+  fclose(fp2);
   for(i=0;i<23;i++) {
     dummy = fgetc(fp);
   }

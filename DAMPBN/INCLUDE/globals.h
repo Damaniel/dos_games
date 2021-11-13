@@ -26,6 +26,7 @@
 #include "../include/palette.h"
 #include "../include/uiconsts.h"
 #include "../include/input.h"
+#include "../include/res.h"
 
 /* Compression types for dampbm .PIC files */
 #define COMPRESSION_NONE   0
@@ -193,5 +194,7 @@ extern int g_draw_style;
 extern int g_title_countdown;
 
 extern TitleAnimation g_title_anim;
+
+extern DATAFILE *g_res;
 
 #endif
