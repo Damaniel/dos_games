@@ -464,7 +464,7 @@ void render_menu_buttons(BITMAP *dest) {
  * render_map_screen
  *============================================================================*/
 void render_map_screen(BITMAP *dest, RenderComponents c) {
-    int i, j, x_pos, y_pos, color, row_1_width, row_2_width, center;
+    int i, j, x_pos, y_pos, color, actual_color, row_1_width, row_2_width, center;
     char text[40];
 
     if(c.render_map) {
@@ -478,7 +478,8 @@ void render_map_screen(BITMAP *dest, RenderComponents c) {
       for(j=0; j<g_picture->h; j++) {
         for(i=0; i<g_picture->w; i++) {
           color = g_picture->pic_squares[j * g_picture->w + i].fill_value;
-          if (color != 0) {
+          actual_color = g_picture->pic_squares[j * g_picture->w + i].pal_entry;
+          if (color != 0 && color == actual_color) {
             putpixel(dest, x_pos + i, y_pos + j, color - 1);
           }
           else {
@@ -699,7 +700,7 @@ void render_prop_text(BITMAP *dest, char *text, int x_pos, int y_pos) {
  *============================================================================*/
 int load_logo(void) {
   PALETTE pal;
-  int result;
+
   g_logo = load_pcx("RES/HOLYGOAT.PCX", pal);
   if(g_logo == NULL) {
     return -1;

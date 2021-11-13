@@ -4,5 +4,6 @@ Next things to do
    - Find opportunities to remove duplicated code  
 - Add structures and support for the overview/progress window
 - Add loading screen.  Keep count of loaded elements, use interrupt to draw
-- Implement save
-- Implement load
+
+(in progress) Make a better game loop!
+Add 'or ESC' text to the map screen

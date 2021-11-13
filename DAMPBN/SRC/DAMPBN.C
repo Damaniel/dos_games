@@ -38,7 +38,7 @@ void change_state(State new_state, State prev_state) {
       clear_render_components(&g_components);
       g_components.render_title = 1;
       g_update_screen = 1;
-      g_title_countdown = 3;
+      g_title_countdown = 3 * FRAME_RATE;
       break;
     case STATE_GAME:
       if (g_prev_state == STATE_LOGO)
@@ -47,45 +47,50 @@ void change_state(State new_state, State prev_state) {
       g_components.render_all = 1;
       g_update_screen = 1;
       /* Start the timer */
-      g_int_counter = 0;
-      g_game_timer_running = 1;      
+      game_timer_set(1);      
       break;
     case STATE_MAP:
       clear_render_components(&g_components);
       g_components.render_map = 1;
       g_show_map_text = 1;
       g_update_screen = 1;    
+      game_timer_set(0);
       break;
   }
 
 }
 
-void per_second_update(void) {
-  switch (g_state) {
-    case STATE_LOGO:
-      g_title_countdown--;
-      if (g_title_countdown <= 0) {
-        change_state(STATE_GAME, STATE_LOGO);
-      }
-      g_seconds_update = 0;
-      break;
-    case STATE_GAME:
-      clear_render_components(&g_components);
-      g_components.render_status_text = 1;
-      g_update_screen = 1;      
-      g_seconds_update = 0;    
-      break;
+void process_timing_stuff(void) {
+
+  /* Update the timer for the logo screen */
+  if (g_state == STATE_LOGO) {
+    g_title_countdown--;
+    if (g_title_countdown <= 0) {
+      change_state(STATE_GAME, STATE_LOGO);
+    }
   }
 
-
+  /* Update the elapsed time counter for the on-screen display */
+  if(g_game_timer_running)
+    g_time_to_update_elapsed--;
+  if (g_time_to_update_elapsed <= 0) {
+    g_elapsed_time++;
+    g_time_to_update_elapsed = FRAME_RATE;
+    g_components.render_status_text = 1;
+    g_update_screen = 1;
+  }
 }
+
+void game_timer_set(int status) {
+  g_game_timer_running = status;
+}
+
 
 /*=============================================================================
  * main
  *============================================================================*/
 int main(int argc, char *argv[]) {
-  int status, i;
-  int done;
+  int status, done;
   BITMAP *buffer;
 
   allegro_init();
@@ -114,7 +119,6 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   
-
   set_palette(game_pal);
   init_defaults();
 
@@ -124,20 +128,32 @@ int main(int argc, char *argv[]) {
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);
 
   while(!g_game_done) {  
-    if(g_seconds_update) {
-      per_second_update();
+
+    /* Wait until the next frame ticks */
+    while (!g_next_frame) {
+       rest(1); 
     }
+
+    /* Do anything that relies on the frame counter */
+    process_timing_stuff();
+
+    /* Get input */
     process_input(g_state);
 
+    /* Check to see if we're done with the picture */
     done = check_completion();
-    if(done)
+    if (done)
       g_game_done = 1;
 
-    if (g_update_screen) {
+    /* Update the display */
+    if(g_update_screen) {
       render_screen(buffer, g_components);
       blit(buffer, screen, 0, 0, 0, 0, 320, 200);
       clear_render_components(&g_components);
     }
+
+    /* Done in the loop, wait for the next frame */
+    g_next_frame = 0;
   }
 
   free_picture_file(g_picture);

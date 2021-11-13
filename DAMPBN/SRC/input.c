@@ -65,6 +65,16 @@ void input_state_map(void) {
       g_keypress_lockout[KEY_M] = 0;
     }    
 
+    if (key[KEY_ESC]) {
+      if (!g_keypress_lockout[KEY_ESC]) {
+        change_state(STATE_GAME, STATE_MAP);
+        g_keypress_lockout[KEY_ESC] = 1;          
+      }
+    }
+    if (!key[KEY_ESC] && g_keypress_lockout[KEY_ESC]) {
+      g_keypress_lockout[KEY_ESC] = 0;
+    }    
+
     if (key[KEY_C]) {
       if (!g_keypress_lockout[KEY_C]) {
         if (g_show_map_text == 0) {
@@ -89,6 +99,10 @@ void input_state_map(void) {
 void input_state_game(void) {
     ColorSquare c;
     int square_offset, fill_val, pal_val, result;
+    int moved;
+
+
+    moved = 0;
 
     /*-------------------------------------------------------------------------
      * ESC - exit the game
@@ -107,9 +121,10 @@ void input_state_game(void) {
     /*-------------------------------------------------------------------------
      * left - move the cursor left in the play area
      *------------------------------------------------------------------------*/
-    if(key[KEY_LEFT]) {
+    if (key[KEY_LEFT]) {
       /* If the key was previously up... */
-      if (!g_keypress_lockout[KEY_LEFT]) {
+      if (!g_keypress_lockout[KEY_LEFT] && moved == 0) {
+        moved = 1;
         clear_render_components(&g_components);
         g_old_draw_cursor_x = g_draw_cursor_x;
         g_old_draw_cursor_y = g_draw_cursor_y;        
@@ -149,7 +164,8 @@ void input_state_game(void) {
      *------------------------------------------------------------------------*/
     if (key[KEY_RIGHT]) {
       /* If the key was previously up... */
-      if (!g_keypress_lockout[KEY_RIGHT]) {
+      if (!g_keypress_lockout[KEY_RIGHT] && moved == 0) {
+        moved = 1;
         clear_render_components(&g_components);
         g_old_draw_cursor_x = g_draw_cursor_x;
         g_old_draw_cursor_y = g_draw_cursor_y;             
@@ -189,7 +205,8 @@ void input_state_game(void) {
      *------------------------------------------------------------------------*/
     if (key[KEY_UP]) {
       /* If the key was previously up */
-      if (!g_keypress_lockout[KEY_UP]) {
+      if (!g_keypress_lockout[KEY_UP] && moved == 0) {
+        moved = 1;
         clear_render_components(&g_components);
         g_old_draw_cursor_x = g_draw_cursor_x;
         g_old_draw_cursor_y = g_draw_cursor_y;              
@@ -229,7 +246,8 @@ void input_state_game(void) {
      *------------------------------------------------------------------------*/
     if (key[KEY_DOWN]) {
       /* If the key was previously up */
-      if (!g_keypress_lockout[KEY_DOWN]) {
+      if (!g_keypress_lockout[KEY_DOWN] && moved == 0) {
+        moved = 1;
         clear_render_components(&g_components);
         g_old_draw_cursor_x = g_draw_cursor_x;
         g_old_draw_cursor_y = g_draw_cursor_y;
@@ -497,13 +515,13 @@ void input_state_game(void) {
      *------------------------------------------------------------------------*/ 
     if (key[KEY_L]) {
       if(!g_keypress_lockout[KEY_L]) {
+        game_timer_set(0);
         result = load_progress_file("progress.dat", g_picture);
         if(result != 0) {
           printf("Unable to load progress file!\n");
           g_game_done = 1;
         } else {         
-          /* Reset the timer so it counts up correctly */
-          g_int_counter = 0;
+          game_timer_set(1);
           clear_render_components(&g_components);
           g_components.render_all = 1;
           g_update_screen = 1;

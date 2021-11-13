@@ -61,10 +61,17 @@ extern int prop_font_offset[];
 extern int g_update_screen;
 
 /* A counter used by the interrupt to update the status screen */
-extern volatile unsigned long g_int_counter;
+extern volatile unsigned long g_frame_counter;
+
+/* Set to true when the timer triggers, so processing for the new frame
+   can begin */
+extern volatile int g_next_frame;
 
 /* The elapsed play time for the loaded picture */
 extern volatile unsigned int g_elapsed_time;
+
+/* A counter to count down to the next clock update */
+extern int g_time_to_update_elapsed;
 
 /* Should the elapsed time be advancing? */
 extern int g_game_timer_running;
@@ -173,10 +180,6 @@ extern int g_show_map_text;
 
 /* The style of square to draw with */
 extern int g_draw_style;
-
-/* A flag to change stuff once a second rolls over - avoids doing work in
-   the interrupt handler */
-extern int g_seconds_update;
 
 /* Timer to automatically move from logo to title screen if no key is pressed */
 extern int g_title_countdown;

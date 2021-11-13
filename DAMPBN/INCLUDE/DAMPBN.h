@@ -41,12 +41,17 @@ typedef enum {
 void change_state(State new_state, State prev_state);
 
 /*=============================================================================
- * per_second_update
+ * game_timer_set
  *
- * Once a second, the interrupt handler sets a flag.  This function does any
- * processing required as a result of that flag change.  Currently it's just
- * updating the status text.
+ * Used to start or stop the game timer 
  *============================================================================*/
-void per_second_update(void);
+void game_timer_set(int status);
+
+/*=============================================================================
+ * process_timing_stuff
+ *
+ * Decrement counters and do things when they expire
+ *============================================================================*/
+void process_timing_stuff(void);
 
 #endif

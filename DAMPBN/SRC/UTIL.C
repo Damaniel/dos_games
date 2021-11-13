@@ -26,9 +26,12 @@
 
 #define NUM_CATEGORIES 8
 
-volatile unsigned long g_int_counter;
 volatile unsigned int g_elapsed_time;
+volatile unsigned long int g_frame_counter;
+volatile int g_next_frame;
+
 int g_game_timer_running;
+int g_time_to_update_elapsed;
 
 int g_title_countdown;
 
@@ -37,7 +40,6 @@ int g_correct_count;
 
 int g_total_picture_squares;
 
-int g_seconds_update;
 
 Picture *g_picture;
 
@@ -57,7 +59,6 @@ char *g_categories[NUM_CATEGORIES] = {
 int save_progress_file(char *filename, Picture *p) {
   FILE *fp;
   int time, i;
-  char magic[2], dummy;
 
   fp = fopen(filename, "wb");
   if (fp == NULL)
@@ -366,18 +367,8 @@ int check_completion(void) {
  *============================================================================*/
 void int_handler(void) {
   /* do animation stuff here */
-  g_int_counter++;
-
-  if(g_int_counter >= FRAME_RATE) {
-    g_int_counter = 0;
-    g_seconds_update=1;    
-    if(g_game_timer_running == 0) {
-        return; 
-    } else {
-        g_elapsed_time++;
-    }
-  }
-  
+  g_frame_counter++;
+  g_next_frame = 1;
 }
 END_OF_FUNCTION(int_handler);
 
@@ -398,7 +389,6 @@ void init_defaults(void) {
   g_cur_color = 1;
   g_prev_color = 1;
   g_elapsed_time = 0;
-  g_int_counter = 0;
   g_update_screen = 1;
   g_game_timer_running = 0;
   g_mistake_count = 0;
@@ -410,17 +400,16 @@ void init_defaults(void) {
   g_down_scrollbar_height = 0;
   g_show_map_text = 0;
   g_draw_style = STYLE_SOLID;
-
-  g_seconds_update = 0;
-
+  g_next_frame = 0;
+  g_time_to_update_elapsed = FRAME_RATE;
+  
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;
 
   /* Variables used in the interrupt handler */
   LOCK_VARIABLE(g_elapsed_time);
-  LOCK_VARIABLE(g_int_counter);
-  LOCK_VARIABLE(g_components);
-  LOCK_VARIABLE(g_update_screen);
+  LOCK_VARIABLE(g_frame_counter);
+  LOCK_VARIABLE(g_next_frame);
   LOCK_FUNCTION(int_handler);
 
   g_state = STATE_GAME;
