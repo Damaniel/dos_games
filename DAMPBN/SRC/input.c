@@ -19,6 +19,7 @@
    DEALINGS IN THE SOFTWARE.
  */
 #include <allegro.h>
+#include <stdio.h>
 #include "../include/globals.h"
 
 unsigned char g_keypress_lockout[128];
@@ -97,13 +98,10 @@ void input_state_map(void) {
  * input_state_game
  *============================================================================*/
 void input_state_game(void) {
-    ColorSquare c;
     int square_offset, fill_val, pal_val, result;
     int moved;
 
-
     moved = 0;
-
     /*-------------------------------------------------------------------------
      * ESC - exit the game
      *------------------------------------------------------------------------*/

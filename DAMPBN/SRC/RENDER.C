@@ -322,7 +322,7 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
   color_offset = c.fill_value;
 
   if(color_offset == 0) {
-    if (g_cur_color == pal_offset & g_mark_current == 1) {
+    if (g_cur_color == pal_offset && g_mark_current == 1) {
       blit(g_highlight_numbers, 
           dest, 
           pal_offset * NUMBER_BOX_WIDTH,
@@ -519,10 +519,7 @@ void render_map_screen(BITMAP *dest, RenderComponents c) {
  * render_game_screen
  *============================================================================*/
 void render_game_screen(BITMAP *dest, RenderComponents c) {
-int start_index, palette_color, square_x, square_y, area_w, area_h;
-  int swatch_x, swatch_y, pal_index, pal_x, pal_y;
-  int i, j;
-  char render_text[40];
+  int start_index, pal_index, pal_x, pal_y, i, j;
 
   /* Draw the static UI components */
   if (c.render_ui_components || c.render_all) {  
@@ -635,11 +632,24 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   switch(g_state) {
     case STATE_LOGO:
       render_logo(dest, c);
+      break;
+    case STATE_TITLE:
+      break;
     case STATE_GAME:
       render_game_screen(dest, c);
       break;
     case STATE_MAP:
       render_map_screen(dest, c);
+      break;
+    case STATE_LOAD:
+      break;
+    case STATE_SAVE:
+      break;
+    case STATE_HELP:
+      break;
+    case STATE_OPTS:
+      break;
+    default:
       break;
   }
 
@@ -660,7 +670,7 @@ int get_prop_text_width(char *text) {
 	while (*cur != 0) {
 		offset = (*cur) - 32;    
 		width += g_prop_font_width[offset] + 1;
-    *cur++;
+    cur++;
 	}  
 
   return width;
@@ -669,7 +679,7 @@ int get_prop_text_width(char *text) {
 /*=============================================================================
  * render_centered_prop_text
  *============================================================================*/
-int render_centered_prop_text(BITMAP *dest, char *text, int center, int y_pos) {
+void render_centered_prop_text(BITMAP *dest, char *text, int center, int y_pos) {
   int width;
 
   width = get_prop_text_width(text);

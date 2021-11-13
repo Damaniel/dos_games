@@ -40,6 +40,8 @@ void change_state(State new_state, State prev_state) {
       g_update_screen = 1;
       g_title_countdown = 3 * FRAME_RATE;
       break;
+    case STATE_TITLE:
+      break;
     case STATE_GAME:
       if (g_prev_state == STATE_LOGO)
         free_logo();
@@ -55,6 +57,16 @@ void change_state(State new_state, State prev_state) {
       g_show_map_text = 1;
       g_update_screen = 1;    
       game_timer_set(0);
+      break;
+    case STATE_LOAD:
+      break;
+    case STATE_SAVE:
+      break;
+    case STATE_HELP:
+      break;
+    case STATE_OPTS:
+      break;
+    default:
       break;
   }
 

@@ -169,7 +169,7 @@ int get_prop_text_width(char *text);
  *
  * Writes a string centered at 'center' using the proportional font.
  *============================================================================*/
-int render_centered_prop_text(BITMAP *dest, char *text, int center, int y_pos);
+void render_centered_prop_text(BITMAP *dest, char *text, int center, int y_pos);
 
 /*=============================================================================
  * render_prop_text
