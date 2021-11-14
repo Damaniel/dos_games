@@ -21,6 +21,9 @@
 #ifndef __RENDER_H__
 #define __RENDER_H__
 
+#define NEW_COLOR_COUNT   1
+#define NEW_NUMBER_COUNT  12
+
 /* A list of areas of the screen to update when calling render_screen() */
 typedef struct {
   /* The visible part of the work area*/

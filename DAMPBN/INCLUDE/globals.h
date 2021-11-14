@@ -49,6 +49,12 @@
 /* The internal frame rate of various timers */
 #define FRAME_RATE        30
 
+/* Information about picture files that can be loaded */
+#define MAX_FILES   1000
+#define PIC_FILE_PATHSPEC "res/pics/*.pic"
+#define PIC_FILE_DIR "res/pics"
+#define PROGRESS_FILE_DIR "progress"
+
 /* Width and height of all characters from ASCII values 32 to 127 in the
    standard proportional font*/
 extern int g_prop_font_width[];
@@ -193,8 +199,16 @@ extern int g_draw_style;
 /* Timer to automatically move from logo to title screen if no key is pressed */
 extern int g_title_countdown;
 
+/* Title animation controls */
 extern TitleAnimation g_title_anim;
 
+/* The Allegro datafile containing image resources */
 extern DATAFILE *g_res;
+
+/* The items to be displayed in the 'Load file' menu */
+extern PictureItem g_pic_items[MAX_FILES];
+
+/* The number of items to display in the 'Load file' menu */
+extern int g_pic_count;
 
 #endif

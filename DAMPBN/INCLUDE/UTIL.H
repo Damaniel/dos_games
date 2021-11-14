@@ -37,6 +37,7 @@ typedef struct {
   short y;
 } OrderItem;
 
+/* A picture (that the player can color in) */
 typedef struct {
   char image_name[32];
   short w;
@@ -48,8 +49,35 @@ typedef struct {
   char *mistakes;
 } Picture;
 
-#define NEW_COLOR_COUNT   1
-#define NEW_NUMBER_COUNT  12
+/* A collection of metadata regarding a picture and completion progress */
+typedef struct {
+    char category;
+    short width;
+    short height;
+    char colors;
+    int progress;
+} PictureItem;
+
+/*=============================================================================
+ * get_picture_metadata
+ *
+ * Gets information about a Picture file
+ *============================================================================*/
+void get_picture_metadata(char *basepath, char *filename, PictureItem *p);
+
+/*=============================================================================
+ * get_progress_metadata
+ *
+ * Gets information about a progress file
+ *============================================================================*/
+void get_progress_metadata(char *basepath, char *filename, PictureItem *p);
+
+/*=============================================================================
+ * get_picture_files
+ * 
+ * Populates a list of Picture files along with their metadata
+ *============================================================================*/
+void get_picture_files(void);
 
 /*=============================================================================
  * save_progress_file

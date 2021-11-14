@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <dir.h>
 #include "../include/globals.h"
 
 #define NUM_CATEGORIES 8
@@ -54,6 +55,85 @@ char *g_categories[NUM_CATEGORIES] = {
     "Abstract",
     "Pattern"
 };
+
+PictureItem g_pic_items[MAX_FILES];
+int g_pic_count;
+
+/*=============================================================================
+ * get_picture_metadata
+ *============================================================================*/
+void get_picture_metadata(char *basepath, char *filename, PictureItem *p) {
+    char full_file[128];
+    char dummy;
+    FILE *fp;
+    int i;
+
+    sprintf(full_file, "%s/%s.pic", basepath, filename);
+    fp = fopen(full_file, "rb");
+
+    /* Get the relevant fields from this file */
+    /* Category, dimensions, colors */
+    dummy = fgetc(fp);
+    dummy = fgetc(fp);
+    fread(&p->width, 1, sizeof(short), fp);
+    fread(&p->height, 1, sizeof(short), fp);
+    fread(&p->category, 1, sizeof(char), fp);
+    for(i=0;i<32;i++)
+      dummy = fgetc(fp);
+    fread(&p->colors, 1, sizeof(char), fp);
+
+    fclose(fp);    
+}
+
+/*=============================================================================
+ * get_progress_metadata
+ *============================================================================*/
+void get_progress_metadata(char *basepath, char *filename, PictureItem *p) {
+    char full_file[128];
+    char dummy;
+    FILE *fp;
+    int i;
+
+    sprintf(full_file, "%s/%s.pro", basepath, filename);
+    fp = fopen(full_file, "rb");
+    if (fp == NULL) {
+        p->progress = 0;
+        return;
+    }
+
+    for (i=0;i<26;i++)
+        dummy = fgetc(fp);
+
+    fread(&p->progress, 1, sizeof(int), fp);
+
+    fclose(fp);
+}
+
+/*=============================================================================
+ * get_picture_files
+ *============================================================================*/
+void get_picture_files(void) {
+    struct ffblk f;
+    int done, i;
+    int total_files;
+    char names[MAX_FILES][8];
+    char *filename;
+    
+    total_files = 0;
+    done = findfirst(PIC_FILE_PATHSPEC, &f, 0);
+    while (!done && total_files < MAX_FILES) 
+    {
+        filename = strtok(f.ff_name, ".");
+        strncpy(names[total_files], filename, 8);
+        total_files++;
+        done = findnext(&f);
+    } 
+
+    for (i=0; i< total_files; i++) {
+        get_picture_metadata(PIC_FILE_DIR, names[i], &g_pic_items[i]);
+        get_progress_metadata(PROGRESS_FILE_DIR, names[i], &g_pic_items[i]);
+    }
+}
 
 /*=============================================================================
  * save_progress_file
@@ -117,9 +197,9 @@ int load_progress_file(Picture *p) {
   short x, y;
   short width, height;
   char dummy, magic[2];
-  char progress_file[12];
+  char progress_file[128];
 
-  sprintf(progress_file, "%s.pro",  g_picture_file_basename);
+  sprintf(progress_file, "progress/%s.pro",  g_picture_file_basename);
 
   fp = fopen(progress_file, "rb");
   if (fp == NULL) {

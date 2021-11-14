@@ -24,6 +24,7 @@
 #include <time.h>
 #include <dpmi.h>
 #include "../include/globals.h"
+#include "../include/util.h"
 
 BITMAP *buffer;
 DATAFILE *g_res;
@@ -76,8 +77,9 @@ void change_state(State new_state, State prev_state) {
       g_update_screen = 1;
       /* Force display of loading dialog */
       do_render();
-      load_progress_file(g_picture);
+      load_progress_file(g_picture);           
       change_state(STATE_GAME, STATE_LOAD);
+
       break;
     case STATE_SAVE:
       game_timer_set(0);
@@ -143,6 +145,9 @@ void process_timing_stuff(void) {
     g_time_to_update_elapsed--;
   if (g_time_to_update_elapsed <= 0) {
     g_elapsed_time++;
+    if(g_elapsed_time % 60 == 0) {
+      print_mem_free();
+    }
     g_time_to_update_elapsed = FRAME_RATE;
     g_components.render_status_text = 1;
     g_update_screen = 1;
@@ -173,8 +178,6 @@ void print_mem_free(void) {
  *============================================================================*/
 int main(int argc, char *argv[]) {
   int done;
-
-  //print_mem_free();
   
   allegro_init();
   install_keyboard();
@@ -183,8 +186,6 @@ int main(int argc, char *argv[]) {
   install_int(int_handler, 1000/FRAME_RATE);
 
   srand(time(NULL));
-
-  //print_mem_free();
 
   set_gfx_mode(GFX_VGA, 320, 200, 0, 0);
 
@@ -208,7 +209,7 @@ int main(int argc, char *argv[]) {
     allegro_exit();
     exit(1);
   }
-  
+
   init_defaults();
 
   change_state(STATE_LOGO, STATE_NONE);
@@ -236,8 +237,6 @@ int main(int argc, char *argv[]) {
     /* Done in the loop, wait for the next frame */
     g_next_frame = 0;
   }
-
-  //print_mem_free();
 
   free_picture_file(g_picture);
   
