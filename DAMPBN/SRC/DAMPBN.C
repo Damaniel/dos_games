@@ -96,6 +96,8 @@ void change_state(State new_state, State prev_state) {
       break;
     case STATE_LOAD_DIALOG:
       game_timer_set(0);
+      /* Generate the list of picture files */
+      get_picture_files();
       clear_render_components(&g_components);
       g_update_screen = 1;
       /* Force display of loading dialog */

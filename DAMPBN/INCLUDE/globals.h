@@ -209,7 +209,13 @@ extern DATAFILE *g_res;
 /* The items to be displayed in the 'Load file' menu */
 extern PictureItem g_pic_items[MAX_FILES];
 
-/* The number of items to display in the 'Load file' menu */
-extern int g_pic_count;
+/* The index of the selected picture in the load file dialog */
+extern int g_load_picture_index;
+
+/* The picture file offset of the file shown at the top of the list */
+extern int g_load_picture_offset;
+
+/* The number of picture files available to display in the Load File menu */
+extern int g_num_picture_files;
 
 #endif

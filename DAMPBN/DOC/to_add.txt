@@ -9,10 +9,14 @@ Next things to do
 Add 'or ESC' text to the map screen
 
 Help screen
-Save complete dialog
-Load image screen
+Title screen options display:
+  - Open last worked on file
+  - Load file
+  - Exit
+Load image/image select screen
+  - Add it to both the 'L' key in game, and from the title screen
 Completed picture replay screen
 
-Logo -> Title -> Select Image -> Game -> Complete |
-                     ^                            |
-                     -----------------------------|
+Logo -> Title -> Load Image dialog (optional) -> Game -> Complete |
+          ^                                                       |
+          --------------------------------------------------------|

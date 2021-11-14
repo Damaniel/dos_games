@@ -51,6 +51,7 @@ typedef struct {
 
 /* A collection of metadata regarding a picture and completion progress */
 typedef struct {
+    char name[8];
     char category;
     short width;
     short height;

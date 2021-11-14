@@ -709,7 +709,102 @@ void render_screen(BITMAP *dest, RenderComponents c) {
  * render_load_dialog
  *============================================================================*/
 void render_load_dialog(BITMAP *dest, RenderComponents c) {
+  int start_offset, num_files_to_draw;
+  int i;
+  char text[30];
+
   draw_sprite(dest, g_load_dialog, LOAD_DIALOG_X, LOAD_DIALOG_Y);
+
+  /* Figure out what picture offset to draw FROM */
+  start_offset = g_load_picture_offset;
+  if (g_load_picture_offset >= g_num_picture_files) {
+    start_offset = g_num_picture_files - 1;
+  }
+
+  /* Figure out what picture offset to draw TO */
+  num_files_to_draw = LOAD_NUM_VISIBLE_FILES;
+  if((start_offset + LOAD_NUM_VISIBLE_FILES) > g_num_picture_files) {
+    num_files_to_draw = g_num_picture_files - start_offset;
+  }
+
+  /* Iterate through and draw the file list */
+  for(i=start_offset; i < start_offset + num_files_to_draw ; i++) {
+    /* If i = the actively highlighted item, draw a rectangle behind the 
+       text first for highlight */
+    if (i == g_load_picture_index) {
+      rectfill(dest,
+               LOAD_FILE_NAME_X_OFF,
+               LOAD_FILE_NAME_Y_OFF + 
+               ((i-start_offset) * LOAD_FILE_NAME_HEIGHT),
+               LOAD_FILE_NAME_X_OFF + LOAD_FILE_NAME_WIDTH - 1,
+               LOAD_FILE_NAME_Y_OFF + 
+               ((i-start_offset + 1) * LOAD_FILE_NAME_HEIGHT) - 1, 204);
+    }
+    /* Draw the file name */
+    render_prop_text(dest, g_pic_items[i].name, LOAD_FILE_NAME_X_OFF + 1,
+                   LOAD_FILE_NAME_Y_OFF + 
+                   ((i-start_offset) * LOAD_FILE_NAME_HEIGHT) + 1);       
+  }
+    
+  /* Draw the category */
+  rectfill(dest,
+           LOAD_FILE_CATEGORY_X,
+           LOAD_FILE_CATEGORY_Y,
+           LOAD_FILE_CATEGORY_X + LOAD_FILE_CATEGORY_WIDTH - 1,
+           LOAD_FILE_CATEGORY_Y + LOAD_FILE_CATEGORY_HEIGHT - 1, 
+           208);
+  render_centered_prop_text(dest, 
+                     g_categories[(int)g_pic_items[g_load_picture_index].category],
+                     LOAD_FILE_CATEGORY_TEXT_X, LOAD_FILE_CATEGORY_TEXT_Y);
+
+  /* Draw the dimensions */
+  rectfill(dest,
+           LOAD_FILE_XSIZE_X,
+           LOAD_FILE_XSIZE_Y,
+           LOAD_FILE_XSIZE_X + LOAD_FILE_XSIZE_WIDTH - 1,
+           LOAD_FILE_XSIZE_Y + LOAD_FILE_XSIZE_HEIGHT - 1, 
+           208);  
+  rectfill(dest,
+           LOAD_FILE_YSIZE_X,
+           LOAD_FILE_YSIZE_Y,
+           LOAD_FILE_YSIZE_X + LOAD_FILE_YSIZE_WIDTH - 1,
+           LOAD_FILE_YSIZE_Y + LOAD_FILE_YSIZE_HEIGHT - 1, 
+           208);  
+  sprintf(text, "%d", g_pic_items[g_load_picture_index].width);
+  render_centered_prop_text(dest, text,
+                            LOAD_FILE_XSIZE_TEXT_X, LOAD_FILE_XSIZE_TEXT_Y);
+  sprintf(text, "%d", g_pic_items[g_load_picture_index].height);
+  render_centered_prop_text(dest, text,
+                           LOAD_FILE_YSIZE_TEXT_X, LOAD_FILE_YSIZE_TEXT_Y);
+
+  /* Draw the colors */
+  rectfill(dest,
+           LOAD_FILE_COLORS_X,
+           LOAD_FILE_COLORS_Y,
+           LOAD_FILE_COLORS_X + LOAD_FILE_COLORS_WIDTH - 1,
+           LOAD_FILE_COLORS_Y + LOAD_FILE_COLORS_HEIGHT - 1, 
+           208);  
+  sprintf(text, "%d", g_pic_items[g_load_picture_index].colors);
+  render_centered_prop_text(dest, text,
+                     LOAD_FILE_COLORS_TEXT_X, LOAD_FILE_COLORS_TEXT_Y);
+
+  /* Draw the progress */
+  rectfill(dest,
+           LOAD_FILE_PROGRESS_X,
+           LOAD_FILE_PROGRESS_Y,
+           LOAD_FILE_PROGRESS_X + LOAD_FILE_PROGRESS_WIDTH - 1,
+           LOAD_FILE_PROGRESS_Y + LOAD_FILE_PROGRESS_HEIGHT - 1, 
+           208);  
+  if(g_pic_items[i].progress == 0) 
+    sprintf(text, "None yet");
+  else 
+    sprintf(text, "%d/%d", g_pic_items[g_load_picture_index].progress,
+            g_pic_items[g_load_picture_index].width *
+            g_pic_items[g_load_picture_index].height);
+    
+  render_centered_prop_text(dest, text,
+                            LOAD_FILE_PROGRESS_TEXT_X, 
+                            LOAD_FILE_PROGRESS_TEXT_Y);
 }
 
 /*=============================================================================

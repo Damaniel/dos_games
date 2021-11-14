@@ -57,7 +57,11 @@ char *g_categories[NUM_CATEGORIES] = {
 };
 
 PictureItem g_pic_items[MAX_FILES];
-int g_pic_count;
+int g_num_picture_files;
+int g_load_picture_index;
+int g_load_picture_offset;
+
+
 
 /*=============================================================================
  * get_picture_metadata
@@ -130,9 +134,12 @@ void get_picture_files(void) {
     } 
 
     for (i=0; i< total_files; i++) {
+        strncpy(g_pic_items[i].name, names[i], 8);
         get_picture_metadata(PIC_FILE_DIR, names[i], &g_pic_items[i]);
         get_progress_metadata(PROGRESS_FILE_DIR, names[i], &g_pic_items[i]);
     }
+
+    g_num_picture_files = total_files;
 }
 
 /*=============================================================================
@@ -497,6 +504,9 @@ void init_defaults(void) {
   g_draw_style = STYLE_SOLID;
   g_next_frame = 0;
   g_time_to_update_elapsed = FRAME_RATE;
+  g_load_picture_index = 0;
+  g_load_picture_offset = 0;
+  g_num_picture_files = 0;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;
