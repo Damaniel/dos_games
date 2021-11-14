@@ -75,7 +75,7 @@ void change_state(State new_state, State prev_state) {
       game_timer_set(0);
       clear_render_components(&g_components);
       g_update_screen = 1;
-      /* Force display of loading dialog */
+      /* Force display of loading message */
       do_render();
       load_progress_file(g_picture);           
       change_state(STATE_GAME, STATE_LOAD);
@@ -85,7 +85,7 @@ void change_state(State new_state, State prev_state) {
       game_timer_set(0);
       clear_render_components(&g_components);
       g_update_screen = 1;      
-      /* Force display of saving dialog */
+      /* Force display of saving message */
       do_render();
       save_progress_file(g_picture);
       change_state(STATE_GAME, STATE_SAVE);      
@@ -95,11 +95,15 @@ void change_state(State new_state, State prev_state) {
     case STATE_OPTS:
       break;
     case STATE_LOAD_DIALOG:
+      game_timer_set(0);
+      clear_render_components(&g_components);
+      g_update_screen = 1;
+      /* Force display of loading dialog */
+      do_render();           
       break;
     default:
       break;
   }
-
 }
 
 void do_render(void) {

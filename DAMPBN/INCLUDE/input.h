@@ -44,6 +44,13 @@ void input_state_logo(void);
 void input_state_title(void);
 
 /*=============================================================================
+ * input_state_load_dialog
+ *
+ * Process input for the load dialog state (g_cur_state = STATE_LOAD_DIALOG)
+ *============================================================================*/
+void input_state_load_dialog(void);
+
+/*=============================================================================
  * input_state_game
  *
  * Process input for the in game state (g_cur_state = STATE_GAME)

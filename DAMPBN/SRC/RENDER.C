@@ -684,16 +684,17 @@ void render_screen(BITMAP *dest, RenderComponents c) {
       render_map_screen(dest, c);
       break;
     case STATE_LOAD:
-      render_load_dialog(dest, c);
+      render_load_message(dest, c);
       break;
     case STATE_SAVE:
-      render_save_dialog(dest, c);
+      render_save_message(dest, c);
       break;
     case STATE_HELP:
       break;
     case STATE_OPTS:
       break;
     case STATE_LOAD_DIALOG:
+      render_load_dialog(dest, c);
       break;
     default:
       break;
@@ -704,11 +705,24 @@ void render_screen(BITMAP *dest, RenderComponents c) {
   g_update_screen = 0;
 }
 
-void render_save_dialog(BITMAP *dest, RenderComponents c) {
+/*=============================================================================
+ * render_load_dialog
+ *============================================================================*/
+void render_load_dialog(BITMAP *dest, RenderComponents c) {
+  draw_sprite(dest, g_load_dialog, LOAD_DIALOG_X, LOAD_DIALOG_Y);
+}
+
+/*=============================================================================
+ * render_save_message
+ *============================================================================*/
+void render_save_message(BITMAP *dest, RenderComponents c) {
   draw_sprite(dest, g_save_notice, SAVING_MESSAGE_X, SAVING_MESSAGE_Y);
 }
 
-void render_load_dialog(BITMAP *dest, RenderComponents c) {
+/*=============================================================================
+ * render_load_message
+ *============================================================================*/
+void render_load_message(BITMAP *dest, RenderComponents c) {
   draw_sprite(dest, g_load_notice, LOADING_MESSAGE_X, LOADING_MESSAGE_Y);
 }
 

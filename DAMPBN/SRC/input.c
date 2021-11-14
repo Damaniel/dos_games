@@ -42,18 +42,49 @@ void process_input(int state) {
       input_state_map();
       break;
     case STATE_SAVE:
+      /* No keypresses are supported here */
       break;
     case STATE_LOAD:
+      /* No keypresses are supported here */
       break;
     case STATE_HELP:
       break;
     case STATE_OPTS:
       break;
     case STATE_LOAD_DIALOG:
+      input_state_load_dialog();
       break;
     default:
       break;
   }
+}
+
+/*=============================================================================
+ * input_state_load_dialog
+ *============================================================================*/
+void input_state_load_dialog(void) {
+    if (key[KEY_ENTER]) {
+      if (!g_keypress_lockout[KEY_ENTER]) {
+        change_state(STATE_GAME, STATE_LOAD_DIALOG);
+        g_keypress_lockout[KEY_ENTER] = 1;          
+      }
+    }
+    if (!key[KEY_ENTER] && g_keypress_lockout[KEY_ENTER]) {
+      g_keypress_lockout[KEY_M] = 0;
+    }    
+
+    if (key[KEY_ESC]) {
+      if (!g_keypress_lockout[KEY_ESC]) {
+        /* Change to the appropriate state.  Could be the title screen
+           or the game screen depending on where the dialog was invoked.
+           The appropriate state is actually held in g_prev_state. */
+        change_state(g_prev_state, STATE_LOAD_DIALOG);
+        g_keypress_lockout[KEY_ESC] = 1;          
+      }
+    }
+    if (!key[KEY_ESC] && g_keypress_lockout[KEY_ESC]) {
+      g_keypress_lockout[KEY_ESC] = 0;
+    }   
 }
 
 /*=============================================================================
@@ -538,7 +569,7 @@ void input_state_game(void) {
      *------------------------------------------------------------------------*/ 
     if (key[KEY_L]) {
       if(!g_keypress_lockout[KEY_L]) {
-          change_state(STATE_LOAD, STATE_GAME);
+          change_state(STATE_LOAD_DIALOG, STATE_GAME);
           g_keypress_lockout[KEY_L] = 1;      
       }
     }
