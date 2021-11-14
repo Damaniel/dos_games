@@ -94,6 +94,8 @@ void change_state(State new_state, State prev_state) {
       break;
     case STATE_OPTS:
       break;
+    case STATE_LOAD_DIALOG:
+      break;
     default:
       break;
   }

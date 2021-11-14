@@ -116,6 +116,7 @@ BITMAP *g_main_buttons;
 BITMAP *g_prop_font;
 BITMAP *g_save_notice;
 BITMAP *g_load_notice;
+BITMAP *g_load_dialog;
 
 RenderComponents g_components;
 TitleAnimation g_title_anim;
@@ -692,6 +693,8 @@ void render_screen(BITMAP *dest, RenderComponents c) {
       break;
     case STATE_OPTS:
       break;
+    case STATE_LOAD_DIALOG:
+      break;
     default:
       break;
   }
@@ -794,7 +797,7 @@ int load_graphics(void) {
   g_main_buttons = (BITMAP *)g_res[RES_BUTTONS].dat;
   g_save_notice = (BITMAP *)g_res[RES_SAVING].dat;
   g_load_notice = (BITMAP *)g_res[RES_LOADING].dat;
-
+  g_load_dialog = (BITMAP *)g_res[RES_LOADDIAG].dat;
   return 0;
 
 }

@@ -113,6 +113,7 @@ extern BITMAP *g_main_buttons;
 extern BITMAP *g_prop_font;
 extern BITMAP *g_save_notice;
 extern BITMAP *g_load_notice;
+extern BITMAP *g_load_dialog;
 
 /* The parts of the screen to render */
 extern RenderComponents g_components;

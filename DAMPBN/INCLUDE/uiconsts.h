@@ -129,11 +129,71 @@
 #define SCROLLBAR_INTERIOR_COLOR   202
 #define SCROLLBAR_BORDER_COLOR     208
 
+/* The 'Saving...' message when you press S while working on a picture */
 #define SAVING_MESSAGE_X           144
 #define SAVING_MESSAGE_Y           146
 
+/* The 'Loading...' message when you've selected a picture to load */
 #define LOADING_MESSAGE_X          138
 #define LOADING_MESSAGE_Y          146
+
+/* The load picture dialog */
+#define LOAD_DIALOG_X               88
+#define LOAD_DIALOG_Y               42
+
+/* Position and size of the first file name item */
+#define LOAD_FILE_NAME_X_OFF        (LOAD_DIALOG_X) + 7
+#define LOAD_FILE_NAME_Y_OFF        (LOAD_DIALOG_Y) + 18
+#define LOAD_FILE_NAME_WIDTH        49 
+#define LOAD_FILE_NAME_HEIGHT        9
+
+/* How many files can we see at a time? */
+#define LOAD_NUM_VISIBLE_FILES      10
+
+/* The position of the top of the file selector scrollbar */
+#define LOAD_FILE_SCROLLBAR_X       (LOAD_DIALOG_X) + 57
+#define LOAD_FILE_SCROLLBAR_Y       (LOAD_DIALOG_Y) + 18
+
+/* The width of the scrollbar.  The height and y position of the actual 
+   bar are dynamic, so are defined via variables */
+#define LOAD_FILE_SCROLLBAR_WIDTH    4
+
+/* The dimensions and sizes of the boxes that hold Picture metadata */
+
+#define LOAD_FILE_CATEGORY_X         (LOAD_DIALOG_X) + 65
+#define LOAD_FILE_CATEGORY_Y         (LOAD_DIALOG_Y) + 28
+#define LOAD_FILE_CATEGORY_WIDTH     72
+#define LOAD_FILE_CATEGORY_HEIGHT     9
+#define LOAD_FILE_CATEGORY_TEXT_X    (LOAD_DIALOG_X) + 101
+#define LOAD_FILE_CATEGORY_TEXT_Y    (LOAD_DIALOG_Y) + 29
+
+#define LOAD_FILE_XSIZE_X            (LOAD_DIALOG_X) + 65
+#define LOAD_FILE_XSIZE_Y            (LOAD_DIALOG_Y) + 51
+#define LOAD_FILE_XSIZE_WIDTH        29
+#define LOAD_FILE_XSIZE_HEIGHT        9
+#define LOAD_FILE_XSIZE_TEXT_X       (LOAD_DIALOG_X) + 79
+#define LOAD_FILE_XSIZE_TEXT_Y       (LOAD_DIALOG_Y) + 52
+
+#define LOAD_FILE_YSIZE_X            (LOAD_DIALOG_X) + 108
+#define LOAD_FILE_YSIZE_Y            (LOAD_DIALOG_Y) + 51
+#define LOAD_FILE_YSIZE_WIDTH        29
+#define LOAD_FILE_YSIZE_HEIGHT        9
+#define LOAD_FILE_YSIZE_TEXT_X       (LOAD_DIALOG_X) + 122
+#define LOAD_FILE_YSIZE_TEXT_Y       (LOAD_DIALOG_Y) + 52
+
+#define LOAD_FILE_COLORS_X           (LOAD_DIALOG_X) + 65
+#define LOAD_FILE_COLORS_Y           (LOAD_DIALOG_Y) + 74
+#define LOAD_FILE_COLORS_WIDTH       72
+#define LOAD_FILE_COLORS_HEIGHT       9
+#define LOAD_FILE_COLORS_TEXT_X      (LOAD_DIALOG_X) + 101   
+#define LOAD_FILE_COLORS_TEXT_Y      (LOAD_DIALOG_Y) + 75
+
+#define LOAD_FILE_PROGRESS_X         (LOAD_DIALOG_X) + 65
+#define LOAD_FILE_PROGRESS_Y         (LOAD_DIALOG_Y) + 97
+#define LOAD_FILE_PROGRESS_WIDTH     72
+#define LOAD_FILE_PROGRESS_HEIGHT     9
+#define LOAD_FILE_PROGRESS_TEXT_X    (LOAD_DIALOG_X) + 101    
+#define LOAD_FILE_PROGRESS_TEXT_Y    (LOAD_DIALOG_Y) + 98
 
 /* Pick the button set depending on whether a button  is pressed or not */
 #define BUTTON_DEFAULT_OFFSET      0

@@ -49,6 +49,8 @@ void process_input(int state) {
       break;
     case STATE_OPTS:
       break;
+    case STATE_LOAD_DIALOG:
+      break;
     default:
       break;
   }
