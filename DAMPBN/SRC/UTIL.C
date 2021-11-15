@@ -60,7 +60,7 @@ PictureItem g_pic_items[MAX_FILES];
 int g_num_picture_files;
 int g_load_picture_index;
 int g_load_picture_offset;
-
+int g_load_cursor_offset;
 
 
 /*=============================================================================
@@ -506,6 +506,7 @@ void init_defaults(void) {
   g_time_to_update_elapsed = FRAME_RATE;
   g_load_picture_index = 0;
   g_load_picture_offset = 0;
+  g_load_cursor_offset = 0;
   g_num_picture_files = 0;
 
   for(i=0; i<128; i++)

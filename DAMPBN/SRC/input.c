@@ -85,9 +85,60 @@ void input_state_load_dialog(void) {
     if (!key[KEY_ESC] && g_keypress_lockout[KEY_ESC]) {
       g_keypress_lockout[KEY_ESC] = 0;
     }   
-}
 
+    /* Need the following */
+    /* index - the actual value of the picture to load */
+    /* offset - the index of the top position on the dialog */
+    /* dialog_index - the position of the highlighted entry in the dialog */
+
+    if (key[KEY_DOWN]) {
+      /* If the key was previously up */
+      if (!g_keypress_lockout[KEY_DOWN]) {
+        g_load_picture_index++;
+        if (g_load_picture_index >= g_num_picture_files) {
+          g_load_picture_index = g_num_picture_files -1;
+        }
+        else {
+          g_load_cursor_offset++;
+          if(g_load_cursor_offset >= LOAD_NUM_VISIBLE_FILES) {
+            g_load_picture_offset++;            
+            g_load_cursor_offset = LOAD_NUM_VISIBLE_FILES -1;
+          }
+        }
+        g_update_screen = 1;
+        g_keypress_lockout[KEY_DOWN] = 1;
+      }
+    }
+    if (!key[KEY_DOWN] && g_keypress_lockout[KEY_DOWN]) {
+      g_keypress_lockout[KEY_DOWN] = 0;
+    }
+
+    if (key[KEY_UP]) {
+      /* If the key was previously up */
+      if (!g_keypress_lockout[KEY_UP]) {
+        g_load_picture_index--;
+        if (g_load_picture_index < 0) {
+          g_load_picture_index = 0;
+        }
+        else {
+          g_load_cursor_offset--;
+          if(g_load_cursor_offset < 0) {
+            g_load_picture_offset--;
+            g_load_cursor_offset = 0;
+          }
+        }
+        g_update_screen = 1;
+        g_keypress_lockout[KEY_UP] = 1;
+      }
+    }
+    if (!key[KEY_UP] && g_keypress_lockout[KEY_UP]) {
+      g_keypress_lockout[KEY_UP] = 0;
+    }
+
+}
 /*=============================================================================
+
+
  * input_state_logo
  *============================================================================*/
 void input_state_logo(void) {
