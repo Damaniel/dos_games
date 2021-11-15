@@ -37,6 +37,8 @@ int g_game_done;
  * change_state
  *============================================================================*/
 void change_state(State new_state, State prev_state) {
+  char name[80];
+
   /* Do stuff */
   g_state = new_state;
   g_prev_state = prev_state;
@@ -50,13 +52,28 @@ void change_state(State new_state, State prev_state) {
       g_title_countdown = 3 * FRAME_RATE;
       break;
     case STATE_TITLE:
-      load_title();
-      set_palette(title_pal);
+      /* If we're coming back from pressing ESC on the load dialog, skip
+         some of the init stuff */        
+      if(g_prev_state != STATE_LOAD_DIALOG) {
+         g_title_anim.update_background = 1;          
+         load_title();        
+      }
       g_title_anim.color_start_counter = FRAME_RATE / 2;
-      g_title_anim.update_background = 1;  
       g_update_screen = 1;
+      do_render();      
       break;
     case STATE_GAME:
+      /* If the player just picked a file to load, load it and any progress
+         file that exists */
+      if (prev_state == STATE_LOAD_DIALOG) {
+        if(g_load_new_file == 1) {
+          init_new_pic_defaults();     
+          free_picture_file(g_picture);    
+          sprintf(name, "%s/%s.pic", PIC_FILE_DIR, g_picture_file_basename);
+          g_picture = load_picture_file(name);
+          load_progress_file(g_picture);
+        }
+      }
       set_palette(game_pal);
       clear_render_components(&g_components);
       g_components.render_all = 1;
@@ -79,7 +96,6 @@ void change_state(State new_state, State prev_state) {
       do_render();
       load_progress_file(g_picture);           
       change_state(STATE_GAME, STATE_LOAD);
-
       break;
     case STATE_SAVE:
       game_timer_set(0);
@@ -95,13 +111,14 @@ void change_state(State new_state, State prev_state) {
     case STATE_OPTS:
       break;
     case STATE_LOAD_DIALOG:
+      /* Reset the load dialog positions and such*/
+      init_load_dialog_defaults();
+      /* Turn the timer off in case we're in the game */
       game_timer_set(0);
       /* Generate the list of picture files */
       get_picture_files();
       clear_render_components(&g_components);
-      g_update_screen = 1;
-      /* Force display of loading dialog */
-      do_render();           
+      g_update_screen = 1;      
       break;
     default:
       break;
@@ -109,7 +126,7 @@ void change_state(State new_state, State prev_state) {
 }
 
 void do_render(void) {
-  if(g_update_screen) {
+  if(g_update_screen) {    
     render_screen(buffer, g_components);
     blit(buffer, screen, 0, 0, 0, 0, 320, 200);
     clear_render_components(&g_components);
@@ -130,8 +147,11 @@ void process_timing_stuff(void) {
     }
   }
 
-  /* Update the animations on the title screen */
-  if (g_state == STATE_TITLE) {
+  /* Update the animations on the title screen 
+     This is also called when showing the loading dialog on the title
+     screen. */
+  if (g_state == STATE_TITLE || 
+     (g_state == STATE_LOAD_DIALOG && g_prev_state == STATE_TITLE)) {
     g_title_anim.new_color_counter--;
     g_title_anim.color_start_counter--;
 
@@ -153,9 +173,6 @@ void process_timing_stuff(void) {
     g_time_to_update_elapsed--;
   if (g_time_to_update_elapsed <= 0) {
     g_elapsed_time++;
-    if(g_elapsed_time % 60 == 0) {
-      print_mem_free();
-    }
     g_time_to_update_elapsed = FRAME_RATE;
     g_components.render_status_text = 1;
     g_update_screen = 1;
@@ -185,8 +202,7 @@ void print_mem_free(void) {
  * main
  *============================================================================*/
 int main(int argc, char *argv[]) {
-  int done;
-  
+
   allegro_init();
   install_keyboard();
   install_timer();
@@ -209,23 +225,13 @@ int main(int argc, char *argv[]) {
   }
 
   load_graphics();
-
-  g_picture = load_picture_file(argv[1]);
-  if (g_picture == NULL) {
-    set_gfx_mode(GFX_TEXT, 80, 25, 0, 0);    
-    printf("Unable to load picture!\n");
-    allegro_exit();
-    exit(1);
-  }
-
   init_defaults();
 
   change_state(STATE_LOGO, STATE_NONE);
-  
+
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);
 
   while(!g_game_done) {  
-
     /* Wait until the next frame ticks */
     while (!g_next_frame) {
        rest(1); 
@@ -236,11 +242,6 @@ int main(int argc, char *argv[]) {
 
     /* Get input */
     process_input(g_state);
-
-    /* Check to see if we're done with the picture */
-    done = check_completion();
-    if (done)
-      g_game_done = 1;
 
     /* Done in the loop, wait for the next frame */
     g_next_frame = 0;

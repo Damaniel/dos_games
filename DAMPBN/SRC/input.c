@@ -20,6 +20,7 @@
  */
 #include <allegro.h>
 #include <stdio.h>
+#include <string.h>
 #include "../include/globals.h"
 
 unsigned char g_keypress_lockout[128];
@@ -63,14 +64,18 @@ void process_input(int state) {
  * input_state_load_dialog
  *============================================================================*/
 void input_state_load_dialog(void) {
+
     if (key[KEY_ENTER]) {
       if (!g_keypress_lockout[KEY_ENTER]) {
+        strncpy(g_picture_file_basename, 
+                g_pic_items[g_load_picture_index].name, 8);
+        g_load_new_file = 1;
         change_state(STATE_GAME, STATE_LOAD_DIALOG);
         g_keypress_lockout[KEY_ENTER] = 1;          
       }
     }
     if (!key[KEY_ENTER] && g_keypress_lockout[KEY_ENTER]) {
-      g_keypress_lockout[KEY_M] = 0;
+      g_keypress_lockout[KEY_ENTER] = 0;
     }    
 
     if (key[KEY_ESC]) {
@@ -78,6 +83,8 @@ void input_state_load_dialog(void) {
         /* Change to the appropriate state.  Could be the title screen
            or the game screen depending on where the dialog was invoked.
            The appropriate state is actually held in g_prev_state. */
+        g_load_new_file = 0;
+        clear_keybuf();        
         change_state(g_prev_state, STATE_LOAD_DIALOG);
         g_keypress_lockout[KEY_ESC] = 1;          
       }
@@ -154,7 +161,7 @@ void input_state_logo(void) {
 void input_state_title(void) {
     if(keypressed()) {
       clear_keybuf();
-      change_state(STATE_GAME, STATE_TITLE);
+      change_state(STATE_LOAD_DIALOG, STATE_TITLE);
     }
 }
 
@@ -206,7 +213,7 @@ void input_state_map(void) {
  *============================================================================*/
 void input_state_game(void) {
     int square_offset, fill_val, pal_val;
-    int moved;
+    int moved, done;
 
     moved = 0;
     /*-------------------------------------------------------------------------
@@ -535,6 +542,10 @@ void input_state_game(void) {
              g_picture->draw_order[g_correct_count].x = g_draw_position_x;
              g_picture->draw_order[g_correct_count].y = g_draw_position_y;
              g_correct_count++;
+             /* Check to see if we're done with the picture */
+             done = check_completion();
+             if (done)
+               g_game_done = 1;             
            }
         }
         clear_render_components(&g_components);

@@ -221,4 +221,7 @@ extern int g_load_cursor_offset;
 /* The number of picture files available to display in the Load File menu */
 extern int g_num_picture_files;
 
+/* A flag that's set when the 
+   load dialog confirms a new file should be loaded */
+extern int g_load_new_file;
 #endif

@@ -62,6 +62,7 @@ int g_load_picture_index;
 int g_load_picture_offset;
 int g_load_cursor_offset;
 
+int g_load_new_file;
 
 /*=============================================================================
  * get_picture_metadata
@@ -148,9 +149,10 @@ void get_picture_files(void) {
 int save_progress_file(Picture *p) {
   FILE *fp;
   int time, i;
-  char progress_file[12];
+  char progress_file[80];
 
-  sprintf(progress_file, "%s.pro",  g_picture_file_basename);
+  sprintf(progress_file, "%s/%s.pro",  PROGRESS_FILE_DIR, 
+          g_picture_file_basename);
 
   fp = fopen(progress_file, "wb");
   if (fp == NULL)
@@ -445,6 +447,11 @@ Picture *load_picture_file(char *filename) {
  * free_picture_file
  *============================================================================*/
 void free_picture_file(Picture *p) {
+
+  /* It's never been allocated at all, don't free it */
+  if(p == NULL) 
+    return;
+
   if(p->pic_squares != NULL) 
     free(p->pic_squares);
   if(p->draw_order != NULL)
@@ -474,25 +481,17 @@ void int_handler(void) {
 }
 END_OF_FUNCTION(int_handler);
 
-/*=============================================================================
- * init_defaults
- *============================================================================*/
-void init_defaults(void) {
-  int i;
-  
+void init_new_pic_defaults(void) {
   g_draw_cursor_x = 0;
   g_draw_cursor_y = 0;
   g_pic_render_x = 0;
   g_pic_render_y = 0;
   g_draw_position_x = 0;
   g_draw_position_y = 0;
-  g_game_done = 0;
   g_palette_page = 0;
   g_cur_color = 1;
   g_prev_color = 1;
   g_elapsed_time = 0;
-  g_update_screen = 1;
-  g_game_timer_running = 0;
   g_mistake_count = 0;
   g_correct_count = 0;
   g_mark_current = 0;
@@ -500,14 +499,35 @@ void init_defaults(void) {
   g_across_scrollbar_width = 0;
   g_down_scrollbar_y = 0;
   g_down_scrollbar_height = 0;
+
+}
+
+void init_load_dialog_defaults(void) {
+  g_load_picture_index = 0;
+  g_load_picture_offset = 0;
+  g_load_cursor_offset = 0;
+  g_num_picture_files = 0;  
+  g_load_new_file = 0;
+}
+
+/*=============================================================================
+ * init_defaults
+ *============================================================================*/
+void init_defaults(void) {
+  int i;
+  
+  init_new_pic_defaults();
+  init_load_dialog_defaults();
+  
+  g_game_done = 0;
+  g_update_screen = 1;
+  g_game_timer_running = 0;  
   g_show_map_text = 0;
   g_draw_style = STYLE_SOLID;
   g_next_frame = 0;
   g_time_to_update_elapsed = FRAME_RATE;
-  g_load_picture_index = 0;
-  g_load_picture_offset = 0;
-  g_load_cursor_offset = 0;
-  g_num_picture_files = 0;
+
+  g_picture = NULL;
 
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;

@@ -126,6 +126,20 @@ int check_completion(void);
 void int_handler(void);
 
 /*=============================================================================
+ * init_new_pic_defaults
+ *
+ * Resets picture-specific variables to their default values
+ *============================================================================*/
+void init_new_pic_defaults(void);
+
+/*=============================================================================
+ * init_load_dialog_defaults
+ *
+ * Resets load dialog-specific variables to their default values
+ *============================================================================*/
+void init_load_dialog_defaults(void);
+
+/*=============================================================================
  * init_defaults
  *
  * Resets various variables to their default values

@@ -186,10 +186,13 @@ void render_logo(BITMAP *dest, RenderComponents c) {
   blit(g_logo, dest, 0, 0, 0, 0, g_logo->w, g_logo->h);
 }
 
+/*=============================================================================
+ * render_title_screen
+ *============================================================================*/
 void render_title_screen(BITMAP *dest, RenderComponents c) {
   int i,j;
   if(g_title_anim.update_background == 1) {      
-    /* Restore the original palette */
+    set_palette(title_pal);      
     clear_to_color(g_title_area, 208);    
     for(i=0;i<32;i++) {
       for (j=3; j<17; j++) {
@@ -713,6 +716,12 @@ void render_load_dialog(BITMAP *dest, RenderComponents c) {
   int i;
   char text[30];
 
+  /* If the load dialog was invoked from the title screen, keep drawing 
+     the title screen parts */
+  if (g_prev_state == STATE_TITLE) {
+    render_title_screen(dest, c);
+  }
+
   draw_sprite(dest, g_load_dialog, LOAD_DIALOG_X, LOAD_DIALOG_Y);
 
   /* Figure out what picture offset to draw FROM */
@@ -796,7 +805,7 @@ void render_load_dialog(BITMAP *dest, RenderComponents c) {
     
   render_centered_prop_text(dest, text,
                             LOAD_FILE_PROGRESS_TEXT_X, 
-                            LOAD_FILE_PROGRESS_TEXT_Y);
+                            LOAD_FILE_PROGRESS_TEXT_Y);                         
 }
 
 /*=============================================================================
@@ -860,10 +869,15 @@ void render_prop_text(BITMAP *dest, char *text, int x_pos, int y_pos) {
 	}
 }
 
+/*=============================================================================
+ * load_title
+ *============================================================================*/
 int load_title(void) {
-  clear_to_color(screen, 208);
 
-  g_title_area = create_bitmap(SCREEN_W, SCREEN_H);
+  if(g_title_area == NULL) {
+     g_title_area = create_bitmap(SCREEN_W, SCREEN_H);
+     clear_to_color(g_title_area, 208);
+  }
   g_title_box = (BITMAP *)g_res[RES_TITLEBOX].dat;
   return 0;
 }
@@ -899,6 +913,11 @@ int load_graphics(void) {
   g_save_notice = (BITMAP *)g_res[RES_SAVING].dat;
   g_load_notice = (BITMAP *)g_res[RES_LOADING].dat;
   g_load_dialog = (BITMAP *)g_res[RES_LOADDIAG].dat;
+
+  /* We only want to create this once, so we check for null before we 
+     create it */
+  g_title_area = NULL;
+
   return 0;
 
 }
