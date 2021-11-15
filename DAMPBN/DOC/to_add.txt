@@ -1,22 +1,18 @@
 Next things to do
 
 - Refactor some of the code 
-   - Find opportunities to remove duplicated code  
-- Add loading screen.  Keep count of loaded elements, use interrupt to draw
+   - Find opportunities to remove duplicated code 
 - Figure out something to do with the upper right area of the screen 
 
-(in progress) Make a better game loop!
 Add 'or ESC' text to the map screen
 
 Help screen
-Title screen options display:
-  - Open last worked on file
-  - Load file
-  - Exit
-Load image/image select screen
-  - Add it to both the 'L' key in game, and from the title screen
+In the load picture screen invoked from the title menu, highlight the last 
+ worked on picture (likely based on the time of the most recently accessed 
+ progress file)
+
 Completed picture replay screen
 
-Logo -> Title -> Load Image dialog (optional) -> Game -> Complete |
-          ^                                                       |
-          --------------------------------------------------------|
+Logo -> Title -> Load Image dialog-> Game -> Complete |
+          ^                                           |
+          --------------------------------------------|

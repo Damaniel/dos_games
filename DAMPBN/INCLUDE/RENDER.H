@@ -215,6 +215,22 @@ void render_save_message(BITMAP *dest, RenderComponents c);
 void render_load_message(BITMAP *dest, RenderComponents c);
 
 /*=============================================================================
+ * update_overview_area
+ *
+ * Update the underlying overview area bitmap. Used to seed the entire thing
+ * after loading an in-progress picture
+ *============================================================================*/
+void update_overview_area(void);
+
+/*=============================================================================
+ * update_overview_area_at
+ *
+ * Update a single block (4x4 pixels) of the overview area.  Used by 
+ * update_overview_area and called when a block is placed somewhere
+ *============================================================================*/
+void update_overview_area_at(int i, int j);
+
+/*=============================================================================
  * load_title
  *
  * Load title graphics.
@@ -227,6 +243,13 @@ int load_title(void);
  * Load logo graphics.
  *============================================================================*/
 int load_logo(void);
+
+/*=============================================================================
+ * free_graphics
+ *
+ * Destroy bitmaps created with create_bitmap()
+ *============================================================================*/
+void free_graphics(void);
 
 /*=============================================================================
  * load_graphics

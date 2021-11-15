@@ -253,5 +253,10 @@
 #define EXIT_BUTTON_X              287
 #define EXIT_BUTTON_Y              184
 
-#endif
+#define OVERVIEW_BLOCK_SIZE          4
+#define OVERVIEW_WIDTH              80
+#define OVERVIEW_HEIGHT             50
+#define OVERVIEW_X                 224
+#define OVERVIEW_Y                  10
+#endif 
  

@@ -64,9 +64,6 @@ extern int g_prop_font_height;
    widths defined in prop_font_width) */
 extern int prop_font_offset[];
 
-/* A flag used to notify the game loop that the screen should be updated */
-extern int g_update_screen;
-
 /* A counter used by the interrupt to update the status screen */
 extern volatile unsigned long g_frame_counter;
 
@@ -114,6 +111,8 @@ extern BITMAP *g_prop_font;
 extern BITMAP *g_save_notice;
 extern BITMAP *g_load_notice;
 extern BITMAP *g_load_dialog;
+extern BITMAP *g_overview_box;
+extern BITMAP *g_overview_cursor;
 
 /* The parts of the screen to render */
 extern RenderComponents g_components;

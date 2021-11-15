@@ -1,6 +1,6 @@
 /* Allegro datafile object indexes, produced by grabber v3.12 */
 /* Datafile: c:\projects\dos_ga~1\dampbn\res\dampbn.dat */
-/* Date: Sun Nov 14 09:30:17 2021 */
+/* Date: Mon Nov 15 08:45:03 2021 */
 /* Do not hand edit! */
 
 #define RES_BG_LOWER                         0        /* BMP  */
@@ -16,12 +16,13 @@
 #define RES_MAINAREA                         10       /* BMP  */
 #define RES_NUMBERS                          11       /* BMP  */
 #define RES_NUMS_HI                          12       /* BMP  */
-#define RES_PAGEBUTN                         13       /* BMP  */
-#define RES_PAL_COL                          14       /* BMP  */
-#define RES_PALCURS                          15       /* BMP  */
-#define RES_PROPFONT                         16       /* BMP  */
-#define RES_SAVING                           17       /* BMP  */
-#define RES_SM_PAL                           18       /* BMP  */
-#define RES_TITLEBOX                         19       /* BMP  */
-#define RES_WRONG                            20       /* BMP  */
+#define RES_OVERCURS                         13       /* BMP  */
+#define RES_PAGEBUTN                         14       /* BMP  */
+#define RES_PAL_COL                          15       /* BMP  */
+#define RES_PALCURS                          16       /* BMP  */
+#define RES_PROPFONT                         17       /* BMP  */
+#define RES_SAVING                           18       /* BMP  */
+#define RES_SM_PAL                           19       /* BMP  */
+#define RES_TITLEBOX                         20       /* BMP  */
+#define RES_WRONG                            21       /* BMP  */
 

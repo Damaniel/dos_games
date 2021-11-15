@@ -112,7 +112,6 @@ void input_state_load_dialog(void) {
             g_load_cursor_offset = LOAD_NUM_VISIBLE_FILES -1;
           }
         }
-        g_update_screen = 1;
         g_keypress_lockout[KEY_DOWN] = 1;
       }
     }
@@ -134,7 +133,6 @@ void input_state_load_dialog(void) {
             g_load_cursor_offset = 0;
           }
         }
-        g_update_screen = 1;
         g_keypress_lockout[KEY_UP] = 1;
       }
     }
@@ -159,10 +157,18 @@ void input_state_logo(void) {
  * input_state_title
  *============================================================================*/
 void input_state_title(void) {
-    if(keypressed()) {
+  int key;
+
+  if (keypressed()) {
+    key = readkey();
+    if((key >> 8) == KEY_ESC) {
+      g_game_done = 1;
+    } 
+    else {
       clear_keybuf();
       change_state(STATE_LOAD_DIALOG, STATE_TITLE);
     }
+  }
 }
 
 /*=============================================================================
@@ -199,7 +205,6 @@ void input_state_map(void) {
         }
         clear_render_components(&g_components);
         g_components.render_map = 1;
-        g_update_screen = 1;
         g_keypress_lockout[KEY_C] = 1;          
       }
     }
@@ -262,8 +267,8 @@ void input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
         
         g_components.render_draw_cursor = 1;
-        g_components.render_scrollbars = 1;        
-        g_update_screen = 1;
+        g_components.render_scrollbars = 1;
+        g_components.render_overview_display = 1;        
         g_keypress_lockout[KEY_LEFT] = 1;
       }
     }
@@ -304,7 +309,7 @@ void input_state_game(void) {
 
         g_components.render_draw_cursor = 1;
         g_components.render_scrollbars = 1;
-        g_update_screen = 1;
+        g_components.render_overview_display = 1;        
         g_keypress_lockout[KEY_RIGHT] = 1;
       }
     }
@@ -344,8 +349,8 @@ void input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
 
         g_components.render_draw_cursor = 1;
-        g_components.render_scrollbars = 1;        
-        g_update_screen = 1;
+        g_components.render_scrollbars = 1;
+        g_components.render_overview_display = 1;        
         g_keypress_lockout[KEY_UP] = 1;
       }
     }
@@ -385,8 +390,8 @@ void input_state_game(void) {
         g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
 
         g_components.render_draw_cursor = 1;
-        g_components.render_scrollbars = 1;        
-        g_update_screen = 1;
+        g_components.render_scrollbars = 1;  
+        g_components.render_overview_display = 1;        
         g_keypress_lockout[KEY_DOWN] = 1;
       }
     }
@@ -429,7 +434,7 @@ void input_state_game(void) {
         }  
         g_components.render_palette_area = 1;
         g_components.render_palette_cursor = 1;
-        g_update_screen = 1;
+
         g_keypress_lockout[KEY_P] = 1;
       }
     }
@@ -467,7 +472,7 @@ void input_state_game(void) {
           g_components.render_draw_cursor = 1;
         }    
         g_components.render_palette_cursor = 1;
-        g_update_screen = 1;
+  
         g_keypress_lockout[KEY_OPENBRACE] = 1;
       }
     }
@@ -505,7 +510,6 @@ void input_state_game(void) {
           g_components.render_draw_cursor = 1;
         }                  
         g_components.render_palette_cursor = 1;
-        g_update_screen = 1;
         g_keypress_lockout[KEY_CLOSEBRACE] = 1;
       }
     }
@@ -549,9 +553,15 @@ void input_state_game(void) {
            }
         }
         clear_render_components(&g_components);
+        update_overview_area_at((g_draw_position_x - 
+                               (g_draw_position_x % OVERVIEW_BLOCK_SIZE)) /
+                               OVERVIEW_BLOCK_SIZE,
+                               (g_draw_position_y - 
+                               (g_draw_position_y % OVERVIEW_BLOCK_SIZE)) /
+                               OVERVIEW_BLOCK_SIZE);
         g_components.render_draw_cursor = 1;
         g_components.render_status_text = 1;
-        g_update_screen = 1;
+        g_components.render_overview_display = 1;
         g_keypress_lockout[KEY_SPACE] = 1;
        }
      }
@@ -572,7 +582,6 @@ void input_state_game(void) {
         g_components.render_main_area_squares = 1;
         g_components.render_draw_cursor = 1;
         g_components.render_buttons = 1;
-        g_update_screen = 1;
         g_keypress_lockout[KEY_K] = 1;
       }
     }
@@ -605,7 +614,6 @@ void input_state_game(void) {
         clear_render_components(&g_components);
         g_components.render_main_area_squares = 1;
         g_components.render_draw_cursor = 1;
-        g_update_screen = 1;
         g_keypress_lockout[KEY_T] = 1;      
       }
     }

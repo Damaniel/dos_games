@@ -134,3 +134,57 @@ Data:
   - x * y bytes - an array of 'mistakes'.  For each position of the picture,
     if the value is 0 then the square is correct, otherwise the value is the
     color actually currently in the square.
+
+Rough estimate of non-Allegro malloc()ed memory:
+  Picture - 50 bytes
+  ColorSquare - 6 bytes
+  OrderItem - 4 bytes
+
+
+  pic_squares   (pic_width * pic_height) * 6 bytes
+  draw_order    (pic_width * pic_height) * 4 bytes
+  mistakes      (pic_width * pic_height) bytes
+
+For a 320x200 image, a total of 704,000 bytes is malloc()ed.
+
+Rough estimate of allocated BITMAPs:
+
+Note: Bitmaps are very dynamic in size.  The struct has 44 bytes of 
+      fixed data, some data based on the size of the image, and a 
+      void pointer to extra data.  The numbers below are therefore estimates
+
+There are currently 18 disk bitmaps and 2 memory bitmaps.  The memory bitmaps
+are the size of the screen.  
+
+Fixed memory used by bitmaps: 792 bytes x 18 bitmaps
+Dynamic memory estimate used by bitmaps:  
+  bglower.pcx:    6,541 bytes
+  bg_right.pcx:  22,400 bytes
+  buttons.pcx:    4,444 bytes
+  drawcurs.pcx:     132 bytes
+  holygoat.pcx   64,200 bytes
+  lg_cross.pcx    7,876 bytes
+  lg_dia.pcx      7,876 bytes
+  lg_pal.pcx      7,876 bytes
+  mainarea.pcx   35,870 bytes
+  numbers.pcx     7,876 bytes
+  nums_hi.pcx     7,876 bytes
+  pagebutn.pcx    1,122 bytes
+  pal_col.pcx     1,377 bytes
+  palcurs.pcx       187 bytes
+  propfont.pcx    2,835 bytes
+  sm_pal.pcx      4,301 bytes
+  titlebox.pcx   12,880 bytes
+  wrong.pcx         132 bytes
+  double buffer  64,200 bytes
+  title buffer   64,200 bytes
+  structures     14,256 bytes
+-------------------------------
+  Total:        338,457 bytes
+
+Malloc data + bitmap data = ~1MB
+The actual number is going to be higher.  There's other structures in Allegro
+plus DPMI stuff./10
+
+Total phys + virtual used = ~2MB
+

@@ -484,6 +484,8 @@ END_OF_FUNCTION(int_handler);
 void init_new_pic_defaults(void) {
   g_draw_cursor_x = 0;
   g_draw_cursor_y = 0;
+  g_old_draw_cursor_x = 0;
+  g_old_draw_cursor_y = 0;
   g_pic_render_x = 0;
   g_pic_render_y = 0;
   g_draw_position_x = 0;
@@ -518,9 +520,8 @@ void init_defaults(void) {
   
   init_new_pic_defaults();
   init_load_dialog_defaults();
-  
+
   g_game_done = 0;
-  g_update_screen = 1;
   g_game_timer_running = 0;  
   g_show_map_text = 0;
   g_draw_style = STYLE_SOLID;

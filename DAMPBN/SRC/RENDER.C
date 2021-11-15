@@ -60,8 +60,6 @@ int g_prop_font_offset[FONT_ENTRIES] = {
   334, 339, 344, 348, 353, 357, 362, 367, 372, 377, 382, 387, 390, 391, 394, 399
 };
 
-int g_update_screen;
-
 int g_draw_cursor_x;
 int g_draw_cursor_y;
 
@@ -117,6 +115,8 @@ BITMAP *g_prop_font;
 BITMAP *g_save_notice;
 BITMAP *g_load_notice;
 BITMAP *g_load_dialog;
+BITMAP *g_overview_box;
+BITMAP *g_overview_cursor;
 
 RenderComponents g_components;
 TitleAnimation g_title_anim;
@@ -176,7 +176,6 @@ void update_scrollbar_positions(void) {
      g_across_scrollbar_x = (int)across_scroll_x;                           
      g_across_scrollbar_width = (int)across_scroll_w;
    }
-
 }
 
 /*=============================================================================
@@ -605,6 +604,17 @@ void render_game_screen(BITMAP *dest, RenderComponents c) {
 
   /* Draw the overview window */
   if (c.render_overview_display || c.render_all) {
+    blit(g_overview_box, dest, 0, 0, OVERVIEW_X, OVERVIEW_Y,
+         g_overview_box->w, g_overview_box->h);
+
+    /* Draw a border around the window (to hide any cursor movement) */
+    rect(dest, OVERVIEW_X - 1, OVERVIEW_Y - 1, OVERVIEW_X + OVERVIEW_WIDTH, OVERVIEW_Y + OVERVIEW_HEIGHT, 207);
+
+    /* Draw the cursor around the currently active region of the overview
+       screen */ 
+    draw_sprite(dest, g_overview_cursor, 
+                OVERVIEW_X - 1 + g_pic_render_x / OVERVIEW_BLOCK_SIZE,
+                OVERVIEW_Y - 1 + g_pic_render_y / OVERVIEW_BLOCK_SIZE);
   }
 
   /* Draw updated status text in the lower left part of the display */
@@ -616,6 +626,7 @@ void render_game_screen(BITMAP *dest, RenderComponents c) {
   if(c.render_main_area_squares || c.render_all) {
     /* If the picture is smaller than the play area, only draw the smaller
        area */
+    printf("play area w =%d\nplay_area_h=%d\n", g_play_area_w, g_play_area_h);
     for(i = 0; i < g_play_area_w; i++) {
       for(j = 0; j < g_play_area_h; j++) {
         render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, i, j);
@@ -705,7 +716,6 @@ void render_screen(BITMAP *dest, RenderComponents c) {
 
   /* Clear the render flags */
   clear_render_components(&g_components);
-  g_update_screen = 0;
 }
 
 /*=============================================================================
@@ -720,6 +730,11 @@ void render_load_dialog(BITMAP *dest, RenderComponents c) {
      the title screen parts */
   if (g_prev_state == STATE_TITLE) {
     render_title_screen(dest, c);
+    /* Cover the 'press key to play' box and replace it with instructions */
+    rectfill(dest, 0, 180, 319, 190, 208);
+    render_centered_prop_text(dest, 
+                      "Press UP/DOWN to select a picture and ENTER to continue", 
+                      160, 182);
   }
 
   draw_sprite(dest, g_load_dialog, LOAD_DIALOG_X, LOAD_DIALOG_Y);
@@ -869,6 +884,68 @@ void render_prop_text(BITMAP *dest, char *text, int x_pos, int y_pos) {
 	}
 }
 
+void update_overview_area(void) {
+  int i, j;
+
+  /* I and J represent a block of 4*4 pixels */
+  clear_to_color(g_overview_box, 192);  
+  for(i=0; i< g_picture->w / OVERVIEW_BLOCK_SIZE + 1; i++) {
+    for(j=0; j< g_picture->h / OVERVIEW_BLOCK_SIZE + 1; j++) {
+      update_overview_area_at(i, j);
+    }
+  }
+}
+
+void update_overview_area_at(int x, int y) {
+  /* X and Y represent a block of 4*4 pixels */
+  int start_x, start_y;
+  int end_x, end_y;
+  int i, j, complete_count, error_count;
+  int correct_color, current_color;
+
+  start_x = x * OVERVIEW_BLOCK_SIZE;
+  start_y = y * OVERVIEW_BLOCK_SIZE;
+  if(start_x > g_picture->w && start_y > g_picture->h) 
+    return;
+
+  if(start_x + OVERVIEW_BLOCK_SIZE > g_picture->w) 
+    end_x = g_picture->w;
+  else
+    end_x = start_x + OVERVIEW_BLOCK_SIZE;
+  if(start_y + OVERVIEW_BLOCK_SIZE > g_picture->h)
+    end_y = g_picture->h;
+  else
+    end_y = start_y + OVERVIEW_BLOCK_SIZE;
+
+  complete_count = 0;
+  error_count = 0;
+  for(j = start_y; j < end_y; j++) {
+    for(i = start_x; i < end_x; i++) {
+      correct_color=g_picture->pic_squares[j*g_picture->w + i].pal_entry;
+      current_color=g_picture->pic_squares[j*g_picture->w + i].fill_value;
+      if (current_color == correct_color)
+        complete_count++;
+      else if (current_color != correct_color && current_color != 0)
+        error_count++;
+    }
+  }
+
+  if(complete_count == 0)
+    /* Draw blocks with nothing black */
+    putpixel(g_overview_box, x, y, 208);
+  else if(error_count > 0)
+    /* Draw blocks with a mistake red */
+    putpixel(g_overview_box, x, y, 198);    
+  else if (complete_count > 0 && complete_count <
+           OVERVIEW_BLOCK_SIZE * OVERVIEW_BLOCK_SIZE)
+    /* Draw partial blocks light blue */
+    putpixel(g_overview_box, x, y, 204);
+  else
+    /* Draw completed blocks white */
+    putpixel(g_overview_box, x, y, 207);
+
+}
+
 /*=============================================================================
  * load_title
  *============================================================================*/
@@ -888,6 +965,14 @@ int load_title(void) {
 int load_logo(void) {
   g_logo = (BITMAP *)g_res[RES_HOLYGOAT].dat;
   return 0;
+}
+
+void free_graphics(void) {
+  /* A couple graphics need to be deallocated before shutdown */
+  if(g_overview_box != NULL)
+    destroy_bitmap(g_overview_box);
+  if(g_title_area != NULL)
+    destroy_bitmap(g_title_area);
 }
 
 /*=============================================================================
@@ -913,6 +998,9 @@ int load_graphics(void) {
   g_save_notice = (BITMAP *)g_res[RES_SAVING].dat;
   g_load_notice = (BITMAP *)g_res[RES_LOADING].dat;
   g_load_dialog = (BITMAP *)g_res[RES_LOADDIAG].dat;
+
+  g_overview_box = create_bitmap(OVERVIEW_WIDTH, OVERVIEW_HEIGHT);
+  g_overview_cursor = (BITMAP *)g_res[RES_OVERCURS].dat;
 
   /* We only want to create this once, so we check for null before we 
      create it */
