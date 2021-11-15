@@ -30,6 +30,13 @@
 void process_input(int state);
 
 /*=============================================================================
+ * input_state_help
+ *
+ * Process input for the help state (g_cur_state = STATE_HELP)
+ *============================================================================*/
+void input_state_help(void);
+
+/*=============================================================================
  * input_state_logo
  *
  * Process input for the logo state (g_cur_state = STATE_LOGO)

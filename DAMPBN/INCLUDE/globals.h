@@ -38,6 +38,9 @@
 /* The maximum number of colors in the palette */
 #define MAX_COLORS        64
 
+/* How many pages of help are there */
+#define MAX_HELP_PAGES     6
+
 /* The number of palette colors displayed at once */
 #define PALETTE_COLORS_PER_PAGE     32
 
@@ -223,4 +226,8 @@ extern int g_num_picture_files;
 /* A flag that's set when the 
    load dialog confirms a new file should be loaded */
 extern int g_load_new_file;
+
+/* Which help page is visible */
+extern int g_help_page;
+
 #endif

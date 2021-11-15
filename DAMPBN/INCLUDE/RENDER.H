@@ -215,6 +215,13 @@ void render_save_message(BITMAP *dest, RenderComponents c);
 void render_load_message(BITMAP *dest, RenderComponents c);
 
 /*=============================================================================
+ * render_help_text
+ *
+ * Displays the current help page
+ *============================================================================*/
+void render_help_text(BITMAP *dest, RenderComponents c);
+
+/*=============================================================================
  * update_overview_area
  *
  * Update the underlying overview area bitmap. Used to seed the entire thing

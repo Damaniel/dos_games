@@ -102,6 +102,8 @@ void change_state(State new_state, State prev_state) {
       change_state(STATE_GAME, STATE_SAVE);      
       break;
     case STATE_HELP:
+      game_timer_set(0);
+      g_help_page = 0;
       break;
     case STATE_OPTS:
       break;

@@ -91,6 +91,8 @@ int g_show_map_text;
 
 int g_draw_style;
 
+int g_help_page;
+
 BITMAP *g_logo;
 
 BITMAP *g_title_area;
@@ -703,6 +705,7 @@ void render_screen(BITMAP *dest, RenderComponents c) {
       render_save_message(dest, c);
       break;
     case STATE_HELP:
+      render_help_text(dest, c);
       break;
     case STATE_OPTS:
       break;
@@ -715,6 +718,163 @@ void render_screen(BITMAP *dest, RenderComponents c) {
 
   /* Clear the render flags */
   clear_render_components(&g_components);
+}
+
+/*=============================================================================
+ * render_help_text
+ *============================================================================*/
+void render_help_text(BITMAP *dest, RenderComponents c) {
+
+  /* Fill in the background */
+  clear_to_color(dest, 194);
+  rect(dest, 0, 0, 319, 199, 205 );
+  rect(dest, 1, 1, 318, 198, 208 );
+
+  switch(g_help_page) {
+    case 0:
+      render_centered_prop_text(dest, "Welcome to Damaniel's Pixel by Number!", 160, 8);
+      render_centered_prop_text(dest, "(The most useless retro 'game' ever made!)", 160, 16);      
+      
+      render_prop_text(dest, "This 'game' (if you want to call it that) is a hyper-casual", 8, 32);   
+      render_prop_text(dest, "paint by number thing.  Think 'old-school physical paint by", 8, 40);   
+      render_prop_text(dest, "number canvas' or 'modern diamond painting', but in a digital", 8, 48);   
+      render_prop_text(dest, "form for a totally obsolete OS!  Fun.", 8, 56);  
+
+      render_prop_text(dest, "The entire goal is to fill in every square of one or more of", 8, 72);  
+      render_prop_text(dest, "the provided picture files with the correct color,", 8, 80);  
+      render_prop_text(dest, "re-creating the original image file, one pixel at a time.", 8, 88);  
+
+      render_prop_text(dest, "The most relevant controls are:", 8, 96);
+      render_prop_text(dest, "- Arrow keys: move the cursor one square", 50, 112);
+      render_prop_text(dest, "- SHIFT + arrow keys: move the cursor one page", 50, 122);
+      render_prop_text(dest, "- [ / ]: Move up and down through the palette", 50, 132);
+      render_prop_text(dest, "- P: Switch palette pages", 50, 142);
+      render_prop_text(dest, "- Space: color a square in!", 50, 152);      
+
+      render_prop_text(dest, "See the following page for a list of every command.", 8, 168);
+      render_prop_text(dest, "Some are extremely useful!.", 8, 176);
+
+      render_prop_text(dest, "- [N]ext Page -", 236, 188);
+      break;
+    case 1:
+      render_centered_prop_text(dest, "Complete List of Controls", 160, 8);
+
+      render_prop_text(dest, "Arrow keys :  move the cursor one square", 8, 24); 
+      render_prop_text(dest, "SHIFT + arrow keys :  move the cursor one page", 8, 34); 
+      render_prop_text(dest, "[ / ] : Move up and down through the palette", 8, 44);
+      render_prop_text(dest, "P : Switch palette pages", 8, 54);
+      render_prop_text(dest, "Space : color a square in!", 8, 64);      
+      render_prop_text(dest, "Space will also clear an incorrectly colored square", 24, 74);
+      render_prop_text(dest, "M : show a map of overall progress", 8, 84);
+      render_prop_text(dest, "K : Highlight all squares of the current color", 8, 94);
+      render_prop_text(dest, "T : Change the drawing style", 8, 104);      
+      render_prop_text(dest, "S : Save your progress", 8, 114);  
+      render_prop_text(dest, "L : Load a new picture", 8, 124);
+      render_prop_text(dest, "H : Help (you must have discovered this one already!)", 8, 134);
+      render_prop_text(dest, "ESC : Return to title, or exit the Help menu", 8, 144);      
+
+      render_prop_text(dest, "- [Previous] Page -", 8, 188);
+      render_prop_text(dest, "- [N]ext Page -", 236, 188);
+      break;
+    case 2:
+      render_centered_prop_text(dest, "Explanation of features", 160, 8);
+
+      render_prop_text(dest, "Highlighting the active color:", 8, 24);           
+      render_prop_text(dest, "  Pressing the K key toggles highlighting of the", 8, 34);
+      render_prop_text(dest, "  current color.  In this mode, unmarked squares of the", 8, 42);  
+      render_prop_text(dest, "  active color will be displayed in gray instead of white,", 8, 50);  
+      render_prop_text(dest, "  making them easier to find.", 8, 58);  
+
+      render_prop_text(dest, "The progress map:", 8, 74); 
+      render_prop_text(dest, "  Pressing the M key will bring up the progress map. This", 8, 84);
+      render_prop_text(dest, "  mode shows an overview of the entire picture, giving a ", 8, 92);
+      render_prop_text(dest, "  detailed overview of overall progress.  Press C to ", 8, 100);
+      render_prop_text(dest, "  toggle the help message on the map screen and M to ", 8, 108);
+      render_prop_text(dest, "  return to the game.", 8, 116);
+
+      render_prop_text(dest, "The palette:", 8, 132); 
+      render_prop_text(dest, "  A picture can consist of up to 64 different colors.", 8, 142);      
+      render_prop_text(dest, "  The bracket keys ([ and ]) are used to move up and", 8, 150);      
+      render_prop_text(dest, "  down through colors in the palette.  For pictures with", 8, 158);
+      render_prop_text(dest, "  more than 32 colors, the additional colors are on a ", 8, 166);
+      render_prop_text(dest, "  second page.  Press P to switch between pages.", 8, 174);
+
+      render_prop_text(dest, "- [Previous] Page -", 8, 188);
+      render_prop_text(dest, "- [N]ext Page -", 236, 188);
+      break;
+    case 3:
+      render_centered_prop_text(dest, "Explanation of (more) features", 160, 8);    
+
+      render_prop_text(dest, "The overview window:", 8, 24);           
+      render_prop_text(dest, "  The box in the upper right corner of the screen is a", 8, 34);
+      render_prop_text(dest, "  high level overview of current progress.  The yellow box", 8, 42);  
+      render_prop_text(dest, "  inside it represents the visible part of the picture as", 8, 50);  
+      render_prop_text(dest, "  shown in the main area. Each 'pixel' in this box ", 8, 58);
+      render_prop_text(dest, "  represents a 4x4 square block of the final image. ", 8, 66);
+
+      render_prop_text(dest, "  The colors used are as follows:", 8, 82); 
+      render_prop_text(dest, "    - White : every square in this region is done", 8, 92);
+      render_prop_text(dest, "    - Blue :  some squares this region are done", 8, 100);
+      render_prop_text(dest, "    - Black : no squares in this region are done ", 8, 108);
+      render_prop_text(dest, "    - Red : one or more squares was filled in wrong", 8, 116);
+
+      render_prop_text(dest, "Mistakes:", 8, 132);           
+      render_prop_text(dest, "  If a square is incorrectly filled in, it will be shown", 8, 142);
+      render_prop_text(dest, "  with an 'X' over it, and the relevant region of the", 8, 150);
+      render_prop_text(dest, "  overview window will show a red pixel.  To fix it, just", 8, 158);
+      render_prop_text(dest, "  use the Space bar to remove the offending square.", 8, 166);
+
+      render_prop_text(dest, "- [Previous] Page -", 8, 188);
+      render_prop_text(dest, "- [N]ext Page -", 236, 188);      
+      break;
+    case 4:
+      render_centered_prop_text(dest, "Explanation of (yet more) features", 160, 8);
+      
+      render_prop_text(dest, "Styles:", 8, 24);
+      render_prop_text(dest, "  The individual squares in the main play area can be", 8, 34);
+      render_prop_text(dest, "  displayed in one of 3 different ways.  The T key", 8, 42);  
+      render_prop_text(dest, "  is used to switch between styles.", 8, 50);
+
+      render_prop_text(dest, "  The available styles are:", 8, 66); 
+      render_prop_text(dest, "    - Solid : the default.  Each square is a solid color", 8, 76);
+      render_prop_text(dest, "    - Diamond : each square has a raised effect", 8, 86);
+      render_prop_text(dest, "    - X : each square looks kind of like a cross stitch ", 8, 96);      
+
+      render_prop_text(dest, "Saving and loading:", 8, 112); 
+      render_prop_text(dest, "  Press the S key to save your progress.", 8, 122);
+      render_prop_text(dest, "  Press the L key to bring up the load menu.", 8, 138);
+      render_prop_text(dest, "  In the load menu, press Up and down to select an image.", 8, 146);
+      render_prop_text(dest, "  Press Enter to select the image, or Esc to cancel.", 8, 154);
+
+      render_prop_text(dest, "- [Previous] Page -", 8, 188);
+      render_prop_text(dest, "- [N]ext Page -", 236, 188);     
+      break;
+    case 5:
+      render_centered_prop_text(dest, "About this program and the author", 160, 8);
+      render_prop_text(dest, "  Damaniel's Paint by Number is copyright 2021 by", 8, 24);
+      render_prop_text(dest, "  Shaun Brandt and his weird company, Holy Meatgoat", 8, 32);  
+      render_prop_text(dest, "  Productions.", 8, 40);  
+
+      render_prop_text(dest, "  The source code is available under the MIT License - see", 8, 56);  
+      render_prop_text(dest, "  the LICENSE file for more information. ", 8, 64); 
+
+      render_prop_text(dest, "  More DOS-compatible software can be found here:", 8, 80);
+      render_centered_prop_text(dest, "https://github.com/Damaniel/dos_games", 160, 96);
+
+      render_prop_text(dest, "  Enjoy, I guess.  I put this together in a couple weeks", 8, 112);  
+      render_prop_text(dest, "  after spending far too long working on real diamond", 8, 120);
+      render_prop_text(dest, "  paintings and needed a break.", 8, 128);
+
+      render_prop_text(dest, "  (Be glad I didn't do the text mode version I was joking", 8, 144); 
+      render_prop_text(dest, "  about with my wife when I was 30 hours into this one...", 8, 152);
+
+      render_centered_prop_text(dest, "...yet.)", 160, 168);
+
+      render_prop_text(dest, "- [Previous] Page -", 8, 188);
+      break;
+    default:
+      break;
+  }
 }
 
 /*=============================================================================

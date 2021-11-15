@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-O2 -Wall
-DEPS=include/dampbn.h include/palette.h include/uiconsts.h include/render.h include/input.h include/util.h
+DEPS=include/dampbn.h include/palette.h include/uiconsts.h include/render.h include/input.h include/util.h include/globals.h
 LIBS=-lalleg
 
 all: dampbn

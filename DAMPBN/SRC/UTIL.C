@@ -527,7 +527,8 @@ void init_defaults(void) {
   g_draw_style = STYLE_SOLID;
   g_next_frame = 0;
   g_time_to_update_elapsed = FRAME_RATE;
-
+  g_help_page = 0;
+  
   g_picture = NULL;
 
   for(i=0; i<128; i++)

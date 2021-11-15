@@ -49,6 +49,7 @@ void process_input(int state) {
       /* No keypresses are supported here */
       break;
     case STATE_HELP:
+      input_state_help();
       break;
     case STATE_OPTS:
       break;
@@ -58,6 +59,73 @@ void process_input(int state) {
     default:
       break;
   }
+}
+
+/*=============================================================================
+ * input_state_help
+ *============================================================================*/
+void input_state_help(void) {
+
+  /* ESC - exit help */
+   if (key[KEY_ESC]) {
+    if (!g_keypress_lockout[KEY_ESC]) {
+        clear_keybuf();        
+        change_state(STATE_GAME, STATE_HELP);
+        g_keypress_lockout[KEY_ESC] = 1;          
+      }
+    }
+    if (!key[KEY_ESC] && g_keypress_lockout[KEY_ESC]) {
+      g_keypress_lockout[KEY_ESC] = 0;
+    }   
+
+   /* P or left arrow - previous help page */
+   if (key[KEY_P]) {
+    if (!g_keypress_lockout[KEY_P]) {
+        g_help_page--;
+        if(g_help_page < 0)
+          g_help_page = 0;          
+        g_keypress_lockout[KEY_P] = 1;
+      }
+    }
+    if (!key[KEY_P] && g_keypress_lockout[KEY_P]) {
+      g_keypress_lockout[KEY_P] = 0;
+    }      
+   if (key[KEY_LEFT]) {
+    if (!g_keypress_lockout[KEY_LEFT]) {
+        g_help_page--;
+        if(g_help_page < 0)
+          g_help_page = 0;          
+        g_keypress_lockout[KEY_LEFT] = 1;          
+      }
+    }
+    if (!key[KEY_LEFT] && g_keypress_lockout[KEY_LEFT]) {
+      g_keypress_lockout[KEY_LEFT] = 0;
+    }   
+
+  /* N or right arrow - next help page */
+  if (key[KEY_N]) {
+    if (!g_keypress_lockout[KEY_N]) {
+        g_help_page++;
+        if(g_help_page >= MAX_HELP_PAGES)
+          g_help_page = MAX_HELP_PAGES - 1;          
+        g_keypress_lockout[KEY_N] = 1;          
+      }
+  }
+  if (!key[KEY_N] && g_keypress_lockout[KEY_N]) {
+    g_keypress_lockout[KEY_N] = 0;
+  }     
+  if (key[KEY_RIGHT]) {
+    if (!g_keypress_lockout[KEY_RIGHT]) {
+      g_help_page++;
+      if(g_help_page >= MAX_HELP_PAGES)
+        g_help_page = MAX_HELP_PAGES - 1;          
+      g_keypress_lockout[KEY_RIGHT] = 1;          
+    }
+  }
+  if (!key[KEY_RIGHT] && g_keypress_lockout[KEY_RIGHT]) {
+    g_keypress_lockout[KEY_RIGHT] = 0;
+  }   
+
 }
 
 /*=============================================================================
@@ -588,6 +656,19 @@ void input_state_game(void) {
     if (!key[KEY_K] && g_keypress_lockout[KEY_K]) {
       g_keypress_lockout[KEY_K] = 0;
     }
+
+    /*-------------------------------------------------------------------------
+     * H - display help
+     *------------------------------------------------------------------------*/ 
+    if (key[KEY_H]) {
+      if (!g_keypress_lockout[KEY_H]) {    
+        change_state(STATE_HELP, STATE_GAME);
+        g_keypress_lockout[KEY_H] = 1;        
+      }
+    }
+    if (!key[KEY_H] && g_keypress_lockout[KEY_H]) {
+      g_keypress_lockout[KEY_H] = 0;
+    }    
 
     /*-------------------------------------------------------------------------
      * M - display progress map
