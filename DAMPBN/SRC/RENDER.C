@@ -626,7 +626,6 @@ void render_game_screen(BITMAP *dest, RenderComponents c) {
   if(c.render_main_area_squares || c.render_all) {
     /* If the picture is smaller than the play area, only draw the smaller
        area */
-    printf("play area w =%d\nplay_area_h=%d\n", g_play_area_w, g_play_area_h);
     for(i = 0; i < g_play_area_w; i++) {
       for(j = 0; j < g_play_area_h; j++) {
         render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, i, j);

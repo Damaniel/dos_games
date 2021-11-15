@@ -163,8 +163,10 @@ void process_timing_stuff(void) {
     g_time_to_update_elapsed--;
   if (g_time_to_update_elapsed <= 0) {
     g_elapsed_time++;
+    /* Dump memory info every so often
     if(g_elapsed_time % 20 == 0)
       print_mem_free();
+    */
     g_time_to_update_elapsed = FRAME_RATE;
     g_components.render_status_text = 1;
   }
