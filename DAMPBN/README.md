@@ -39,20 +39,20 @@ large amounts of code.  Who needs modern standards anyway?
 
 ### What's done
 
-- Pictures can be loaded from the command line
 - Logo screen, title screen
 - Save / Load
 - Funcional timer
 - 'Mark' (highlight) function
 - 3 different pixel styles
 - Overview 'map' showing overall progress
+- High level overview on the main game screen
+- Load picture menu
+- Help screen
 
 ### What's left to do?
 
-Lots.
+Lots. Many of these I'll do, but some probably not.  These include:
 
-- Load picture screen (not from the command line)
-- Help screen
 - Option screen (continue last, start/continue another)
 - Save on exit confirmation
 - Periodic auto-save
