@@ -25,17 +25,27 @@ There are 2 tools in the 'tools' directory.  You can build them by running
 
 ### Build requirements
 
-The toolchain used by this game is very specific (and old!) though - I'll 
-probably toss a pre-assembled DJGPP installation on archive.org somewhere.  It 
-includes:
+This program can be built in one of two ways:
 
-- DJGPP 2.03
-- gcc 2.95.2
-- Allegro 3.12
+- A modern version of DJGPP and Allegro (9.3.0 and 4.2.2 respectively).
+- My 'old' toolchain (gcc 2.95.2 and Allegro 3.12)
 
-Why am I using these?  They hit the sweet spot between functional and bloated.
-Allegro 4.x does way more than I need, and new versions of gcc generate very 
-large amounts of code.  Who needs modern standards anyway?
+The modern version is the default.  Running `make` will generate this version
+of the program.  If you want to build the old version, running 
+`make -f Makefile.295` will do that instead.
+
+Also note that the 2.9.x toolchain isn't widely available - I have a bespoke
+setup on my PC for it.  The main reason to use it is compile speed - it builds
+much faster on older hardware and generates smaller executables.  The newer
+version also loads a fair bit slower on older hardware, though seems to run
+more or less at the same speed.  For playing around on DOSBox, the default
+build is fine - the 'old' build will probably just be offered as binary
+packages for now.
+
+Note that the upx call in `make prod` in the modern DJGPP build will fail
+on DOSbox due to the compiler setting the executable read-only.  For now,
+until I figure out what to do about it, just run upx on it manually if
+desired. 
 
 ### What's done
 

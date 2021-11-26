@@ -234,6 +234,9 @@ void input_state_title(void) {
     } 
     else {
       clear_keybuf();
+      /* Force the enter key to be pressed down.  This behavior seems to 
+         have broken between my old compiler and new one */
+      g_keypress_lockout[KEY_ENTER] = 1;
       change_state(STATE_LOAD_DIALOG, STATE_TITLE);
     }
   }

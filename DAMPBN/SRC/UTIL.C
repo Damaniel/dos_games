@@ -42,7 +42,7 @@ int g_correct_count;
 
 int g_total_picture_squares;
 
-char g_picture_file_basename[8];
+char g_picture_file_basename[9];
 
 Picture *g_picture;
 
@@ -69,7 +69,6 @@ int g_load_new_file;
  *============================================================================*/
 void get_picture_metadata(char *basepath, char *filename, PictureItem *p) {
     char full_file[128];
-    char dummy;
     FILE *fp;
     int i;
 
@@ -78,13 +77,13 @@ void get_picture_metadata(char *basepath, char *filename, PictureItem *p) {
 
     /* Get the relevant fields from this file */
     /* Category, dimensions, colors */
-    dummy = fgetc(fp);
-    dummy = fgetc(fp);
+    fgetc(fp);
+    fgetc(fp);
     fread(&p->width, 1, sizeof(short), fp);
     fread(&p->height, 1, sizeof(short), fp);
     fread(&p->category, 1, sizeof(char), fp);
     for(i=0;i<32;i++)
-      dummy = fgetc(fp);
+    fgetc(fp);
     fread(&p->colors, 1, sizeof(char), fp);
 
     fclose(fp);    
@@ -95,7 +94,6 @@ void get_picture_metadata(char *basepath, char *filename, PictureItem *p) {
  *============================================================================*/
 void get_progress_metadata(char *basepath, char *filename, PictureItem *p) {
     char full_file[128];
-    char dummy;
     FILE *fp;
     int i;
 
@@ -107,7 +105,7 @@ void get_progress_metadata(char *basepath, char *filename, PictureItem *p) {
     }
 
     for (i=0;i<26;i++)
-        dummy = fgetc(fp);
+        fgetc(fp);
 
     fread(&p->progress, 1, sizeof(int), fp);
 
@@ -121,7 +119,7 @@ void get_picture_files(void) {
     struct ffblk f;
     int done, i;
     int total_files;
-    char names[MAX_FILES][8];
+    char names[MAX_FILES][9];
     char *filename;
     
     total_files = 0;
@@ -135,7 +133,10 @@ void get_picture_files(void) {
     } 
 
     for (i=0; i< total_files; i++) {
-        strncpy(g_pic_items[i].name, names[i], 8);
+        /* Use memcpy instead of strncpy due to GCC 9.x string truncation
+           warnings */
+        memcpy(g_pic_items[i].name, names[i], 8);
+        //strncpy(g_pic_items[i].name, names[i], 8);
         get_picture_metadata(PIC_FILE_DIR, names[i], &g_pic_items[i]);
         get_progress_metadata(PROGRESS_FILE_DIR, names[i], &g_pic_items[i]);
     }
@@ -205,7 +206,7 @@ int load_progress_file(Picture *p) {
   int i, j, mistakes, progress, size, target_size, offset;
   short x, y;
   short width, height;
-  char dummy, magic[2];
+  char magic[2];
   char progress_file[128];
 
   sprintf(progress_file, "progress/%s.pro",  g_picture_file_basename);
@@ -219,7 +220,7 @@ int load_progress_file(Picture *p) {
   /* Get the file size so we can do sanity checks */
   size = 0;
   while (!feof(fp)) {
-    dummy = fgetc(fp);
+    fgetc(fp);
     size++;
   }
   size--;
@@ -241,7 +242,7 @@ int load_progress_file(Picture *p) {
 
   /* for now, ignore the file name data*/
   for(i = 0; i < 12; i++) 
-    dummy = fgetc(fp);
+    fgetc(fp);
 
   /* Load the width and the height.  If they don't match the provided picture,
      return an error */
@@ -267,7 +268,7 @@ int load_progress_file(Picture *p) {
 
   /* Load and discard padding */
   for(i = 0; i < 33; i++)
-    dummy = fgetc(fp);
+    fgetc(fp);
 
   /* Check to see if the number of remaining bytes is enough to load the
      buffer */
@@ -318,7 +319,7 @@ Picture *load_picture_file(char *filename) {
   int i, bytes_processed;
   float pal_offset;
   RGB pic_pal[64];
-  unsigned char dummy, first_byte, run_length;
+  unsigned char first_byte, run_length;
 
   fp = fopen(filename, "rb");
     if (fp == NULL)
@@ -347,7 +348,7 @@ Picture *load_picture_file(char *filename) {
     pic_pal[i].b = fgetc(fp);
   }
   for(i=0;i<23;i++) {
-    dummy = fgetc(fp);
+    fgetc(fp);
   }
 
   /* Set the total square count for progress purposes */

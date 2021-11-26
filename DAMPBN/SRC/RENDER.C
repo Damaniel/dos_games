@@ -509,7 +509,7 @@ void render_menu_buttons(BITMAP *dest) {
  * render_map_screen
  *============================================================================*/
 void render_map_screen(BITMAP *dest, RenderComponents c) {
-    int i, j, x_pos, y_pos, color, actual_color, row_1_width, row_2_width, center;
+    int i, j, x_pos, y_pos, color, actual_color, row_1_width, center;
     char text[40];
 
     if(c.render_map) {
@@ -550,7 +550,6 @@ void render_map_screen(BITMAP *dest, RenderComponents c) {
 
         render_centered_prop_text(dest, text, SCREEN_W / 2, 176);    
         sprintf(text, "Press M to exit map mode");
-        row_2_width = get_prop_text_width(text);
         render_centered_prop_text(dest, text, SCREEN_W / 2, 185);
   
         rect(dest, center - (row_1_width/2) - 2, 174,
@@ -675,8 +674,7 @@ void render_game_screen(BITMAP *dest, RenderComponents c) {
   }
 
   if(c.render_debug) {
-    textprintf(dest, font, 5, 171, 209, "%d %d     ", g_down_scrollbar_y, g_down_scrollbar_height);    
-    textprintf(dest, font, 5, 181, 209, "g_pic_render_y = %d   ", g_pic_render_y);
+    /* Add debug stuff here */
   }
 }
 
