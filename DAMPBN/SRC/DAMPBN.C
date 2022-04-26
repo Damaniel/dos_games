@@ -125,7 +125,6 @@ void do_render(void) {
     render_screen(buffer, g_components);
     blit(buffer, screen, 0, 0, 0, 0, 320, 200);
     clear_render_components(&g_components);
-  //}  
 }
 
 /*=============================================================================
