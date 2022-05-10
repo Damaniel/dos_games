@@ -6,12 +6,27 @@
 // The actual maze
 MazeSquare *g_maze_data;
 
-// Used for iterating the cellular automata and for doing flood fills
+// Used for iterating the cellular automata
 MazeSquare *g_temp_maze_data;
+
+// Used for flood filling the map (to find open regions)
+MazeSquare *g_fill_data;
 
 int g_maze_width;
 int g_maze_height;
 
+//
+// iterate_maze
+//
+// Performs one generation of cellular automata processing.  
+//
+// r1_cutoff - the number of neighbors immediately adjacent - a neighbor count
+//             higher than this will turn the square into a wall
+// r2_cutoff - the number of neighbors 2 squares away.  If set to -1, this
+//             neighbor count will be ignored.  Otherwise, a number of neighbors
+//             less than this, along with the count from r1_cutoff, determines
+//             whether the location becomes a wall or a floor.
+//
 void iterate_maze(int r1_cutoff, int r2_cutoff) {
     int i, j, ii, jj;
     int neighbors_d1, neighbors_d2;
@@ -101,19 +116,19 @@ void init_random_maze(int pct_walls) {
 void flood_fill_at(int x, int y) {
     MazeSquare *m;
 
-    set_maze_square(g_temp_maze_data, x, y, MAZE_WALL);
-    set_filled(g_temp_maze_data, x, y, 1);
+    set_maze_square(g_fill_data, x, y, MAZE_WALL);
+    set_filled(g_fill_data, x, y, 1);
 
-    m = get_maze_square(g_temp_maze_data, x-1, y);
+    m = get_maze_square(g_fill_data, x-1, y);
     if (m->squareType == MAZE_FLOOR)
         flood_fill_at(x-1, y);
-    m = get_maze_square(g_temp_maze_data, x+1, y);
+    m = get_maze_square(g_fill_data, x+1, y);
     if (m->squareType == MAZE_FLOOR)
         flood_fill_at(x+1, y);        
-    m = get_maze_square(g_temp_maze_data, x, y-1);
+    m = get_maze_square(g_fill_data, x, y-1);
     if (m->squareType == MAZE_FLOOR)
         flood_fill_at(x, y-1);        
-    m = get_maze_square(g_temp_maze_data, x, y+1);
+    m = get_maze_square(g_fill_data, x, y+1);
     if (m->squareType == MAZE_FLOOR)
         flood_fill_at(x, y+1);                
 }
@@ -128,7 +143,7 @@ void fill_random_region(void) {
     while(squareFound == 0) {
         x = rand() % g_maze_width;
         y = rand() % g_maze_height;
-        m = get_maze_square(g_temp_maze_data, x, y);
+        m = get_maze_square(g_maze_data, x, y);
         if (m->squareType == MAZE_FLOOR)
             squareFound = 1;
     }
@@ -136,8 +151,8 @@ void fill_random_region(void) {
     for(j=0; j<g_maze_height; j++) {
         for (i=0; i<g_maze_width; i++) {
             m2 = get_maze_square(g_maze_data, i, j);
-            set_maze_square(g_temp_maze_data, i, j, m2->squareType);
-            set_filled(g_temp_maze_data, i, j, 0);
+            set_maze_square(g_fill_data, i, j, m2->squareType);
+            set_filled(g_fill_data, i, j, 0);
         }
     }
 
@@ -155,7 +170,7 @@ int check_fill_percentage(void) {
 
     for(j=1; j<g_maze_height-1; j++) {
         for(i=1; i<g_maze_width-1; i++) {
-            m = get_maze_square(g_temp_maze_data, i, j);
+            m = get_maze_square(g_fill_data, i, j);
             if (m->floodFilled == 1) {
                 filledCount++;
             }
@@ -172,20 +187,20 @@ void backfill_maze(void) {
 
     for(j=0; j<g_maze_height;j++) {
         for(i=0; i<g_maze_width; i++) {
-            m = get_maze_square(g_temp_maze_data, i, j);
+            m = get_maze_square(g_fill_data, i, j);
             if(m->floodFilled == 0)
                 set_maze_square(g_maze_data, i, j, MAZE_WALL);
         }
     }
 }
 
-void clear_maze(void) {
+void clear_maze(MazeSquare *m) {
     int i, j;
 
     for (j=0; j<g_maze_height; j++) {
         for (i=0; i<g_maze_width; i++) {
-            set_maze_square(g_maze_data, i, j, MAZE_FLOOR);
-            set_filled(g_maze_data, i, j, 0);
+            set_maze_square(m, i, j, MAZE_FLOOR);
+            set_filled(m, i, j, 0);
         }
     }
 }
@@ -195,7 +210,9 @@ void generate_maze() {
     char validMaze;
 
     while (validMaze == 0) {
-        clear_maze();
+        clear_maze(g_maze_data);
+        clear_maze(g_temp_maze_data);
+        clear_maze(g_fill_data);
         init_random_maze(40);
         for(i=0; i<4; i++)     
             iterate_maze(5, 2);
@@ -239,19 +256,32 @@ int init_maze_structs(int width, int height) {
     g_temp_maze_data = malloc(g_maze_width*g_maze_height*sizeof(MazeSquare));
     if(g_temp_maze_data == NULL) {
         // Free the sucessfully allocated maze data
-        free(g_temp_maze_data);
+        free(g_maze_data);
         return -1;
     }
+    g_fill_data = malloc(g_maze_width*g_maze_height*sizeof(MazeSquare));
+    if(g_fill_data == NULL) {
+        // Free the sucessfully allocated maze data
+        free(g_maze_data);
+        free(g_temp_maze_data);
+        return -1;
+    }    
     return 0;
 
+}
+
+void free_temp_maze_structs() {
+    if(g_temp_maze_data != NULL)
+        free(g_temp_maze_data);
+    if(g_fill_data != NULL)
+        free(g_fill_data);      
 }
 
 void free_maze_structs() {
     if(g_maze_data != NULL)
         free(g_maze_data);
-    if(g_temp_maze_data != NULL)
-        free(g_temp_maze_data);
-}
+    free_temp_maze_structs();
+}   
 
 int main(void) {
 

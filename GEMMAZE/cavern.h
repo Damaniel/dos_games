@@ -17,6 +17,7 @@ typedef struct {
 } MazeSquare;
 
 extern MazeSquare *g_maze_data;
+extern MazeSquare *g_temp_maze_data;
 extern MazeSquare *g_fill_data;
 extern int g_maze_width;
 extern int g_maze_height;
@@ -27,7 +28,7 @@ void flood_fill_at(int x, int y);
 void fill_random_region(void);
 int check_fill_percentage(void);
 void backfill_maze(void);
-void clear_maze(void);
+void clear_maze(MazeSquare *m);
 void generate_maze();
 void print_maze(void);
 void set_maze_square(MazeSquare *m, int x, int y, char square_type);
