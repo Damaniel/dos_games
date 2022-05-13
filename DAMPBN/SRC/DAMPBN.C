@@ -58,6 +58,9 @@ void change_state(State new_state, State prev_state) {
          g_title_anim.update_background = 1;          
          load_title();        
       }
+      if(g_prev_state == STATE_REPLAY) {
+        g_title_anim.color_start = 0;
+      }
       g_title_anim.color_start_counter = FRAME_RATE / 2; 
       break;
     case STATE_GAME:
@@ -116,6 +119,24 @@ void change_state(State new_state, State prev_state) {
       get_picture_files();
       clear_render_components(&g_components);    
       break;
+    case STATE_FINISHED:
+      game_timer_set(0);
+      g_components.render_all = 1;
+      /* Force redraw the game screen so the last pixel gets displayed */
+      render_game_screen(buffer, g_components);
+      g_finished_countdown = FRAME_RATE / 2;
+      break;
+    case STATE_REPLAY:
+      /* Draw 1/(5 seconds * frame rate) worth of replay per frame */
+      g_replay_increment = g_total_picture_squares / (5 * FRAME_RATE);
+      if (g_replay_increment < 1) {
+        g_replay_increment = 1;
+      }
+      g_replay_total = 0;
+      g_replay_x = 160 - (g_picture->w / 2);
+      g_replay_y = 100 - (g_picture->h / 2);
+      g_replay_first_time = 1;
+      break;
     default:
       break;
   }
@@ -132,6 +153,13 @@ void do_render(void) {
  *============================================================================*/
 void process_timing_stuff(void) {
 
+  if (g_state == STATE_REPLAY) {
+    g_replay_total += g_replay_increment;
+    if (g_replay_total >= g_total_picture_squares) {
+      g_replay_total = g_total_picture_squares;
+    }
+  }
+
   /* Update the timer for the logo screen */
   if (g_state == STATE_LOGO) {
     g_title_countdown--;
@@ -140,6 +168,12 @@ void process_timing_stuff(void) {
     }
   }
 
+  if (g_state == STATE_FINISHED) {
+    g_finished_countdown--;
+    if (g_finished_countdown <=0 ) {
+      change_state(STATE_REPLAY, STATE_FINISHED);
+    }
+  }
   /* Update the animations on the title screen 
      This is also called when showing the loading dialog on the title
      screen. */

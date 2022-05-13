@@ -282,15 +282,3 @@ void free_maze_structs() {
         free(g_maze_data);
     free_temp_maze_structs();
 }   
-
-int main(void) {
-
-    srand(time(NULL));
-
-    init_maze_structs(70, 20);
-    generate_maze();
-    print_maze();
-    free_maze_structs();
-
-    return 0;
-}

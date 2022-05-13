@@ -19,6 +19,7 @@
 // DEALINGS IN THE SOFTWARE.
 #include <dpmi.h>
 #include <pc.h>
+#include <string.h>
 #include "textdraw.h"
 
 char *g_screen;

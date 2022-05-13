@@ -36,6 +36,7 @@ int g_game_timer_running;
 int g_time_to_update_elapsed;
 
 int g_title_countdown;
+int g_finished_countdown;
 
 int g_mistake_count;
 int g_correct_count;
@@ -63,6 +64,14 @@ int g_load_picture_offset;
 int g_load_cursor_offset;
 
 int g_load_new_file;
+
+int g_replay_increment;
+int g_replay_total;
+
+int g_replay_x;
+int g_replay_y;
+
+int g_replay_first_time;
 
 /*=============================================================================
  * get_picture_metadata

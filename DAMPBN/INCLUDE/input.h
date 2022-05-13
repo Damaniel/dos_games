@@ -71,4 +71,11 @@ void input_state_game(void);
  *============================================================================*/
 void input_state_map(void);
 
+/*=============================================================================
+ * input_state_replay
+ *
+ * Process input for the complete state (g_cur_state = STATE_REPLAY)
+ *============================================================================*/
+void input_state_replay(void);
+
 #endif

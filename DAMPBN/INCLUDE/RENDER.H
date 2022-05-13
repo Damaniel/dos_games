@@ -222,6 +222,13 @@ void render_load_message(BITMAP *dest, RenderComponents c);
 void render_help_text(BITMAP *dest, RenderComponents c);
 
 /*=============================================================================
+ * render_replay_state
+ *
+ * Displays the replay
+ *============================================================================*/
+void render_replay_state(BITMAP *dest, RenderComponents c);
+
+/*=============================================================================
  * update_overview_area
  *
  * Update the underlying overview area bitmap. Used to seed the entire thing

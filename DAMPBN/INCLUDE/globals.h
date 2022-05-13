@@ -116,6 +116,7 @@ extern BITMAP *g_load_notice;
 extern BITMAP *g_load_dialog;
 extern BITMAP *g_overview_box;
 extern BITMAP *g_overview_cursor;
+extern BITMAP *g_finished_dialog;
 
 /* The parts of the screen to render */
 extern RenderComponents g_components;
@@ -201,6 +202,23 @@ extern int g_draw_style;
 
 /* Timer to automatically move from logo to title screen if no key is pressed */
 extern int g_title_countdown;
+
+/* Timer between when the image is completed and the screen changes over to
+   the replay screen */
+extern int g_finished_countdown;
+
+/* How many pixels to add to the replay on every frame */
+extern int g_replay_increment;
+
+/* How many pixels from the replay have we rendered so far? */
+extern int g_replay_total;
+
+/* Where on screen should we put the top left corner of the replay? */
+extern int g_replay_x;
+extern int g_replay_y;
+
+/* Is this the first time we've started the replay loop? */
+extern int g_replay_first_time;
 
 /* Title animation controls */
 extern TitleAnimation g_title_anim;

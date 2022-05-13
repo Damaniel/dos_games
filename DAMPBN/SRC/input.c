@@ -56,6 +56,11 @@ void process_input(int state) {
     case STATE_LOAD_DIALOG:
       input_state_load_dialog();
       break;
+    case STATE_FINISHED:
+      /* No keypresses are supported here */
+      break;
+    case STATE_REPLAY:
+      input_state_replay();
     default:
       break;
   }
@@ -292,6 +297,7 @@ void input_state_game(void) {
     int moved, done;
 
     moved = 0;
+    done = 0;
     /*-------------------------------------------------------------------------
      * ESC - exit the game
      *------------------------------------------------------------------------*/
@@ -620,8 +626,8 @@ void input_state_game(void) {
              /* Check to see if we're done with the picture */
              done = check_completion();
              if (done)
-               g_game_done = 1;             
-           }
+              change_state(STATE_FINISHED, STATE_GAME);
+        }                     
         }
         clear_render_components(&g_components);
         update_overview_area_at((g_draw_position_x - 
@@ -730,4 +736,14 @@ void input_state_game(void) {
     if(!key[KEY_L] && g_keypress_lockout[KEY_L]) {
       g_keypress_lockout[KEY_L] = 0;
     }    
+}
+
+/*=============================================================================
+ * input_state_replay
+ *============================================================================*/
+void input_state_replay(void) {
+    if(key[KEY_ENTER]) {
+      clear_keybuf();    
+      change_state(STATE_TITLE, STATE_REPLAY);
+    }
 }

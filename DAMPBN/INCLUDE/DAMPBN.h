@@ -31,7 +31,9 @@ typedef enum {
   STATE_HELP,
   STATE_OPTS,
   STATE_MAP,
-  STATE_LOAD_DIALOG
+  STATE_LOAD_DIALOG,
+  STATE_FINISHED,
+  STATE_REPLAY
 } State;
 
 /* Definitions from dpmi.h */

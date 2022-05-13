@@ -119,6 +119,7 @@ BITMAP *g_load_notice;
 BITMAP *g_load_dialog;
 BITMAP *g_overview_box;
 BITMAP *g_overview_cursor;
+BITMAP *g_finished_dialog;
 
 RenderComponents g_components;
 TitleAnimation g_title_anim;
@@ -710,6 +711,11 @@ void render_screen(BITMAP *dest, RenderComponents c) {
     case STATE_LOAD_DIALOG:
       render_load_dialog(dest, c);
       break;
+    case STATE_FINISHED:
+      break;
+    case STATE_REPLAY:
+      render_replay_state(dest, c);
+      break;
     default:
       break;
   }
@@ -995,6 +1001,26 @@ void render_load_message(BITMAP *dest, RenderComponents c) {
 }
 
 /*=============================================================================
+ * render_replay_state
+ *============================================================================*/
+void render_replay_state(BITMAP *dest, RenderComponents c) {
+  int i;
+
+  if(g_replay_first_time == 1) {
+    clear_to_color(dest, 209);  
+    g_replay_first_time = 0;
+  }
+
+  for(i=g_replay_total; i< g_replay_total + g_replay_increment; i++) {
+    if (i<g_total_picture_squares) {
+      putpixel(dest, g_replay_x + g_picture->draw_order[i].x, g_replay_y + g_picture->draw_order[i].y, 
+              g_picture->pic_squares[g_picture->draw_order[i].y * g_picture->w + g_picture->draw_order[i].x].pal_entry - 1);
+    }
+  }
+  draw_sprite(dest, g_finished_dialog, FINISHED_X, FINISHED_Y);
+}
+
+/*=============================================================================
  * get_prop_text_width
  *============================================================================*/
 int get_prop_text_width(char *text) {
@@ -1155,10 +1181,10 @@ int load_graphics(void) {
   g_save_notice = (BITMAP *)g_res[RES_SAVING].dat;
   g_load_notice = (BITMAP *)g_res[RES_LOADING].dat;
   g_load_dialog = (BITMAP *)g_res[RES_LOADDIAG].dat;
-
+  g_finished_dialog = (BITMAP *)g_res[RES_FINISHED].dat;
   g_overview_box = create_bitmap(OVERVIEW_WIDTH, OVERVIEW_HEIGHT);
   g_overview_cursor = (BITMAP *)g_res[RES_OVERCURS].dat;
-
+  
   /* We only want to create this once, so we check for null before we 
      create it */
   g_title_area = NULL;

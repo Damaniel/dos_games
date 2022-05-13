@@ -19,8 +19,10 @@
 // DEALINGS IN THE SOFTWARE.
 #include <bios.h>
 #include <string.h>
+#include <stdio.h>
 #include <sys/nearptr.h>
 #include "textdraw.h"
+#include "cavern.h"
 
 void wait_for_key() {    
   while(!bioskey(0x01)) {}
@@ -52,6 +54,18 @@ void set_extents() {
 
 int main(void) {
 
+    srand(time(NULL));
+
+    init_maze_structs(70, 20);
+    generate_maze();
+    print_maze();
+    free_maze_structs();
+
+    return 0;
+}
+
+/*
+int main(void) {
   int ch;
   char attr;
   int card;
@@ -75,7 +89,6 @@ int main(void) {
   set_bg_intensity(1);
   
   hide_cursor();
-  
   set_extents();
   
   attr = make_attr(COLOR_WHITE, COLOR_BLUE);
@@ -91,6 +104,8 @@ int main(void) {
   box_at_rect(g_text_box_window, BORDER_DOUBLE, attr);
   fill_box_at_rect(g_text_box_text_area, ' ', attr);
 
+  attr = make_attr(COLOR_WHITE, COLOR_BLUE);
+  string_at(1, 37, "You hit the bat for 6 damage!", attr);
   wait_for_key();
   
   set_text_mode(MODE_80X25);  
@@ -100,3 +115,4 @@ int main(void) {
    
   return 0;
 }
+*/
