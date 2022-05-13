@@ -210,7 +210,7 @@ void render_title_screen(BITMAP *dest, RenderComponents c) {
     hline(g_title_area, 0, 29, 319, 205);
     hline(g_title_area, 0, 171, 319, 205);
 
-    render_centered_prop_text(g_title_area, "Copyright 2021 Shaun Brandt / Holy Meatgoat Productions", 160, 12);
+    render_centered_prop_text(g_title_area, "Copyright 2022 Shaun Brandt / Holy Meatgoat Productions", 160, 12);
     render_centered_prop_text(g_title_area, "-- Press any key to play! --", 160, 182);    
     g_title_anim.update_background = 0;
   }
@@ -639,7 +639,13 @@ void render_game_screen(BITMAP *dest, RenderComponents c) {
     render_menu_buttons(dest);
   }
 
-  /* Draw the various cursors */
+ 
+  if(c.render_scrollbars || c.render_all ) {
+    update_scrollbar_positions();
+    render_scrollbars(dest);
+  }
+
+ /* Draw the various cursors */
   if(c.render_draw_cursor || c.render_all) {
     /* Redraw the background locations of where the cursor was and now is */
     render_main_area_square_at(dest, g_pic_render_x, g_pic_render_y, 
@@ -650,11 +656,6 @@ void render_game_screen(BITMAP *dest, RenderComponents c) {
     draw_sprite(dest, g_draw_cursor,
                 DRAW_AREA_X + DRAW_CURSOR_WIDTH * g_draw_cursor_x, 
                 DRAW_AREA_Y + DRAW_CURSOR_WIDTH * g_draw_cursor_y);              
-  }
-
-  if(c.render_scrollbars || c.render_all ) {
-    update_scrollbar_positions();
-    render_scrollbars(dest);
   }
 
   if(c.render_palette_cursor || c.render_all) {
@@ -855,7 +856,7 @@ void render_help_text(BITMAP *dest, RenderComponents c) {
       break;
     case 5:
       render_centered_prop_text(dest, "About this program and the author", 160, 8);
-      render_prop_text(dest, "  Damaniel's Paint by Number is copyright 2021 by", 8, 24);
+      render_prop_text(dest, "  Damaniel's Paint by Number is copyright 2021-2022 by", 8, 24);
       render_prop_text(dest, "  Shaun Brandt and his weird company, Holy Meatgoat", 8, 32);  
       render_prop_text(dest, "  Productions.", 8, 40);  
 
