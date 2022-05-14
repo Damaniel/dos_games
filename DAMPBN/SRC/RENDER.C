@@ -211,7 +211,7 @@ void render_title_screen(BITMAP *dest, RenderComponents c) {
     hline(g_title_area, 0, 171, 319, 205);
 
     render_centered_prop_text(g_title_area, "Copyright 2022 Shaun Brandt / Holy Meatgoat Productions", 160, 12);
-    render_centered_prop_text(g_title_area, "-- Press any key to play! --", 160, 182);    
+    render_centered_prop_text(g_title_area, "-- Press ENTER to play! --", 160, 182);    
     g_title_anim.update_background = 0;
   }
 

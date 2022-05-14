@@ -230,21 +230,25 @@ void input_state_logo(void) {
  * input_state_title
  *============================================================================*/
 void input_state_title(void) {
-  int key;
 
-  if (keypressed()) {
-    key = readkey();
-    if((key >> 8) == KEY_ESC) {
-      g_game_done = 1;
-    } 
-    else {
-      clear_keybuf();
-      /* Force the enter key to be pressed down.  This behavior seems to 
-         have broken between my old compiler and new one */
+  if (key[KEY_ENTER]) {
+    if(!g_keypress_lockout[KEY_ENTER]) {
+      change_state(STATE_LOAD_DIALOG, STATE_TITLE);          
       g_keypress_lockout[KEY_ENTER] = 1;
-      change_state(STATE_LOAD_DIALOG, STATE_TITLE);
     }
   }
+  if (!key[KEY_ENTER] && g_keypress_lockout[KEY_ENTER]) {
+    g_keypress_lockout[KEY_ENTER] = 0;
+  }      
+
+  if (key[KEY_ESC]) {
+    if (!g_keypress_lockout[KEY_ESC]) {
+        g_game_done = 1;      
+    }
+  }
+  if (!key[KEY_ESC] && g_keypress_lockout[KEY_ESC]) {
+    g_keypress_lockout[KEY_ESC] = 0;
+  }      
 }
 
 /*=============================================================================
@@ -304,8 +308,8 @@ void input_state_game(void) {
     if(key[KEY_ESC]) {
       /* If the key was previously up... */
       if (!g_keypress_lockout[KEY_ESC]) {
-          g_game_done = 1;
           g_keypress_lockout[KEY_ESC] = 1;
+          change_state(STATE_TITLE, STATE_GAME);
       }
     } 
     if(!key[KEY_ESC] && g_keypress_lockout[KEY_ESC]) {

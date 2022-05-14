@@ -58,7 +58,7 @@ void change_state(State new_state, State prev_state) {
          g_title_anim.update_background = 1;          
          load_title();        
       }
-      if(g_prev_state == STATE_REPLAY) {
+      if(g_prev_state == STATE_REPLAY || g_prev_state == STATE_GAME) {
         g_title_anim.color_start = 0;
       }
       g_title_anim.color_start_counter = FRAME_RATE / 2; 
