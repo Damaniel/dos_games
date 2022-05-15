@@ -440,7 +440,7 @@ void render_status_text(BITMAP *dest) {
   sprintf(render_text, "Mistakes : %d", g_mistake_count);
   render_prop_text(dest, render_text, MISTAKES_X, MISTAKES_Y);
   /* Render progress text */
-  sprintf(render_text, "Progress : %d / %d   ", g_correct_count,
+  sprintf(render_text, "Progress : %d/%d   ", g_correct_count,
           g_total_picture_squares);
   render_prop_text(dest, render_text, PROGRESS_X, PROGRESS_Y);
 }

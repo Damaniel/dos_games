@@ -58,6 +58,7 @@ desired.
 - High level overview on the main game screen
 - Load picture menu
 - Help screen
+- Replay of draw progress on screen when picture is complete
 
 ### What's left to do?
 
@@ -66,7 +67,6 @@ Lots. Many of these I'll do, but some probably not.  These include:
 - Option screen (continue last, start/continue another)
 - Save on exit confirmation
 - Periodic auto-save
-- Replay of draw progress on screen when picture is complete
 - Gallery
 - More pictures (and pictures that aren't test/prototype images)!
 - MIDI player
