@@ -43,6 +43,8 @@ int g_correct_count;
 
 int g_total_picture_squares;
 
+char g_collection_name[9];
+
 char g_picture_file_basename[9];
 
 Picture *g_picture;
@@ -57,7 +59,12 @@ char *g_categories[NUM_CATEGORIES] = {
     "Pattern"
 };
 
+CollectionItem g_collection_items[MAX_FILES];
 PictureItem g_pic_items[MAX_FILES];
+
+int g_num_collections;
+int g_load_collection_index;
+
 int g_num_picture_files;
 int g_load_picture_index;
 int g_load_picture_offset;
@@ -121,18 +128,53 @@ void get_progress_metadata(char *basepath, char *filename, PictureItem *p) {
     fclose(fp);
 }
 
+void get_collections(void) {
+  struct ffblk f;
+  int i;
+  int total_collections;
+  int done;
+  char names[MAX_COLLECTIONS][9];
+
+  total_collections = 0;
+  done = findfirst(COLLECTION_PATHSPEC, &f, FA_DIREC);
+  while (!done && total_collections < MAX_COLLECTIONS) 
+  {
+    if (strcmp(f.ff_name, ".") !=0 && strcmp(f.ff_name, "..") != 0) {
+      strncpy(names[total_collections], f.ff_name, 8);
+      total_collections++;
+    }
+    done = findnext(&f);    
+  }
+
+  for(i=0; i< total_collections; i++) {
+    memcpy(g_collection_items[i].name, names[i], 8);
+  }
+
+  g_num_collections = total_collections;
+}
+
 /*=============================================================================
  * get_picture_files
  *============================================================================*/
-void get_picture_files(void) {
+void get_picture_files(char *collection) {
     struct ffblk f;
     int done, i;
     int total_files;
+    char pic_pathspec[64];
+    char pic_dir[64];
+    char progress_dir[64];
     char names[MAX_FILES][9];
     char *filename;
-    
+
+    sprintf(pic_pathspec, "%s/%s/*.pic", PIC_FILE_DIR, collection);
+    sprintf(pic_dir, "%s/%s", PIC_FILE_DIR, collection);
+    sprintf(progress_dir, "%s/%s", PROGRESS_FILE_DIR, collection);
+
+    /* Reset file count.  There may be extra files from a previous call in
+       the structure, but if the total file count is correct, we don't 
+       really care. */
     total_files = 0;
-    done = findfirst(PIC_FILE_PATHSPEC, &f, 0);
+    done = findfirst(pic_pathspec, &f, 0);
     while (!done && total_files < MAX_FILES) 
     {
         filename = strtok(f.ff_name, ".");
@@ -145,12 +187,14 @@ void get_picture_files(void) {
         /* Use memcpy instead of strncpy due to GCC 9.x string truncation
            warnings */
         memcpy(g_pic_items[i].name, names[i], 8);
-        //strncpy(g_pic_items[i].name, names[i], 8);
-        get_picture_metadata(PIC_FILE_DIR, names[i], &g_pic_items[i]);
-        get_progress_metadata(PROGRESS_FILE_DIR, names[i], &g_pic_items[i]);
+        get_picture_metadata(pic_dir, names[i], &g_pic_items[i]);
+        get_progress_metadata(progress_dir, names[i], &g_pic_items[i]);
     }
 
     g_num_picture_files = total_files;
+
+    /* Update the name of the collection */
+    memcpy(g_collection_name, collection, 9);
 }
 
 /*=============================================================================
@@ -161,7 +205,8 @@ int save_progress_file(Picture *p) {
   int time, i;
   char progress_file[80];
 
-  sprintf(progress_file, "%s/%s.pro",  PROGRESS_FILE_DIR, 
+  sprintf(progress_file, "%s/%s/%s.pro",  PROGRESS_FILE_DIR, 
+          g_collection_name,
           g_picture_file_basename);
 
   fp = fopen(progress_file, "wb");
@@ -218,7 +263,9 @@ int load_progress_file(Picture *p) {
   char magic[2];
   char progress_file[128];
 
-  sprintf(progress_file, "progress/%s.pro",  g_picture_file_basename);
+  sprintf(progress_file, "%s/%s/%s.pro",  PROGRESS_FILE_DIR, 
+         g_collection_name, 
+         g_picture_file_basename);
 
   fp = fopen(progress_file, "rb");
   if (fp == NULL) {
@@ -515,6 +562,8 @@ void init_new_pic_defaults(void) {
 }
 
 void init_load_dialog_defaults(void) {
+  g_load_collection_index = 0;
+
   g_load_picture_index = 0;
   g_load_picture_offset = 0;
   g_load_cursor_offset = 0;

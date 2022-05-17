@@ -70,7 +70,7 @@ void change_state(State new_state, State prev_state) {
         if(g_load_new_file == 1) {
           init_new_pic_defaults();     
           free_picture_file(g_picture);    
-          sprintf(name, "%s/%s.pic", PIC_FILE_DIR, g_picture_file_basename);
+          sprintf(name, "%s/%s/%s.pic", PIC_FILE_DIR, g_collection_name, g_picture_file_basename);
           g_picture = load_picture_file(name);
           load_progress_file(g_picture);
           update_overview_area();
@@ -115,8 +115,10 @@ void change_state(State new_state, State prev_state) {
       init_load_dialog_defaults();
       /* Turn the timer off in case we're in the game */
       game_timer_set(0);
-      /* Generate the list of picture files */
-      get_picture_files();
+      /* Generate the list of collections, then get the files from the first
+         collection */
+      get_collections();
+      get_picture_files(g_collection_items[g_load_collection_index].name);
       clear_render_components(&g_components);    
       break;
     case STATE_FINISHED:
@@ -230,6 +232,18 @@ void print_mem_free(void) {
  * main
  *============================================================================*/
 int main(int argc, char *argv[]) {
+
+/*   int i, j;
+  get_collections();
+  for(i=0; i<g_num_collections; i++) {
+    printf("%s\n", g_collection_items[i].name);
+    get_picture_files(g_collection_items[i].name);
+    for(j=0; j< g_num_picture_files; j++) {
+      printf(" %s\n", g_pic_items[j].name);
+    }    
+  }
+
+  return 0; */
 
   allegro_init();
   install_keyboard();

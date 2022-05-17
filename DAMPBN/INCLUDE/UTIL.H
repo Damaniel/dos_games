@@ -59,6 +59,12 @@ typedef struct {
     int progress;
 } PictureItem;
 
+/* A collection of metadata representing a collection of pictures */
+typedef struct {
+    char name[9];
+    int items;
+} CollectionItem;
+
 /*=============================================================================
  * get_picture_metadata
  *
@@ -74,11 +80,18 @@ void get_picture_metadata(char *basepath, char *filename, PictureItem *p);
 void get_progress_metadata(char *basepath, char *filename, PictureItem *p);
 
 /*=============================================================================
+ * get_collections
+ * 
+ * Populates a list of collection directories
+ *============================================================================*/
+void get_collections(void);
+
+/*=============================================================================
  * get_picture_files
  * 
  * Populates a list of Picture files along with their metadata
  *============================================================================*/
-void get_picture_files(void);
+void get_picture_files(char *collection);
 
 /*=============================================================================
  * save_progress_file

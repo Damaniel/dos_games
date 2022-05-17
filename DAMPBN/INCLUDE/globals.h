@@ -53,8 +53,9 @@
 #define FRAME_RATE        30
 
 /* Information about picture files that can be loaded */
+#define MAX_COLLECTIONS 1000
 #define MAX_FILES   1000
-#define PIC_FILE_PATHSPEC "res/pics/*.pic"
+#define COLLECTION_PATHSPEC "res/pics/*"
 #define PIC_FILE_DIR "res/pics"
 #define PROGRESS_FILE_DIR "progress"
 
@@ -123,6 +124,9 @@ extern RenderComponents g_components;
 
 /* The currently active Picture */
 extern Picture *g_picture;
+
+/* The on-disk name of the collection (used to access the collection name) */
+extern char g_collection_name[];
 
 /* The on-disk name of the picture file (used to name the progress file) */
 extern char g_picture_file_basename[];
@@ -226,8 +230,14 @@ extern TitleAnimation g_title_anim;
 /* The Allegro datafile containing image resources */
 extern DATAFILE *g_res;
 
-/* The items to be displayed in the 'Load file' menu */
+/* The collections to be displayed in the 'Load file' menu */
+extern CollectionItem g_collection_items[MAX_FILES];
+
+/* The pictures to be displayed in the 'Load file' menu */
 extern PictureItem g_pic_items[MAX_FILES];
+
+/* The actual index of the selected collection in the load file dialog */
+extern int g_load_collection_index;
 
 /* The actual index of the selected picture in the load file dialog */
 extern int g_load_picture_index;
@@ -237,6 +247,9 @@ extern int g_load_picture_offset;
 
 /* The position (0 - 10) of the highlighted item in the list */
 extern int g_load_cursor_offset;
+
+/* The number of picture collections available to display */
+extern int g_num_collections;
 
 /* The number of picture files available to display in the Load File menu */
 extern int g_num_picture_files;
