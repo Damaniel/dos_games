@@ -49,11 +49,11 @@ void change_state(State new_state, State prev_state) {
       load_logo();
       set_palette(logo_pal);      
       clear_render_components(&g_components);      
-      g_title_countdown = 3 * FRAME_RATE;
+      g_title_countdown = 2 * FRAME_RATE;
       break;
     case STATE_TITLE:
       /* If we're coming back from pressing ESC on the load dialog, skip
-         some of the init stuff */        
+         some of the init stuff */       
       if(g_prev_state != STATE_LOAD_DIALOG) {
          g_title_anim.update_background = 1;          
          load_title();        

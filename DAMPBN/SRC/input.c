@@ -140,10 +140,13 @@ void input_state_load_dialog(void) {
 
     if (key[KEY_ENTER]) {
       if (!g_keypress_lockout[KEY_ENTER]) {
-        strncpy(g_picture_file_basename, 
-                g_pic_items[g_load_picture_index].name, 8);
-        g_load_new_file = 1;
-        change_state(STATE_GAME, STATE_LOAD_DIALOG);
+        /* Only load an image if the image side is highlighted */
+        if (g_load_section_active == LOAD_IMAGE_ACTIVE) {
+          strncpy(g_picture_file_basename, 
+                  g_pic_items[g_load_picture_index].name, 8);
+          g_load_new_file = 1;
+          change_state(STATE_GAME, STATE_LOAD_DIALOG);
+        }
         g_keypress_lockout[KEY_ENTER] = 1;          
       }
     }
@@ -289,10 +292,7 @@ void input_state_load_dialog(void) {
  * input_state_logo
  *============================================================================*/
 void input_state_logo(void) {
-    if(keypressed()) {
-      clear_keybuf();
-      change_state(STATE_TITLE, STATE_LOGO);
-    }
+  /* Do nothing for now.  We just use a shorter logo sequence */
 }
 
 /*=============================================================================
