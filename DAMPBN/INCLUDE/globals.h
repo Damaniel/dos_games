@@ -121,6 +121,7 @@ extern BITMAP *g_load_dialog;
 extern BITMAP *g_overview_box;
 extern BITMAP *g_overview_cursor;
 extern BITMAP *g_finished_dialog;
+extern BITMAP *g_mouse_cursor;
 
 /* The parts of the screen to render */
 extern RenderComponents g_components;
@@ -277,5 +278,10 @@ extern int g_load_new_file;
 
 /* Which help page is visible */
 extern int g_help_page;
+
+/* Are mouse click detections being locked out?  This is used as part of the
+   process to detect a click.  If the mouse is pressed down and then released,
+   the lockout is enabled until the mouse is pressed again */
+extern int g_mouse_click_lockout;
 
 #endif

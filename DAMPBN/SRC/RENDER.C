@@ -122,6 +122,7 @@ BITMAP *g_load_dialog;
 BITMAP *g_overview_box;
 BITMAP *g_overview_cursor;
 BITMAP *g_finished_dialog;
+BITMAP *g_mouse_cursor;
 
 RenderComponents g_components;
 TitleAnimation g_title_anim;
@@ -1261,7 +1262,8 @@ int load_graphics(void) {
   g_finished_dialog = (BITMAP *)g_res[RES_FINISHED].dat;
   g_overview_box = create_bitmap(OVERVIEW_WIDTH, OVERVIEW_HEIGHT);
   g_overview_cursor = (BITMAP *)g_res[RES_OVERCURS].dat;
-  
+  g_mouse_cursor = (BITMAP *)g_res[RES_MOUSE].dat;
+
   /* We only want to create this once, so we check for null before we 
      create it */
   g_title_area = NULL;

@@ -66,6 +66,8 @@
 #define PALETTE_BOX_HEIGHT          11
 #define PALETTE_BOX_INTERIOR_WIDTH   4
 #define PALETTE_BOX_INTERIOR_HEIGHT  9
+#define PALETTE_ENTRY_WIDTH         16
+#define PALETTE_ENTRY_HEIGHT        10
 
 #define PALETTE_AREA_X             226
 #define PALETTE_AREA_Y              83

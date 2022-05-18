@@ -21,6 +21,11 @@
 #ifndef __INPUT_H__
 #define __INPUT_H__
 
+typedef struct {
+  int x;
+  int y;
+} MousePosition;
+
 /*=============================================================================
  * process_input
  *
@@ -77,5 +82,8 @@ void input_state_map(void);
  * Process input for the complete state (g_cur_state = STATE_REPLAY)
  *============================================================================*/
 void input_state_replay(void);
+
+void update_mouse_status(void);
+int mouse_clicked_here(int x1, int y1, int x2, int y2, int lockout);
 
 #endif

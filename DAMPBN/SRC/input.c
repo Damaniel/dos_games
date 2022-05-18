@@ -24,11 +24,15 @@
 #include "../include/globals.h"
 
 unsigned char g_keypress_lockout[128];
+int g_mouse_click_lockout;
 
 /*=============================================================================
  * process_input
  *============================================================================*/
 void process_input(int state) {
+
+  update_mouse_status();
+
   switch(state) {
     case STATE_LOGO:
       input_state_logo();
@@ -63,6 +67,246 @@ void process_input(int state) {
       input_state_replay();
     default:
       break;
+  }
+}
+
+void update_mouse_status(void) {
+  /* If the mouse press is locked out and the button has been released,
+   * remove the lockout */
+  if (g_mouse_click_lockout) {
+    if(!mouse_b & 1) {
+      g_mouse_click_lockout = 0;
+    }
+  }
+}
+
+int mouse_clicked_here(int x1, int y1, int x2, int y2, int lockout) {
+  int clicked_here = 0;
+
+  /* If the mouse button is pressed, check to see if we're in the specified
+     region.  If so, return 1 and lock out further clicks until the button
+     is released */
+  if ((mouse_b & 1) && mouse_x >= x1 && mouse_x < x2 && mouse_y >= y1 && mouse_y < y2) {
+    if (g_mouse_click_lockout == 0) {
+      g_mouse_click_lockout = lockout;  
+      clicked_here = 1;
+    }
+  }
+
+  return clicked_here;
+}
+
+void process_palette_press(void) {
+  int process_page_change = 0;
+
+  /* Process any mouse clicks on either of the palette buttons to change pages */
+  if (mouse_clicked_here(PAGE_1_BUTTON_X, 
+                         PAGE_1_BUTTON_Y,
+                         PAGE_1_BUTTON_X + PAGE_BUTTON_WIDTH,
+                         PAGE_1_BUTTON_Y + PAGE_BUTTON_HEIGHT,
+                         1) && g_palette_page == 1) {
+    g_palette_page = 0;
+    g_cur_color -= PALETTE_COLORS_PER_PAGE;
+    /* Change previous color to represent the index on the new page */
+    g_prev_color -= PALETTE_COLORS_PER_PAGE;     
+    process_page_change = 1;
+  }
+ 
+   if (mouse_clicked_here(PAGE_2_BUTTON_X, 
+                         PAGE_2_BUTTON_Y,
+                         PAGE_2_BUTTON_X + PAGE_BUTTON_WIDTH,
+                         PAGE_2_BUTTON_Y + PAGE_BUTTON_HEIGHT,
+                         1) && g_palette_page == 0) {
+    /* Only change if there's more than one page worth of colors */
+    if (g_picture->num_colors > PALETTE_COLORS_PER_PAGE) {
+      g_palette_page = 1;
+      g_cur_color += PALETTE_COLORS_PER_PAGE;
+      /* Change previous color to represent the index on the new page */
+      g_prev_color += PALETTE_COLORS_PER_PAGE;
+      process_page_change = 1;
+    }
+  }
+ 
+  /* Process the P key to toggle between pages */
+  if (key[KEY_P]) {
+    if (!g_keypress_lockout[KEY_P]) {
+      g_prev_color = g_cur_color;        
+      if (g_palette_page == 0) {
+        /* Only change if there's more than one page worth of colors */
+        if (g_picture->num_colors > PALETTE_COLORS_PER_PAGE) {
+          g_palette_page = 1;
+          g_cur_color += PALETTE_COLORS_PER_PAGE;
+          /* Change previous color to represent the index on the new page */
+          g_prev_color += PALETTE_COLORS_PER_PAGE;
+        }
+      }
+      else {
+        g_palette_page = 0;
+        g_cur_color -= PALETTE_COLORS_PER_PAGE;
+        /* Change previous color to represent the index on the new page */
+        g_prev_color -= PALETTE_COLORS_PER_PAGE;          
+      }
+      process_page_change = 1;
+      g_keypress_lockout[KEY_P] = 1;
+    }
+  }
+  if(!key[KEY_P] && g_keypress_lockout[KEY_P]) {
+    g_keypress_lockout[KEY_P] = 0;
+  }     
+
+  if (process_page_change) {
+    /* If the wrapped color is now higher than the biggest color index,
+       clamp it. */
+    if (g_cur_color > g_picture->num_colors)
+      g_cur_color = g_picture->num_colors;
+     clear_render_components(&g_components);
+    /* If marking is turned on, redraw the play area to update the
+       highlights */
+    if (g_mark_current == 1 ) {
+      g_components.render_main_area_squares = 1;        
+      g_components.render_draw_cursor = 1;
+      }  
+    g_components.render_palette_area = 1;
+    g_components.render_palette_cursor = 1;
+  }
+}
+
+void process_palette_color_press(void) {
+
+  int i;
+  int entry = 1;
+  int change_color = 0;
+  int update_display = 0;
+
+  /*-------------------------------------------------------------------------
+   * check for mouse clicks in palette area
+   *------------------------------------------------------------------------*/
+  for (i=0; i<NUM_PALETTE_ROWS; i++) {
+    if (mouse_clicked_here(PALETTE_COLUMN_1_X, 
+                           PALETTE_COLUMN_Y +  PALETTE_ENTRY_HEIGHT * i,
+                           PALETTE_COLUMN_1_X + PALETTE_ENTRY_WIDTH,
+                           PALETTE_COLUMN_Y +  PALETTE_ENTRY_HEIGHT * (i+1),
+                           1)) {
+                             g_prev_color = g_cur_color;
+                             entry = i;
+                             change_color = 1;
+                           }
+    if (mouse_clicked_here(PALETTE_COLUMN_2_X, 
+                           PALETTE_COLUMN_Y +  PALETTE_ENTRY_HEIGHT * i,
+                           PALETTE_COLUMN_2_X + PALETTE_ENTRY_WIDTH,
+                           PALETTE_COLUMN_Y +  PALETTE_ENTRY_HEIGHT * (i+1),
+                           1)) {
+                             g_prev_color = g_cur_color;
+                             entry = NUM_PALETTE_ROWS + i;
+                             change_color = 1;
+                           }
+    if (mouse_clicked_here(PALETTE_COLUMN_3_X, 
+                           PALETTE_COLUMN_Y +  PALETTE_ENTRY_HEIGHT * i,
+                           PALETTE_COLUMN_3_X + PALETTE_ENTRY_WIDTH,
+                           PALETTE_COLUMN_Y +  PALETTE_ENTRY_HEIGHT * (i+1),
+                           1)) {
+                             g_prev_color = g_cur_color;
+                             entry = (2 * NUM_PALETTE_ROWS) + i;
+                             change_color = 1;
+                           }    
+    if (mouse_clicked_here(PALETTE_COLUMN_4_X, 
+                           PALETTE_COLUMN_Y +  PALETTE_ENTRY_HEIGHT * i,
+                           PALETTE_COLUMN_4_X + PALETTE_ENTRY_WIDTH,
+                           PALETTE_COLUMN_Y +  PALETTE_ENTRY_HEIGHT * (i+1),
+                           1)) {
+                             g_prev_color = g_cur_color;
+                             entry = (3 * NUM_PALETTE_ROWS) + i;
+                             change_color = 1;
+                           }    
+
+    if (change_color) {
+      if (g_palette_page == 0) {
+        if (entry < g_picture->num_colors) {
+          g_cur_color = entry + 1;
+          update_display = 1;
+        }
+      } else {
+        if (entry + PALETTE_COLORS_PER_PAGE < g_picture->num_colors) {
+          g_cur_color = PALETTE_COLORS_PER_PAGE + entry + 1;
+          update_display = 1;
+        }
+      }
+    }                           
+  }
+
+  /*-------------------------------------------------------------------------
+  * Open Brace ([) - move to previous palette color
+  *------------------------------------------------------------------------*/
+  if (key[KEY_OPENBRACE]) {
+   if (!g_keypress_lockout[KEY_OPENBRACE]) {
+     /* Change to the previous color index */
+     g_prev_color = g_cur_color;
+     g_cur_color--;
+     /* If at the lowest index on the page, wrap to the highest */
+     if (g_palette_page == 0) {
+       if (g_cur_color < FIRST_COLOR_ON_FIRST_PAGE)
+         g_cur_color = LAST_COLOR_ON_FIRST_PAGE;      
+     } 
+     if (g_palette_page == 1) {
+       if (g_cur_color < FIRST_COLOR_ON_SECOND_PAGE)
+         g_cur_color = LAST_COLOR_ON_SECOND_PAGE;
+     }
+     /* If the wrapped color is now higher than the biggest color index,
+        clamp it. */
+     if (g_cur_color > g_picture->num_colors)
+       g_cur_color = g_picture->num_colors;
+       
+      /* Update relevant screen components */
+      update_display = 1;
+
+      g_keypress_lockout[KEY_OPENBRACE] = 1;
+    }
+  }
+  if(!key[KEY_OPENBRACE] && g_keypress_lockout[KEY_OPENBRACE]) {
+    g_keypress_lockout[KEY_OPENBRACE] = 0;
+  }
+
+  /*-------------------------------------------------------------------------
+   * Open Brace ([) - move to next palette color
+   *------------------------------------------------------------------------*/
+  if (key[KEY_CLOSEBRACE]) {
+    if (!g_keypress_lockout[KEY_CLOSEBRACE]) {
+      /* Change to the next color index */
+      g_prev_color = g_cur_color;
+      g_cur_color++;
+      /* If we reach the end of the palette on the current page,
+         either because we hit the last index of the page, or the end of the
+         picture's palette, wrap back around. */
+      if (g_palette_page == 0) {
+        if (g_cur_color > LAST_COLOR_ON_FIRST_PAGE || 
+            g_cur_color > g_picture->num_colors)
+          g_cur_color = FIRST_COLOR_ON_FIRST_PAGE;
+      } 
+      if (g_palette_page == 1) {
+        if (g_cur_color > LAST_COLOR_ON_SECOND_PAGE || 
+            g_cur_color > g_picture->num_colors)
+          g_cur_color = FIRST_COLOR_ON_SECOND_PAGE;
+      }
+
+      /* Update relevant screen components */
+      update_display = 1;
+
+      g_keypress_lockout[KEY_CLOSEBRACE] = 1;
+    }
+  }
+  if(!key[KEY_CLOSEBRACE] && g_keypress_lockout[KEY_CLOSEBRACE]) {
+    g_keypress_lockout[KEY_CLOSEBRACE] = 0;
+  }
+
+  if (update_display) {
+     clear_render_components(&g_components);
+    /* If marking is turned on, redraw the play area to update the
+       highlights */        
+    if (g_mark_current == 1 ) {
+      g_components.render_main_area_squares = 1;        
+      g_components.render_draw_cursor = 1;
+    }                  
+    g_components.render_palette_cursor = 1;  
   }
 }
 
@@ -130,7 +374,6 @@ void input_state_help(void) {
   if (!key[KEY_RIGHT] && g_keypress_lockout[KEY_RIGHT]) {
     g_keypress_lockout[KEY_RIGHT] = 0;
   }   
-
 }
 
 /*=============================================================================
@@ -292,6 +535,9 @@ void input_state_load_dialog(void) {
  * input_state_logo
  *============================================================================*/
 void input_state_logo(void) {
+    if (mouse_clicked_here(0, 0, 319, 199, 1)) {
+      change_state(STATE_TITLE, STATE_LOGO);
+    }
   /* Do nothing for now.  We just use a shorter logo sequence */
 }
 
@@ -299,6 +545,10 @@ void input_state_logo(void) {
  * input_state_title
  *============================================================================*/
 void input_state_title(void) {
+
+  if (mouse_clicked_here(0, 0, 319, 199, 1)) {
+      change_state(STATE_LOAD_DIALOG, STATE_TITLE);
+  }
 
   if (key[KEY_ENTER]) {
     if(!g_keypress_lockout[KEY_ENTER]) {
@@ -549,123 +799,9 @@ void input_state_game(void) {
       g_keypress_lockout[KEY_DOWN] = 0;
     }
 
-    /*-------------------------------------------------------------------------
-     * P - toggle palette page
-     *------------------------------------------------------------------------*/
-    if (key[KEY_P]) {
-      if (!g_keypress_lockout[KEY_P]) {
-        g_prev_color = g_cur_color;        
-        if (g_palette_page == 0) {
-          /* Only change if there's more than one page worth of colors */
-          if (g_picture->num_colors > PALETTE_COLORS_PER_PAGE) {
-            g_palette_page = 1;
-            g_cur_color += PALETTE_COLORS_PER_PAGE;
-            /* Change previous color to represent the index on the new page */
-            g_prev_color += PALETTE_COLORS_PER_PAGE;
-          }
-        }
-        else {
-          g_palette_page = 0;
-          g_cur_color -= PALETTE_COLORS_PER_PAGE;
-          /* Change previous color to represent the index on the new page */
-          g_prev_color -= PALETTE_COLORS_PER_PAGE;          
-        }
-        /* If the wrapped color is now higher than the biggest color index,
-           clamp it. */
-        if (g_cur_color > g_picture->num_colors)
-          g_cur_color = g_picture->num_colors;
+    process_palette_press();
 
-        clear_render_components(&g_components);
-        /* If marking is turned on, redraw the play area to update the
-           highlights */
-        if (g_mark_current == 1 ) {
-          g_components.render_main_area_squares = 1;        
-          g_components.render_draw_cursor = 1;
-        }  
-        g_components.render_palette_area = 1;
-        g_components.render_palette_cursor = 1;
-
-        g_keypress_lockout[KEY_P] = 1;
-      }
-    }
-    if(!key[KEY_P] && g_keypress_lockout[KEY_P]) {
-      g_keypress_lockout[KEY_P] = 0;
-    }     
-
-    /*-------------------------------------------------------------------------
-     * Open Brace ([) - move to previous palette color
-     *------------------------------------------------------------------------*/
-    if (key[KEY_OPENBRACE]) {
-      if (!g_keypress_lockout[KEY_OPENBRACE]) {
-        /* Change to the previous color index */
-        g_prev_color = g_cur_color;
-        g_cur_color--;
-        /* If at the lowest index on the page, wrap to the highest */
-        if (g_palette_page == 0) {
-          if (g_cur_color < FIRST_COLOR_ON_FIRST_PAGE)
-            g_cur_color = LAST_COLOR_ON_FIRST_PAGE;      
-        } 
-        if (g_palette_page == 1) {
-          if (g_cur_color < FIRST_COLOR_ON_SECOND_PAGE)
-            g_cur_color = LAST_COLOR_ON_SECOND_PAGE;
-        }
-        /* If the wrapped color is now higher than the biggest color index,
-           clamp it. */
-        if (g_cur_color > g_picture->num_colors)
-          g_cur_color = g_picture->num_colors;
-          
-        clear_render_components(&g_components);
-        /* If marking is turned on, redraw the play area to update the
-           highlights */
-        if (g_mark_current == 1 ) {
-          g_components.render_main_area_squares = 1;        
-          g_components.render_draw_cursor = 1;
-        }    
-        g_components.render_palette_cursor = 1;
-  
-        g_keypress_lockout[KEY_OPENBRACE] = 1;
-      }
-    }
-    if(!key[KEY_OPENBRACE] && g_keypress_lockout[KEY_OPENBRACE]) {
-      g_keypress_lockout[KEY_OPENBRACE] = 0;
-    }
-
-    /*-------------------------------------------------------------------------
-     * Open Brace ([) - move to next palette color
-     *------------------------------------------------------------------------*/
-    if (key[KEY_CLOSEBRACE]) {
-      if (!g_keypress_lockout[KEY_CLOSEBRACE]) {
-        /* Change to the next color index */
-        g_prev_color = g_cur_color;
-        g_cur_color++;
-        /* If we reach the end of the palette on the current page,
-           either because we hit the last index of the page, or the end of the
-           picture's palette, wrap back around. */
-        if (g_palette_page == 0) {
-          if (g_cur_color > LAST_COLOR_ON_FIRST_PAGE || 
-              g_cur_color > g_picture->num_colors)
-            g_cur_color = FIRST_COLOR_ON_FIRST_PAGE;
-        } 
-        if (g_palette_page == 1) {
-          if (g_cur_color > LAST_COLOR_ON_SECOND_PAGE || 
-              g_cur_color > g_picture->num_colors)
-            g_cur_color = FIRST_COLOR_ON_SECOND_PAGE;
-        }
-
-        clear_render_components(&g_components);
-        /* If marking is turned on, redraw the play area to update the
-           highlights */        
-        if (g_mark_current == 1 ) {
-          g_components.render_main_area_squares = 1;        
-          g_components.render_draw_cursor = 1;
-        }                  
-        g_components.render_palette_cursor = 1;
-        g_keypress_lockout[KEY_CLOSEBRACE] = 1;
-      }
-    }
-    if(!key[KEY_CLOSEBRACE] && g_keypress_lockout[KEY_CLOSEBRACE]) {
-      g_keypress_lockout[KEY_CLOSEBRACE] = 0;
-    }
+    process_palette_color_press();
 
     /*-------------------------------------------------------------------------
      * Space - Mark the highlighted square with the current color

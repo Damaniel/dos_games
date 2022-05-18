@@ -165,9 +165,9 @@ void do_render(void) {
 
     render_screen(buffer, g_components);
     vsync();
-    //show_mouse(NULL);    
+    show_mouse(NULL);    
     blit(buffer, screen, 0, 0, 0, 0, 320, 200);
-    //show_mouse(screen);
+    show_mouse(screen);
     clear_render_components(&g_components);
 
 }
@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
   install_keyboard();
   install_timer();
 
-  //install_mouse();
+  install_mouse();
 
   install_int(int_handler, 1000/FRAME_RATE);
 
@@ -281,7 +281,7 @@ int main(int argc, char *argv[]) {
   load_graphics();
   init_defaults();
 
-  //set_mouse_sprite((BITMAP *)g_res[RES_DRAWCURS].dat);
+  set_mouse_sprite(g_mouse_cursor);
   change_state(STATE_LOGO, STATE_NONE);
 
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);
