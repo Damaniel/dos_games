@@ -224,6 +224,11 @@ extern int g_replay_total;
 extern int g_replay_x;
 extern int g_replay_y;
 
+/* For smaller replays, this will hold the smallest integer scale that
+   allows the replay to cover at least half of the size of the larger 
+   of the two image dimensions */
+extern int g_replay_scale;
+
 /* Is this the first time we've started the replay loop? */
 extern int g_replay_first_time;
 

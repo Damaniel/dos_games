@@ -134,20 +134,42 @@ void change_state(State new_state, State prev_state) {
       if (g_replay_increment < 1) {
         g_replay_increment = 1;
       }
-      g_replay_total = 0;
-      g_replay_x = 160 - (g_picture->w / 2);
-      g_replay_y = 100 - (g_picture->h / 2);
+
+      /* Calculate the replay pixel scale */
+      g_replay_scale = 1;
+      if(g_picture->w >= g_picture->h) {
+        /* The picture is wider than it is tall, or it's square */
+        if (g_picture->w < 160)
+          g_replay_scale = 160 / g_picture->w;
+        
+      } else {
+        /* The picture is taller than it is wide */
+        if (g_picture->h < 100)
+          g_replay_scale = 100 / g_picture->h;
+      }
+
+      /* Calculate the start position of the replay */
+      g_replay_x = 160 - (g_picture->w * g_replay_scale / 2);
+      g_replay_y = 100 - (g_picture->h * g_replay_scale / 2);
+
+      /* Prep the rest of the replay parameters */
       g_replay_first_time = 1;
+      g_replay_total = 0;
       break;
     default:
       break;
   }
 }
 
-void do_render(void) {   
+void do_render(void) {
+
     render_screen(buffer, g_components);
+    vsync();
+    //show_mouse(NULL);    
     blit(buffer, screen, 0, 0, 0, 0, 320, 200);
+    //show_mouse(screen);
     clear_render_components(&g_components);
+
 }
 
 /*=============================================================================
@@ -233,21 +255,11 @@ void print_mem_free(void) {
  *============================================================================*/
 int main(int argc, char *argv[]) {
 
-/*   int i, j;
-  get_collections();
-  for(i=0; i<g_num_collections; i++) {
-    printf("%s\n", g_collection_items[i].name);
-    get_picture_files(g_collection_items[i].name);
-    for(j=0; j< g_num_picture_files; j++) {
-      printf(" %s\n", g_pic_items[j].name);
-    }    
-  }
-
-  return 0; */
-
   allegro_init();
   install_keyboard();
   install_timer();
+
+  //install_mouse();
 
   install_int(int_handler, 1000/FRAME_RATE);
 
@@ -269,6 +281,7 @@ int main(int argc, char *argv[]) {
   load_graphics();
   init_defaults();
 
+  //set_mouse_sprite((BITMAP *)g_res[RES_DRAWCURS].dat);
   change_state(STATE_LOGO, STATE_NONE);
 
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);

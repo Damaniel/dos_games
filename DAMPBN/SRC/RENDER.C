@@ -93,6 +93,8 @@ int g_draw_style;
 
 int g_help_page;
 
+int g_replay_scale;
+
 BITMAP *g_logo;
 
 BITMAP *g_title_area;
@@ -1075,6 +1077,7 @@ void render_load_message(BITMAP *dest, RenderComponents c) {
  *============================================================================*/
 void render_replay_state(BITMAP *dest, RenderComponents c) {
   int i;
+  int color, x, y;
 
   if(g_replay_first_time == 1) {
     clear_to_color(dest, 209);  
@@ -1083,8 +1086,12 @@ void render_replay_state(BITMAP *dest, RenderComponents c) {
 
   for(i=g_replay_total; i< g_replay_total + g_replay_increment; i++) {
     if (i<g_total_picture_squares) {
-      putpixel(dest, g_replay_x + g_picture->draw_order[i].x, g_replay_y + g_picture->draw_order[i].y, 
-              g_picture->pic_squares[g_picture->draw_order[i].y * g_picture->w + g_picture->draw_order[i].x].pal_entry - 1);
+      color = g_picture->pic_squares[g_picture->draw_order[i].y *
+                                     g_picture->w + 
+                                     g_picture->draw_order[i].x].pal_entry - 1;
+      x = g_replay_x + (g_picture->draw_order[i].x * g_replay_scale);
+      y = g_replay_y + (g_picture->draw_order[i].y * g_replay_scale);
+      rectfill(dest, x, y, x+g_replay_scale-1, y+g_replay_scale-1, color);
     }
   }
   draw_sprite(dest, g_finished_dialog, FINISHED_X, FINISHED_Y);
