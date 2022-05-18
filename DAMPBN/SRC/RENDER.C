@@ -904,41 +904,50 @@ void render_load_dialog(BITMAP *dest, RenderComponents c) {
   /*---------------------------------------------------------------------
    * Render the collection list 
    *---------------------------------------------------------------------*/
-  collection_start_offset = g_load_collection_offset;
-  collection_end_offset = collection_start_offset + LOAD_NUM_VISIBLE_FILES;
 
-  if (collection_end_offset > g_num_collections)
-    collection_end_offset = g_num_collections;
+  /* If there are collections, list them */
+  if (g_num_collections > 0) {
+    collection_start_offset = g_load_collection_offset;
+    collection_end_offset = collection_start_offset + LOAD_NUM_VISIBLE_FILES;
 
-  /* If the collection list is active, highlight the active item on the 
-   * collection side and place a highlight aaround the section */
-  if (g_load_section_active == LOAD_COLLECTION_ACTIVE) {
-    rectfill(dest,
-            LOAD_COLLECTION_NAME_X_OFF,
-            LOAD_COLLECTION_NAME_Y_OFF + 
-            (g_load_collection_cursor_offset * LOAD_COLLECTION_NAME_HEIGHT),
-            LOAD_COLLECTION_NAME_X_OFF + LOAD_COLLECTION_NAME_WIDTH - 1,
-            LOAD_COLLECTION_NAME_Y_OFF + 
-             ((g_load_collection_cursor_offset+1) * LOAD_COLLECTION_NAME_HEIGHT) - 1, 204);
-    rect(dest,
-         COLLECTION_HIGHLIGHT_X_OFF,
-         COLLECTION_HIGHLIGHT_Y_OFF,
-         COLLECTION_HIGHLIGHT_X_OFF + COLLECTION_HIGHLIGHT_WIDTH -1,
-         COLLECTION_HIGHLIGHT_Y_OFF + COLLECTION_HIGHLIGHT_HEIGHT -1, 210);             
-  } else {    
-    rect(dest,
-         COLLECTION_HIGHLIGHT_X_OFF,
-         COLLECTION_HIGHLIGHT_Y_OFF,
-         COLLECTION_HIGHLIGHT_X_OFF + COLLECTION_HIGHLIGHT_WIDTH -1,
-         COLLECTION_HIGHLIGHT_Y_OFF + COLLECTION_HIGHLIGHT_HEIGHT -1, 194);
-  }
+    if (collection_end_offset > g_num_collections)
+      collection_end_offset = g_num_collections;
 
-  /* Iterate through and draw the file list */
-  for(i=collection_start_offset; i < collection_end_offset ; i++) {
-    /* Draw the file name */
-    render_prop_text(dest, g_collection_items[i].name, LOAD_COLLECTION_NAME_X_OFF + 1,
-                   LOAD_COLLECTION_NAME_Y_OFF + 
-                   ((i-collection_start_offset) * LOAD_COLLECTION_NAME_HEIGHT) + 1);       
+    /* If the collection list is active, highlight the active item on the 
+    * collection side and place a highlight aaround the section */
+    if (g_load_section_active == LOAD_COLLECTION_ACTIVE) {
+      rectfill(dest,
+              LOAD_COLLECTION_NAME_X_OFF,
+              LOAD_COLLECTION_NAME_Y_OFF + 
+              (g_load_collection_cursor_offset * LOAD_COLLECTION_NAME_HEIGHT),
+              LOAD_COLLECTION_NAME_X_OFF + LOAD_COLLECTION_NAME_WIDTH - 1,
+              LOAD_COLLECTION_NAME_Y_OFF + 
+              ((g_load_collection_cursor_offset+1) * LOAD_COLLECTION_NAME_HEIGHT) - 1, 204);
+      rect(dest,
+          COLLECTION_HIGHLIGHT_X_OFF,
+          COLLECTION_HIGHLIGHT_Y_OFF,
+          COLLECTION_HIGHLIGHT_X_OFF + COLLECTION_HIGHLIGHT_WIDTH -1,
+          COLLECTION_HIGHLIGHT_Y_OFF + COLLECTION_HIGHLIGHT_HEIGHT -1, 210);             
+    } else {    
+      rect(dest,
+          COLLECTION_HIGHLIGHT_X_OFF,
+          COLLECTION_HIGHLIGHT_Y_OFF,
+          COLLECTION_HIGHLIGHT_X_OFF + COLLECTION_HIGHLIGHT_WIDTH -1,
+          COLLECTION_HIGHLIGHT_Y_OFF + COLLECTION_HIGHLIGHT_HEIGHT -1, 194);
+    } 
+
+    /* Iterate through and draw the file list */
+    for(i=collection_start_offset; i < collection_end_offset ; i++) {
+      /* Draw the file name */
+      render_prop_text(dest, g_collection_items[i].name, LOAD_COLLECTION_NAME_X_OFF + 1,
+                       LOAD_COLLECTION_NAME_Y_OFF + 
+                      ((i-collection_start_offset) * LOAD_COLLECTION_NAME_HEIGHT) + 1);       
+    }
+  } else {
+    /* If there aren't any collections, display a message that says that to
+       the user, and don't render anything. */
+    render_prop_text(dest, "- NONE -", LOAD_COLLECTION_NAME_X_OFF + 1,
+                     LOAD_COLLECTION_NAME_Y_OFF + 1);
   }
 
   /*---------------------------------------------------------------------
