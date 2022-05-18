@@ -70,6 +70,9 @@ void process_input(int state) {
   }
 }
 
+/*=============================================================================
+ * update_mouse_status
+ *============================================================================*/
 void update_mouse_status(void) {
   /* If the mouse press is locked out and the button has been released,
    * remove the lockout */
@@ -80,12 +83,15 @@ void update_mouse_status(void) {
   }
 }
 
+/*=============================================================================
+ * mouse_clicked_here
+ *============================================================================*/
 int mouse_clicked_here(int x1, int y1, int x2, int y2, int lockout) {
   int clicked_here = 0;
 
   /* If the mouse button is pressed, check to see if we're in the specified
-     region.  If so, return 1 and lock out further clicks until the button
-     is released */
+     region.  If so, return 1.  If lockout is non-zero, 
+     lock out further clicks until the button is released. */
   if ((mouse_b & 1) && mouse_x >= x1 && mouse_x < x2 && mouse_y >= y1 && mouse_y < y2) {
     if (g_mouse_click_lockout == 0) {
       g_mouse_click_lockout = lockout;  
@@ -96,6 +102,9 @@ int mouse_clicked_here(int x1, int y1, int x2, int y2, int lockout) {
   return clicked_here;
 }
 
+/*=============================================================================
+ * process_palette_press
+ *============================================================================*/
 void process_palette_press(void) {
   int process_page_change = 0;
 
@@ -171,6 +180,50 @@ void process_palette_press(void) {
   }
 }
 
+/*=============================================================================
+ * process_mark_press
+ *============================================================================*/
+void process_mark_press(void) {
+  int process_mark = 0;
+
+  /* Process any mouse clicks on the Mark button */
+  if (mouse_clicked_here(MARK_BUTTON_X , 
+                         MARK_BUTTON_Y,
+                         MARK_BUTTON_X  + MENU_BUTTON_WIDTH,
+                         MARK_BUTTON_Y  + MENU_BUTTON_HEIGHT,
+                         1)) {
+    process_mark = 1;
+  }
+
+  /*-------------------------------------------------------------------------
+   * K - toggle highlighting of active color in the play area
+   *------------------------------------------------------------------------*/     
+  if (key[KEY_K]) {
+    if (!g_keypress_lockout[KEY_K]) {
+      process_mark = 1;
+    }
+  }
+  if (!key[KEY_K] && g_keypress_lockout[KEY_K]) {
+    g_keypress_lockout[KEY_K] = 0;
+  }
+
+  if (process_mark) {
+    if (g_mark_current == 0) {
+      g_mark_current = 1;
+    }
+    else {
+      g_mark_current = 0;      
+    }
+    clear_render_components(&g_components);
+    g_components.render_main_area_squares = 1;
+    g_components.render_draw_cursor = 1;
+    g_components.render_buttons = 1;
+    g_keypress_lockout[KEY_K] = 1;
+  }      
+}
+/*=============================================================================
+ * process_palette_color_press
+ *============================================================================*/
 void process_palette_color_press(void) {
 
   int i;
@@ -803,6 +856,8 @@ void input_state_game(void) {
 
     process_palette_color_press();
 
+    process_mark_press();
+
     /*-------------------------------------------------------------------------
      * Space - Mark the highlighted square with the current color
      *------------------------------------------------------------------------*/
@@ -854,26 +909,6 @@ void input_state_game(void) {
      if(!key[KEY_SPACE] && g_keypress_lockout[KEY_SPACE]) {
       g_keypress_lockout[KEY_SPACE] = 0;
      }
-
-    /*-------------------------------------------------------------------------
-     * K - toggle highlighting of active color in the play area
-     *------------------------------------------------------------------------*/     
-    if (key[KEY_K]) {
-      if (!g_keypress_lockout[KEY_K]) {
-        if (g_mark_current == 0) 
-          g_mark_current = 1;
-        else
-          g_mark_current = 0;
-        clear_render_components(&g_components);
-        g_components.render_main_area_squares = 1;
-        g_components.render_draw_cursor = 1;
-        g_components.render_buttons = 1;
-        g_keypress_lockout[KEY_K] = 1;
-      }
-    }
-    if (!key[KEY_K] && g_keypress_lockout[KEY_K]) {
-      g_keypress_lockout[KEY_K] = 0;
-    }
 
     /*-------------------------------------------------------------------------
      * H - display help

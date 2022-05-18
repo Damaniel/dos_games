@@ -83,7 +83,41 @@ void input_state_map(void);
  *============================================================================*/
 void input_state_replay(void);
 
+/*=============================================================================
+ * update_mouse_status
+ *
+ * Unlocks the mouse click lockout.
+ *============================================================================*/
 void update_mouse_status(void);
+
+/*=============================================================================
+ * mouse_clicked_here
+ *
+ * Check to see if the mouse button has been pressed inside the box defiend
+ * by x1, x2, y1 and y2.  If lockout is non-zero, further clicks won't be 
+ * processed until the mouse button is released.
+ *============================================================================*/
 int mouse_clicked_here(int x1, int y1, int x2, int y2, int lockout);
+
+/*=============================================================================
+ * process_palette_press
+ *
+ * Process mouse and keyboard input for the palette page buttons
+ *============================================================================*/
+void process_palette_press(void);
+
+/*=============================================================================
+ * process_palette_color_press
+ *
+ * Process mouse and keyboard input for the palette color swatch area
+ *============================================================================*/
+void process_palette_color_press(void);
+
+/*=============================================================================
+ * process_mark_press
+ *
+ * Process mouse and keyboard input for the Mark button
+ *============================================================================*/
+void process_mark_press(void);
 
 #endif
