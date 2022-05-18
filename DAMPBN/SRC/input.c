@@ -154,7 +154,8 @@ void input_state_load_dialog(void) {
     /* TAB - select between collection and image tabs */
     if (key[KEY_TAB]) {
       if (!g_keypress_lockout[KEY_TAB]) {
-        if (g_load_section_active == LOAD_COLLECTION_ACTIVE) {
+        if (g_load_section_active == LOAD_COLLECTION_ACTIVE &&
+            g_num_picture_files > 0) {
           g_load_section_active = LOAD_IMAGE_ACTIVE;
         } else {
           g_load_section_active = LOAD_COLLECTION_ACTIVE;
