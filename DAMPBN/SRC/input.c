@@ -151,6 +151,21 @@ void input_state_load_dialog(void) {
       g_keypress_lockout[KEY_ENTER] = 0;
     }    
 
+    /* TAB - select between collection and image tabs */
+    if (key[KEY_TAB]) {
+      if (!g_keypress_lockout[KEY_TAB]) {
+        if (g_load_section_active == LOAD_COLLECTION_ACTIVE) {
+          g_load_section_active = LOAD_IMAGE_ACTIVE;
+        } else {
+          g_load_section_active = LOAD_COLLECTION_ACTIVE;
+        }
+      }
+      g_keypress_lockout[KEY_TAB] = 1;
+    }
+    if (!key[KEY_TAB] && g_keypress_lockout[KEY_TAB]) {
+      g_keypress_lockout[KEY_TAB] = 0;
+    }
+
     if (key[KEY_ESC]) {
       if (!g_keypress_lockout[KEY_ESC]) {
         /* Change to the appropriate state.  Could be the title screen
@@ -174,46 +189,99 @@ void input_state_load_dialog(void) {
     if (key[KEY_DOWN]) {
       /* If the key was previously up */
       if (!g_keypress_lockout[KEY_DOWN]) {
-        g_load_picture_index++;
-        if (g_load_picture_index >= g_num_picture_files) {
-          g_load_picture_index = g_num_picture_files -1;
-        }
-        else {
-          g_load_cursor_offset++;
-          if(g_load_cursor_offset >= LOAD_NUM_VISIBLE_FILES) {
-            g_load_picture_offset++;            
-            g_load_cursor_offset = LOAD_NUM_VISIBLE_FILES -1;
+        /* Adjust the image cursor if the image tab is active */
+        if (g_load_section_active == LOAD_IMAGE_ACTIVE) {
+          g_load_picture_index++;
+          if (g_load_picture_index >= g_num_picture_files) {
+            g_load_picture_index = g_num_picture_files -1;
+          }
+          else {
+            g_load_cursor_offset++;
+            if(g_load_cursor_offset >= LOAD_NUM_VISIBLE_FILES) {
+              g_load_picture_offset++;            
+              g_load_cursor_offset = LOAD_NUM_VISIBLE_FILES -1;
+            }
           }
         }
-        g_keypress_lockout[KEY_DOWN] = 1;
+        /* Adjust the collection cursor if the collection tab is active */
+        if (g_load_section_active == LOAD_COLLECTION_ACTIVE) {
+          g_load_collection_index++;
+          if (g_load_collection_index >= g_num_collections) {
+            g_load_collection_index = g_num_collections -1;
+          }
+          else {
+            g_load_collection_cursor_offset++;
+            if(g_load_collection_cursor_offset >= LOAD_NUM_VISIBLE_FILES) {
+              g_load_collection_offset++;            
+              g_load_collection_cursor_offset = LOAD_NUM_VISIBLE_FILES -1;
+            }
+          }
+        }        
       }
+
+      /* Update the images in the collection */
+      if(g_load_section_active == LOAD_COLLECTION_ACTIVE) {
+        get_picture_files(g_collection_items[g_load_collection_index].name);
+        g_load_picture_offset = 0;
+        g_load_cursor_offset = 0;
+        g_load_picture_index = 0;
+      }
+
+      g_keypress_lockout[KEY_DOWN] = 1;      
     }
     if (!key[KEY_DOWN] && g_keypress_lockout[KEY_DOWN]) {
       g_keypress_lockout[KEY_DOWN] = 0;
     }
 
     if (key[KEY_UP]) {
-      /* If the key was previously up */
-      if (!g_keypress_lockout[KEY_UP]) {
-        g_load_picture_index--;
-        if (g_load_picture_index < 0) {
-          g_load_picture_index = 0;
-        }
-        else {
-          g_load_cursor_offset--;
-          if(g_load_cursor_offset < 0) {
-            g_load_picture_offset--;
-            g_load_cursor_offset = 0;
+      if (g_load_section_active == LOAD_IMAGE_ACTIVE) {
+        /* If the key was previously up */
+        if (!g_keypress_lockout[KEY_UP]) {
+          g_load_picture_index--;
+          if (g_load_picture_index < 0) {
+            g_load_picture_index = 0;
           }
+          else {
+            g_load_cursor_offset--;
+            if(g_load_cursor_offset < 0) {
+              g_load_picture_offset--;
+              g_load_cursor_offset = 0;
+            } 
+          } 
         }
-        g_keypress_lockout[KEY_UP] = 1;
+      } 
+      if (g_load_section_active == LOAD_COLLECTION_ACTIVE) {
+        /* If the key was previously up */
+        if (!g_keypress_lockout[KEY_UP]) {
+          g_load_collection_index--;
+          if (g_load_collection_index < 0) {
+            g_load_collection_index = 0;
+          }
+          else {
+            g_load_collection_cursor_offset--;
+            if(g_load_collection_cursor_offset < 0) {
+              g_load_collection_offset--;
+              g_load_collection_cursor_offset = 0;
+            } 
+          } 
+        }         
       }
+
+      /* Update the images in the collection */
+      if(g_load_section_active == LOAD_COLLECTION_ACTIVE) {
+        get_picture_files(g_collection_items[g_load_collection_index].name);
+        g_load_picture_offset = 0;
+        g_load_cursor_offset = 0;
+        g_load_picture_index = 0;
+      }
+
+      g_keypress_lockout[KEY_UP] = 1;      
     }
     if (!key[KEY_UP] && g_keypress_lockout[KEY_UP]) {
       g_keypress_lockout[KEY_UP] = 0;
     }
-
 }
+
 /*=============================================================================
 
 

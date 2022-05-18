@@ -28,6 +28,9 @@
 #include "../include/input.h"
 #include "../include/res.h"
 
+#define LOAD_COLLECTION_ACTIVE   0
+#define LOAD_IMAGE_ACTIVE        1
+
 /* Compression types for dampbm .PIC files */
 #define COMPRESSION_NONE   0
 #define COMPRESSION_RLE    1
@@ -242,8 +245,14 @@ extern int g_load_collection_index;
 /* The actual index of the selected picture in the load file dialog */
 extern int g_load_picture_index;
 
+/* The index of the category shown at the top of the list */
+extern int g_load_collection_offset;
+
 /* The index of the picture shown at the top of the list */
 extern int g_load_picture_offset;
+
+/* The position (0 - 10) of the highlighted item in the collection list */
+extern int g_load_collection_cursor_offset;
 
 /* The position (0 - 10) of the highlighted item in the list */
 extern int g_load_cursor_offset;
@@ -253,6 +262,9 @@ extern int g_num_collections;
 
 /* The number of picture files available to display in the Load File menu */
 extern int g_num_picture_files;
+
+/* Which section of the load dialog (collection or image) is currently active */
+extern int g_load_section_active;
 
 /* A flag that's set when the 
    load dialog confirms a new file should be loaded */

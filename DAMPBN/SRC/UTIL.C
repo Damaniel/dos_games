@@ -64,6 +64,8 @@ PictureItem g_pic_items[MAX_FILES];
 
 int g_num_collections;
 int g_load_collection_index;
+int g_load_collection_offset;
+int g_load_collection_cursor_offset;
 
 int g_num_picture_files;
 int g_load_picture_index;
@@ -79,6 +81,8 @@ int g_replay_x;
 int g_replay_y;
 
 int g_replay_first_time;
+
+int g_load_section_active;
 
 /*=============================================================================
  * get_picture_metadata
@@ -563,12 +567,16 @@ void init_new_pic_defaults(void) {
 
 void init_load_dialog_defaults(void) {
   g_load_collection_index = 0;
+  g_load_collection_offset = 0;
+  g_load_collection_cursor_offset = 0;
 
   g_load_picture_index = 0;
   g_load_picture_offset = 0;
   g_load_cursor_offset = 0;
   g_num_picture_files = 0;  
   g_load_new_file = 0;
+
+  g_load_section_active = LOAD_COLLECTION_ACTIVE;
 }
 
 /*=============================================================================

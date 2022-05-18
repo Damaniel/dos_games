@@ -887,6 +887,7 @@ void render_help_text(BITMAP *dest, RenderComponents c) {
  *============================================================================*/
 void render_load_dialog(BITMAP *dest, RenderComponents c) {
   int start_offset, end_offset;
+  int collection_start_offset, collection_end_offset;
   int i;
   char text[30];
 
@@ -894,15 +895,55 @@ void render_load_dialog(BITMAP *dest, RenderComponents c) {
      the title screen parts */
   if (g_prev_state == STATE_TITLE) {
     render_title_screen(dest, c);
-    /* Cover the 'press key to play' box and replace it with instructions */
-    rectfill(dest, 0, 180, 319, 190, 208);
-    render_centered_prop_text(dest, 
-                      "Press UP/DOWN to select a picture and ENTER to continue", 
-                      160, 182);
+    /* Cover the 'press key to play' box */
+    rectfill(dest, 0, 180, 319, 190, 208);       
   }
 
   draw_sprite(dest, g_load_dialog, LOAD_DIALOG_X, LOAD_DIALOG_Y);
 
+  /*---------------------------------------------------------------------
+   * Render the collection list 
+   *---------------------------------------------------------------------*/
+  collection_start_offset = g_load_collection_offset;
+  collection_end_offset = collection_start_offset + LOAD_NUM_VISIBLE_FILES;
+
+  if (collection_end_offset > g_num_collections)
+    collection_end_offset = g_num_collections;
+
+  /* If the collection list is active, highlight the active item on the 
+   * collection side and place a highlight aaround the section */
+  if (g_load_section_active == LOAD_COLLECTION_ACTIVE) {
+    rectfill(dest,
+            LOAD_COLLECTION_NAME_X_OFF,
+            LOAD_COLLECTION_NAME_Y_OFF + 
+            (g_load_collection_cursor_offset * LOAD_COLLECTION_NAME_HEIGHT),
+            LOAD_COLLECTION_NAME_X_OFF + LOAD_COLLECTION_NAME_WIDTH - 1,
+            LOAD_COLLECTION_NAME_Y_OFF + 
+             ((g_load_collection_cursor_offset+1) * LOAD_COLLECTION_NAME_HEIGHT) - 1, 204);
+    rect(dest,
+         COLLECTION_HIGHLIGHT_X_OFF,
+         COLLECTION_HIGHLIGHT_Y_OFF,
+         COLLECTION_HIGHLIGHT_X_OFF + COLLECTION_HIGHLIGHT_WIDTH -1,
+         COLLECTION_HIGHLIGHT_Y_OFF + COLLECTION_HIGHLIGHT_HEIGHT -1, 210);             
+  } else {    
+    rect(dest,
+         COLLECTION_HIGHLIGHT_X_OFF,
+         COLLECTION_HIGHLIGHT_Y_OFF,
+         COLLECTION_HIGHLIGHT_X_OFF + COLLECTION_HIGHLIGHT_WIDTH -1,
+         COLLECTION_HIGHLIGHT_Y_OFF + COLLECTION_HIGHLIGHT_HEIGHT -1, 194);
+  }
+
+  /* Iterate through and draw the file list */
+  for(i=collection_start_offset; i < collection_end_offset ; i++) {
+    /* Draw the file name */
+    render_prop_text(dest, g_collection_items[i].name, LOAD_COLLECTION_NAME_X_OFF + 1,
+                   LOAD_COLLECTION_NAME_Y_OFF + 
+                   ((i-collection_start_offset) * LOAD_COLLECTION_NAME_HEIGHT) + 1);       
+  }
+
+  /*---------------------------------------------------------------------
+   * Render the image list 
+   *---------------------------------------------------------------------*/
   /* Figure out what picture offset to draw FROM */
   start_offset = g_load_picture_offset;
   end_offset = start_offset + LOAD_NUM_VISIBLE_FILES;
@@ -910,13 +951,28 @@ void render_load_dialog(BITMAP *dest, RenderComponents c) {
   if(end_offset > g_num_picture_files)
     end_offset = g_num_picture_files;
 
-  rectfill(dest,
-           LOAD_FILE_NAME_X_OFF,
-           LOAD_FILE_NAME_Y_OFF + 
-           (g_load_cursor_offset * LOAD_FILE_NAME_HEIGHT),
-           LOAD_FILE_NAME_X_OFF + LOAD_FILE_NAME_WIDTH - 1,
-           LOAD_FILE_NAME_Y_OFF + 
-           ((g_load_cursor_offset+1) * LOAD_FILE_NAME_HEIGHT) - 1, 204);
+  /* Draw the background of the highlighted image, but only if the 
+   * image section is currently active */
+  if(g_load_section_active == LOAD_IMAGE_ACTIVE) {  
+    rectfill(dest,
+            LOAD_FILE_NAME_X_OFF,
+            LOAD_FILE_NAME_Y_OFF + 
+             (g_load_cursor_offset * LOAD_FILE_NAME_HEIGHT),
+            LOAD_FILE_NAME_X_OFF + LOAD_FILE_NAME_WIDTH - 1,
+            LOAD_FILE_NAME_Y_OFF + 
+            ((g_load_cursor_offset+1) * LOAD_FILE_NAME_HEIGHT) - 1, 204);
+    rect(dest,
+         IMAGE_HIGHLIGHT_X_OFF,
+         IMAGE_HIGHLIGHT_Y_OFF,
+         IMAGE_HIGHLIGHT_X_OFF + IMAGE_HIGHLIGHT_WIDTH -1,
+         IMAGE_HIGHLIGHT_Y_OFF + IMAGE_HIGHLIGHT_HEIGHT -1, 210);              
+  } else {
+    rect(dest,
+         IMAGE_HIGHLIGHT_X_OFF,
+         IMAGE_HIGHLIGHT_Y_OFF,
+         IMAGE_HIGHLIGHT_X_OFF + IMAGE_HIGHLIGHT_WIDTH -1,
+         IMAGE_HIGHLIGHT_Y_OFF + IMAGE_HIGHLIGHT_HEIGHT -1, 194);              
+  }
 
   /* Iterate through and draw the file list */
   for(i=start_offset; i < end_offset ; i++) {
@@ -926,6 +982,10 @@ void render_load_dialog(BITMAP *dest, RenderComponents c) {
                    ((i-start_offset) * LOAD_FILE_NAME_HEIGHT) + 1);       
   }
     
+  /*---------------------------------------------------------------------
+   * Render the metadata
+   *---------------------------------------------------------------------*/    
+  
   /* Draw the category */
   rectfill(dest,
            LOAD_FILE_CATEGORY_X,
