@@ -284,4 +284,8 @@ extern int g_help_page;
    the lockout is enabled until the mouse is pressed again */
 extern int g_mouse_click_lockout;
 
+extern int g_highlight_style_button;
+extern int g_highlight_save_button;
+extern int g_highlight_load_button;
+
 #endif

@@ -469,12 +469,24 @@ void render_menu_buttons(BITMAP *dest) {
   /* Draw the buttons */
 
   /* Save */
-  blit(g_main_buttons, dest, SAVE_BUTTON_X_OFFSET, SAVE_BUTTON_Y_OFFSET,
-       SAVE_BUTTON_X, SAVE_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+  if (g_highlight_save_button == 0) {
+    blit(g_main_buttons, dest, SAVE_BUTTON_X_OFFSET, SAVE_BUTTON_Y_OFFSET,
+         SAVE_BUTTON_X, SAVE_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+  }
+  else {
+    blit(g_main_buttons, dest, SAVE_BUTTON_X_OFFSET, BUTTON_PRESSED_OFFSET + SAVE_BUTTON_Y_OFFSET,
+         SAVE_BUTTON_X, SAVE_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);    
+  }
 
   /* Style */
-  blit(g_main_buttons, dest, STYLE_BUTTON_X_OFFSET, STYLE_BUTTON_Y_OFFSET,
-       STYLE_BUTTON_X, STYLE_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+  if(g_highlight_style_button == 0) {
+    blit(g_main_buttons, dest, STYLE_BUTTON_X_OFFSET, STYLE_BUTTON_Y_OFFSET,
+        STYLE_BUTTON_X, STYLE_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+  }
+  else {
+      blit(g_main_buttons, dest, STYLE_BUTTON_X_OFFSET, BUTTON_PRESSED_OFFSET + STYLE_BUTTON_Y_OFFSET,
+        STYLE_BUTTON_X, STYLE_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
+  }
 
   /* Options */
   blit(g_main_buttons, dest, OPTS_BUTTON_X_OFFSET, OPTS_BUTTON_Y_OFFSET,
@@ -485,8 +497,14 @@ void render_menu_buttons(BITMAP *dest) {
        HELP_BUTTON_X, HELP_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);
 
   /* Load */
-  blit(g_main_buttons, dest, LOAD_BUTTON_X_OFFSET, LOAD_BUTTON_Y_OFFSET,
-       LOAD_BUTTON_X, LOAD_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);   
+  if (g_highlight_load_button == 0) {
+    blit(g_main_buttons, dest, LOAD_BUTTON_X_OFFSET, LOAD_BUTTON_Y_OFFSET,
+         LOAD_BUTTON_X, LOAD_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);   
+  }
+  else {
+    blit(g_main_buttons, dest, LOAD_BUTTON_X_OFFSET, BUTTON_PRESSED_OFFSET + LOAD_BUTTON_Y_OFFSET,
+         LOAD_BUTTON_X, LOAD_BUTTON_Y, MENU_BUTTON_WIDTH, MENU_BUTTON_HEIGHT);      
+  }
 
   /* Mark */
   if(g_mark_current == 1) {

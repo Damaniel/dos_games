@@ -596,6 +596,11 @@ void init_defaults(void) {
   g_time_to_update_elapsed = FRAME_RATE;
   g_help_page = 0;
   
+  /* Highlight certain UI buttons when the mouse is held down over them */
+  g_highlight_style_button = 0;
+  g_highlight_save_button = 0;
+  g_highlight_load_button = 0;
+
   g_picture = NULL;
 
   for(i=0; i<128; i++)

@@ -141,4 +141,41 @@ void process_exit_press(void);
  *============================================================================*/
 void process_map_press(void);
 
+/*=============================================================================
+ * process_style_press
+ *
+ * Process mouse and keyboard input for the Style button
+ *============================================================================*/
+void process_style_press(void);
+
+/*=============================================================================
+ * process_save_press
+ *
+ * Process mouse and keyboard input for the Save button
+ *============================================================================*/
+void process_save_press(void);
+
+/*=============================================================================
+ * process_load_press
+ *
+ * Process mouse and keyboard input for the Load button
+ *============================================================================*/
+void process_load_press(void);
+
+/*=============================================================================
+ * process_main_area_keyboard_input
+ *
+ * Process all keyboard-specific input related to the main game area
+ * (moving the cursor, clicking on a space)
+ *============================================================================*/
+void process_main_area_keyboard_input(void);
+
+/*=============================================================================
+ * process_main_area_mouse_input
+ *
+ * Process all mouse-specific input related to the main game area
+ * (clicking/dragging on spaces, hiding the cursor while the mouse is moving)
+ *============================================================================*/
+void process_main_area_mouse_input(void);
+
 #endif
