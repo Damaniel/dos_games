@@ -120,4 +120,25 @@ void process_palette_color_press(void);
  *============================================================================*/
 void process_mark_press(void);
 
+/*=============================================================================
+ * process_help_press
+ *
+ * Process mouse and keyboard input for the Help button
+ *============================================================================*/
+void process_help_press(void);
+
+/*=============================================================================
+ * process_exit_press
+ *
+ * Process mouse and keyboard input for the Exit button
+ *============================================================================*/
+void process_exit_press(void);
+
+/*=============================================================================
+ * process_map_press
+ *
+ * Process mouse and keyboard input for the Map button
+ *============================================================================*/
+void process_map_press(void);
+
 #endif

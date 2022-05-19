@@ -282,8 +282,9 @@ int main(int argc, char *argv[]) {
   init_defaults();
 
   set_mouse_sprite(g_mouse_cursor);
-  change_state(STATE_LOGO, STATE_NONE);
 
+  change_state(STATE_LOGO, STATE_NONE);
+  
   blit(buffer, screen, 0, 0, 0, 0, 320, 200);
 
   while(!g_game_done) {  

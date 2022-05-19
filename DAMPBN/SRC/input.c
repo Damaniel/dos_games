@@ -221,6 +221,7 @@ void process_mark_press(void) {
     g_keypress_lockout[KEY_K] = 1;
   }      
 }
+
 /*=============================================================================
  * process_palette_color_press
  *============================================================================*/
@@ -361,6 +362,91 @@ void process_palette_color_press(void) {
     }                  
     g_components.render_palette_cursor = 1;  
   }
+}
+
+/*=============================================================================
+ * process_help_press
+ *============================================================================*/
+void process_help_press(void) {
+
+  /* Check to see if the help button was clicked */
+  if (mouse_clicked_here(HELP_BUTTON_X , 
+                         HELP_BUTTON_Y,
+                         HELP_BUTTON_X  + MENU_BUTTON_WIDTH,
+                         HELP_BUTTON_Y  + MENU_BUTTON_HEIGHT,
+                         1)) {
+    change_state(STATE_HELP, STATE_GAME);
+  }
+
+  /*-------------------------------------------------------------------------
+   * H - display help
+   *------------------------------------------------------------------------*/ 
+  if (key[KEY_H]) {
+    if (!g_keypress_lockout[KEY_H]) {    
+      change_state(STATE_HELP, STATE_GAME);
+      g_keypress_lockout[KEY_H] = 1;        
+    }
+  }
+  if (!key[KEY_H] && g_keypress_lockout[KEY_H]) {
+    g_keypress_lockout[KEY_H] = 0;
+  }      
+}
+
+ /*=============================================================================
+ * process_map_press
+ *============================================================================*/
+void process_map_press(void) {
+
+  /* Check to see if the exit button was clicked */
+  if (mouse_clicked_here(MAP_BUTTON_X , 
+                         MAP_BUTTON_Y,
+                         MAP_BUTTON_X  + MENU_BUTTON_WIDTH,
+                         MAP_BUTTON_Y  + MENU_BUTTON_HEIGHT,
+                         1)) {
+    change_state(STATE_MAP, STATE_GAME);
+  }
+
+  /*-------------------------------------------------------------------------
+   * M - display progress map
+   *------------------------------------------------------------------------*/ 
+  if (key[KEY_M]) {
+    if (!g_keypress_lockout[KEY_M]) {    
+      change_state(STATE_MAP, STATE_GAME);
+      g_keypress_lockout[KEY_M] = 1;        
+    }
+  }
+  if (!key[KEY_M] && g_keypress_lockout[KEY_M]) {
+    g_keypress_lockout[KEY_M] = 0;
+  }    
+}
+
+/*=============================================================================
+ * process_exit_press
+ *============================================================================*/
+void process_exit_press(void) {
+
+  /* Check to see if the exit button was clicked */
+  if (mouse_clicked_here(EXIT_BUTTON_X , 
+                         EXIT_BUTTON_Y,
+                         EXIT_BUTTON_X  + MENU_BUTTON_WIDTH,
+                         EXIT_BUTTON_Y  + MENU_BUTTON_HEIGHT,
+                         1)) {
+    change_state(STATE_TITLE, STATE_GAME);
+  }
+  
+  /*-------------------------------------------------------------------------
+   * ESC - exit the game
+   *------------------------------------------------------------------------*/
+  if(key[KEY_ESC]) {
+    /* If the key was previously up... */
+    if (!g_keypress_lockout[KEY_ESC]) {
+        g_keypress_lockout[KEY_ESC] = 1;
+        change_state(STATE_TITLE, STATE_GAME);
+    }
+  } 
+  if(!key[KEY_ESC] && g_keypress_lockout[KEY_ESC]) {
+    g_keypress_lockout[KEY_ESC] = 0;
+  }  
 }
 
 /*=============================================================================
@@ -674,20 +760,15 @@ void input_state_game(void) {
 
     moved = 0;
     done = 0;
-    /*-------------------------------------------------------------------------
-     * ESC - exit the game
-     *------------------------------------------------------------------------*/
-    if(key[KEY_ESC]) {
-      /* If the key was previously up... */
-      if (!g_keypress_lockout[KEY_ESC]) {
-          g_keypress_lockout[KEY_ESC] = 1;
-          change_state(STATE_TITLE, STATE_GAME);
-      }
-    } 
-    if(!key[KEY_ESC] && g_keypress_lockout[KEY_ESC]) {
-      g_keypress_lockout[KEY_ESC] = 0;
-    }
-    
+
+    /* Process each in-game action (both keyboard and mouse) */
+    process_palette_press();
+    process_palette_color_press();
+    process_mark_press();
+    process_help_press();
+    process_exit_press();
+    process_map_press();
+
     /*-------------------------------------------------------------------------
      * left - move the cursor left in the play area
      *------------------------------------------------------------------------*/
@@ -852,12 +933,6 @@ void input_state_game(void) {
       g_keypress_lockout[KEY_DOWN] = 0;
     }
 
-    process_palette_press();
-
-    process_palette_color_press();
-
-    process_mark_press();
-
     /*-------------------------------------------------------------------------
      * Space - Mark the highlighted square with the current color
      *------------------------------------------------------------------------*/
@@ -909,32 +984,6 @@ void input_state_game(void) {
      if(!key[KEY_SPACE] && g_keypress_lockout[KEY_SPACE]) {
       g_keypress_lockout[KEY_SPACE] = 0;
      }
-
-    /*-------------------------------------------------------------------------
-     * H - display help
-     *------------------------------------------------------------------------*/ 
-    if (key[KEY_H]) {
-      if (!g_keypress_lockout[KEY_H]) {    
-        change_state(STATE_HELP, STATE_GAME);
-        g_keypress_lockout[KEY_H] = 1;        
-      }
-    }
-    if (!key[KEY_H] && g_keypress_lockout[KEY_H]) {
-      g_keypress_lockout[KEY_H] = 0;
-    }    
-
-    /*-------------------------------------------------------------------------
-     * M - display progress map
-     *------------------------------------------------------------------------*/ 
-    if (key[KEY_M]) {
-      if (!g_keypress_lockout[KEY_M]) {    
-        change_state(STATE_MAP, STATE_GAME);
-        g_keypress_lockout[KEY_M] = 1;        
-      }
-    }
-    if (!key[KEY_M] && g_keypress_lockout[KEY_M]) {
-      g_keypress_lockout[KEY_M] = 0;
-    }    
 
     /*-------------------------------------------------------------------------
      * T - toggle through tile types
