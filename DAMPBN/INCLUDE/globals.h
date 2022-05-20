@@ -288,18 +288,24 @@ extern int g_help_page;
    the lockout is enabled until the mouse is pressed again */
 extern int g_mouse_click_lockout;
 
+/* Flags to tell the renderer whether to highlight these buttons or not */
 extern int g_highlight_style_button;
 extern int g_highlight_save_button;
 extern int g_highlight_load_button;
 
+/* The mouse mode while in the game state.  Can be NEUTRAL (not drawing or erasing),
+   DRAW (currently drawing) or ERASE (currently erasing). */
 extern int g_game_area_mouse_mode;
 
+/* Mouse position info.  Used as a snapshot for the mouse that can be processed */
 extern int g_mouse_x;
 extern int g_mouse_y;
 
 extern int g_old_mouse_x;
 extern int g_old_mouse_y;
 
+/* A priority flag, used to determine whether the keyboard or mouse has
+   priority in terms of moving the cursor or drawing/erasing squares */
 extern int g_keyboard_has_priority;
 
 #endif

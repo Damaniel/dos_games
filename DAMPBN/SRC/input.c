@@ -879,7 +879,6 @@ void process_main_area_mouse_input(void) {
     /* If we're in neutral mode and clicking over empty space or correctly 
        filled space, enter draw mode */
     if (mouse_b & 1) {
-      printf("%d\n", g_game_area_mouse_mode);
       if (g_game_area_mouse_mode == MOUSE_MODE_NEUTRAL) {
         if (fill_val == 0  || (g_picture->pic_squares[square_offset].correct)) {
           g_game_area_mouse_mode = MOUSE_MODE_DRAW;
@@ -889,11 +888,11 @@ void process_main_area_mouse_input(void) {
         }
       }
       /* If in draw mode, draw in the space if it isn't drawn yet */      
-      if (g_game_area_mouse_mode == MOUSE_MODE_DRAW) {
-        g_picture->pic_squares[square_offset].fill_value = g_cur_color;         
+      if (g_game_area_mouse_mode == MOUSE_MODE_DRAW) {         
         /* Update mistake/progress counters */                  
-        if (g_cur_color != pal_val && g_picture->mistakes[square_offset] == 0) {
+        if (g_cur_color != pal_val && g_picture->mistakes[square_offset] == 0) {          
             if(g_picture->pic_squares[square_offset].correct == 0) {
+              g_picture->pic_squares[square_offset].fill_value = g_cur_color;              
               g_picture->mistakes[square_offset] = g_cur_color;
               g_mistake_count++;
               g_picture->pic_squares[square_offset].correct = 0;
@@ -903,6 +902,7 @@ void process_main_area_mouse_input(void) {
             }
         }             
         if (fill_val == 0 && g_cur_color == pal_val) {
+          g_picture->pic_squares[square_offset].fill_value = g_cur_color;          
           g_picture->draw_order[g_correct_count].x = g_draw_position_x;
           g_picture->draw_order[g_correct_count].y = g_draw_position_y;       
           g_picture->mistakes[square_offset] = 0;
