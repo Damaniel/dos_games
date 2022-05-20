@@ -100,10 +100,8 @@ extern unsigned char g_keypress_lockout[];
 
 /* Image bitmaps used by the game */
 extern BITMAP *g_logo;
-
 extern BITMAP *g_title_area;
 extern BITMAP *g_title_box;
-
 extern BITMAP *g_numbers;
 extern BITMAP *g_highlight_numbers;
 extern BITMAP *g_bg_lower;

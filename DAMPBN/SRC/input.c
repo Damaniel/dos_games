@@ -95,6 +95,20 @@ int is_in_game_area(int x, int y) {
 }
 
 /*=============================================================================
+ * is_in_overview_area
+ *============================================================================*/
+int is_in_overview_area(int x, int y) {
+  int in_area = 0;
+
+  if(x >= OVERVIEW_X && x < OVERVIEW_X + OVERVIEW_WIDTH &&
+    y >= OVERVIEW_Y && y < OVERVIEW_Y + OVERVIEW_HEIGHT) {
+      in_area = 1;
+  }
+
+  return in_area;
+}
+
+/*=============================================================================
  * update_mouse_status
  *============================================================================*/
 void update_mouse_status(void) {
@@ -923,18 +937,54 @@ void process_main_area_mouse_input(void) {
           g_mistake_count--;
         }
       }      
-     clear_render_components(&g_components);
-     update_overview_area_at((g_draw_position_x - 
+      clear_render_components(&g_components);
+      update_overview_area_at((g_draw_position_x - 
+                             (g_draw_position_x % OVERVIEW_BLOCK_SIZE)) /
+                             OVERVIEW_BLOCK_SIZE,
+                             (g_draw_position_y - 
+                              (g_draw_position_y % OVERVIEW_BLOCK_SIZE)) /
+                              OVERVIEW_BLOCK_SIZE);                       
+    }      
+    g_components.render_draw_cursor = 1;
+    g_components.render_status_text = 1;
+    g_components.render_overview_display = 1;           
+  } /* is_in_game_area */  
+
+  if (is_in_overview_area(g_mouse_x, g_mouse_y)) {
+    int click_image_x = (g_mouse_x - OVERVIEW_X) * OVERVIEW_BLOCK_SIZE;
+    int click_image_y = (g_mouse_y - OVERVIEW_Y) * OVERVIEW_BLOCK_SIZE;
+
+    if (mouse_b & 1) {
+      // Does the click represent an in-image region?
+      if (click_image_x < g_picture->w && click_image_y <= g_picture->h) {
+        g_pic_render_x = click_image_x;
+        g_pic_render_y = click_image_y;
+        /* CLamp the position into the play area */
+        if (g_pic_render_y >= g_picture->h - g_play_area_h) {
+          g_pic_render_y = g_picture->h - g_play_area_h;
+        }
+        if (g_pic_render_x >= g_picture->w - g_play_area_w) {
+          g_pic_render_x = g_picture->w - g_play_area_w;
+        }        
+        /* Figure out where to start drawing from */
+        g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
+        g_draw_position_y = g_pic_render_y + g_draw_cursor_y;    
+        clear_render_components(&g_components);
+        update_overview_area_at((g_draw_position_x - 
                             (g_draw_position_x % OVERVIEW_BLOCK_SIZE)) /
                             OVERVIEW_BLOCK_SIZE,
                             (g_draw_position_y - 
                              (g_draw_position_y % OVERVIEW_BLOCK_SIZE)) /
-                             OVERVIEW_BLOCK_SIZE);   
+                             OVERVIEW_BLOCK_SIZE);               
+                           
+      }    
     }
     g_components.render_draw_cursor = 1;
     g_components.render_status_text = 1;
-    g_components.render_overview_display = 1;       
-  } /* is_in_game_area */  
+    g_components.render_overview_display = 1;
+    g_components.render_main_area_squares = 1;       
+  }
+
 }
 
 /*=============================================================================

@@ -178,4 +178,18 @@ void process_main_area_keyboard_input(void);
  *============================================================================*/
 void process_main_area_mouse_input(void);
 
+/*=============================================================================
+ * is_in_game_area
+ *
+ * Returns 1 if the mouse is in the main draw area, otherwise 0.
+ *============================================================================*/
+int is_in_game_area(int x, int y);
+
+/*=============================================================================
+ * is_in_overview_area
+ *
+ * Returns 1 if the mouse is in the overview area, otherwise 0.
+ *============================================================================*/
+int is_in_overview_area(int x, int y);
+
 #endif
