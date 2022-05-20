@@ -347,6 +347,7 @@ int load_progress_file(Picture *p) {
     p->draw_order[i].x = x;
     p->draw_order[i].y = y;
     p->pic_squares[offset].fill_value = p->pic_squares[offset].pal_entry;
+    p->pic_squares[offset].correct = 1;
   }
 
   /* Load mistake data */
@@ -358,6 +359,7 @@ int load_progress_file(Picture *p) {
       offset = j * p->w + i;
       if(p->mistakes[offset] != 0) {
        p->pic_squares[offset].fill_value = p->mistakes[offset];
+       p->pic_squares[offset].correct = 0;       
       }
     }
   }
@@ -470,6 +472,7 @@ Picture *load_picture_file(char *filename) {
       (pic->pic_squares[i]).pal_entry = fgetc(fp) + 1;
       (pic->pic_squares[i]).fill_value = 0;
       (pic->pic_squares[i]).order = -1;
+      (pic->pic_squares[i]).correct = 0;
     }
   } else {
     bytes_processed = 0;
@@ -483,13 +486,15 @@ Picture *load_picture_file(char *filename) {
           (pic->pic_squares[bytes_processed]).pal_entry =(first_byte & 0x7F)+1;
           (pic->pic_squares[bytes_processed]).fill_value = 0;
           (pic->pic_squares[bytes_processed]).order = -1;
+          (pic->pic_squares[bytes_processed]).correct = 0;          
           bytes_processed++;
         }
       } else {
         /* Found a single value */
         (pic->pic_squares[bytes_processed]).pal_entry = first_byte + 1;
         (pic->pic_squares[bytes_processed]).fill_value = 0;
-        (pic->pic_squares[i]).order = -1;
+        (pic->pic_squares[bytes_processed]).order = -1;
+        (pic->pic_squares[bytes_processed]).correct = 0;         
         bytes_processed++;
       }
     } 
@@ -606,6 +611,9 @@ void init_defaults(void) {
   for(i=0; i<128; i++)
     g_keypress_lockout[i] = 0;
 
+  g_game_area_mouse_mode = MOUSE_MODE_NEUTRAL;
+  g_keyboard_has_priority = 1;
+  
   /* Variables used in the interrupt handler */
   LOCK_VARIABLE(g_elapsed_time);
   LOCK_VARIABLE(g_frame_counter);

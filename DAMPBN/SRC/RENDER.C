@@ -401,7 +401,7 @@ void render_main_area_square_at(BITMAP *dest, int tl_x, int tl_y,
         NUMBER_BOX_WIDTH, 
         NUMBER_BOX_HEIGHT);    
     /* Is it marked with the correct color?  If not, draw an X on it */
-    if (pal_offset != color_offset) {
+    if (!c.correct) {
       draw_sprite(dest, g_wrong, 
                   DRAW_AREA_X + (off_x * NUMBER_BOX_RENDER_X_OFFSET),
                   DRAW_AREA_Y + (off_y * NUMBER_BOX_RENDER_Y_OFFSET));
@@ -662,8 +662,9 @@ void render_game_screen(BITMAP *dest, RenderComponents c) {
 
  
   if(c.render_scrollbars || c.render_all ) {
-    update_scrollbar_positions();
-    render_scrollbars(dest);
+    // TODO: fix the update_scrollbar_positions function
+    //update_scrollbar_positions();
+    //render_scrollbars(dest);
   }
 
  /* Draw the various cursors */

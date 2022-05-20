@@ -24,7 +24,7 @@
 typedef struct {
   int x;
   int y;
-} MousePosition;
+} Position;
 
 /*=============================================================================
  * process_input

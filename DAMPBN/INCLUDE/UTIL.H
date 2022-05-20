@@ -29,6 +29,8 @@ typedef struct {
   char fill_value;
   /* The order in which this square was *correctly* filled in */
   int  order;
+  /* 0 - this square isn't correct yet.  1 = this square is correct */
+  char correct;
 } ColorSquare;
 
 typedef struct {

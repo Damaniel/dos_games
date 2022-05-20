@@ -62,6 +62,10 @@
 #define PIC_FILE_DIR "res/pics"
 #define PROGRESS_FILE_DIR "progress"
 
+#define MOUSE_MODE_NEUTRAL             0
+#define MOUSE_MODE_DRAW                1
+#define MOUSE_MODE_ERASE               2
+
 /* Width and height of all characters from ASCII values 32 to 127 in the
    standard proportional font*/
 extern int g_prop_font_width[];
@@ -287,5 +291,15 @@ extern int g_mouse_click_lockout;
 extern int g_highlight_style_button;
 extern int g_highlight_save_button;
 extern int g_highlight_load_button;
+
+extern int g_game_area_mouse_mode;
+
+extern int g_mouse_x;
+extern int g_mouse_y;
+
+extern int g_old_mouse_x;
+extern int g_old_mouse_y;
+
+extern int g_keyboard_has_priority;
 
 #endif

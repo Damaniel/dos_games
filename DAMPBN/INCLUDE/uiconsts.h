@@ -41,6 +41,9 @@
 #define DRAW_AREA_X                  2
 #define DRAW_AREA_Y                  2
 
+#define DRAW_AREA_WIDTH            200
+#define DRAW_AREA_HEIGHT           160
+
 /*==============================================
  * High-level elements
  *==============================================*/

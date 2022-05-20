@@ -30,6 +30,14 @@ int g_highlight_style_button;
 int g_highlight_save_button;
 int g_highlight_load_button;
 
+int g_mouse_x;
+int g_mouse_y;
+int g_old_mouse_x;
+int g_old_mouse_y;
+int g_game_area_mouse_mode;
+
+int g_keyboard_has_priority;
+
 /*=============================================================================
  * process_input
  *============================================================================*/
@@ -75,13 +83,26 @@ void process_input(int state) {
 }
 
 /*=============================================================================
+ * is_in_game_area
+ *============================================================================*/
+int is_in_game_area(int x, int y) {
+  int in_area = 0;
+  if(x >= DRAW_AREA_X && x < DRAW_AREA_X + DRAW_AREA_WIDTH &&
+     y >= DRAW_AREA_Y && y < DRAW_AREA_Y + DRAW_AREA_HEIGHT) {
+       in_area = 1;
+  }
+  return in_area;
+}
+
+/*=============================================================================
  * update_mouse_status
  *============================================================================*/
 void update_mouse_status(void) {
   /* If the mouse press is locked out and the button has been released,
    * remove the lockout */
+
   if (g_mouse_click_lockout) {
-    if(!mouse_b & 1) {
+    if(!(mouse_b & 1)) {
       g_mouse_click_lockout = 0;
       /* Any buttons that should unhighlight when released do so hwere. */
       g_highlight_style_button = 0;
@@ -89,7 +110,18 @@ void update_mouse_status(void) {
       g_highlight_save_button = 0;
       /* Update the buttons on the next screen update */
       g_components.render_buttons = 1;
-
+    }
+  }
+  else {
+    if(!(mouse_b & 1)) {
+      /* If the mouse is released and we're in draw mode or erase mode,
+         go back to neutral */
+      if (g_game_area_mouse_mode == MOUSE_MODE_DRAW) {
+        g_game_area_mouse_mode = MOUSE_MODE_NEUTRAL;
+      }
+      if (g_game_area_mouse_mode == MOUSE_MODE_ERASE) {
+        g_game_area_mouse_mode = MOUSE_MODE_NEUTRAL;
+      }
     }
   }
 }
@@ -99,6 +131,11 @@ void update_mouse_status(void) {
  *============================================================================*/
 int mouse_clicked_here(int x1, int y1, int x2, int y2, int lockout) {
   int clicked_here = 0;
+
+  /* Don't process complete mouse clicks outside of neutral mode */
+  if (g_game_area_mouse_mode != MOUSE_MODE_NEUTRAL) {
+    return 0;
+  }
 
   /* If the mouse button is pressed, check to see if we're in the specified
      region.  If so, return 1.  If lockout is non-zero, 
@@ -111,6 +148,18 @@ int mouse_clicked_here(int x1, int y1, int x2, int y2, int lockout) {
   }
 
   return clicked_here;
+}
+
+/*=============================================================================
+ * get_square_at
+ *============================================================================*/
+Position get_square_at(int x, int y) {
+    Position p;
+
+    p.x = (x - DRAW_AREA_X) / NUMBER_BOX_RENDER_X_OFFSET;
+    p.y = (y - DRAW_AREA_Y) / NUMBER_BOX_RENDER_Y_OFFSET;
+
+    return p;
 }
 
 /*=============================================================================
@@ -753,6 +802,7 @@ void process_main_area_keyboard_input(void) {
           g_picture->pic_squares[square_offset].fill_value = 0;           
           g_picture->mistakes[square_offset] = 0;
           g_mistake_count--;
+          g_picture->pic_squares[square_offset].correct = 0;          
         }
      } else {
         g_picture->pic_squares[square_offset].fill_value = g_cur_color;
@@ -760,11 +810,13 @@ void process_main_area_keyboard_input(void) {
         if (g_cur_color != pal_val) {
           g_picture->mistakes[square_offset] = g_cur_color;
           g_mistake_count++;
+          g_picture->pic_squares[square_offset].correct = 0;          
         }
         else {
           g_picture->draw_order[g_correct_count].x = g_draw_position_x;
           g_picture->draw_order[g_correct_count].y = g_draw_position_y;
           g_correct_count++;
+          g_picture->pic_squares[square_offset].correct = 1;
           /* Check to see if we're done with the picture */
           done = check_completion();
           if (done)
@@ -793,6 +845,96 @@ void process_main_area_keyboard_input(void) {
  * process_main_area_mouse_input
  *============================================================================*/
 void process_main_area_mouse_input(void) {
+
+  int square_offset, fill_val, pal_val, done;
+  Position p;
+
+  g_old_mouse_x = g_mouse_x;
+  g_old_mouse_y = g_mouse_y;
+
+  g_mouse_x = mouse_x;
+  g_mouse_y = mouse_y;
+
+  if(g_mouse_x != g_old_mouse_x || g_mouse_y != g_old_mouse_y || (mouse_b & 1)) {
+        g_keyboard_has_priority = 0;
+  } else {
+        g_keyboard_has_priority = 1;
+  }
+
+  /* If in the game area */
+  if (is_in_game_area(g_mouse_x, g_mouse_y) && !g_keyboard_has_priority) {
+    /* Get all the relevant positional info */
+    p = get_square_at(g_mouse_x, g_mouse_y);
+    g_old_draw_cursor_x = g_draw_cursor_x;
+    g_old_draw_cursor_y = g_draw_cursor_y;    
+    g_draw_cursor_x = p.x;
+    g_draw_cursor_y = p.y;
+    g_draw_position_x = g_pic_render_x + g_draw_cursor_x;
+    g_draw_position_y = g_pic_render_y + g_draw_cursor_y;
+    square_offset = (g_draw_position_y * g_picture->w) +
+                     g_draw_position_x;
+    fill_val = g_picture->pic_squares[square_offset].fill_value;
+    pal_val = g_picture->pic_squares[square_offset].pal_entry;
+
+    /* If we're in neutral mode and clicking over empty space or correctly 
+       filled space, enter draw mode */
+    if (mouse_b & 1) {
+      printf("%d\n", g_game_area_mouse_mode);
+      if (g_game_area_mouse_mode == MOUSE_MODE_NEUTRAL) {
+        if (fill_val == 0  || (g_picture->pic_squares[square_offset].correct)) {
+          g_game_area_mouse_mode = MOUSE_MODE_DRAW;
+        }
+        else if (!g_picture->pic_squares[square_offset].correct) {
+          g_game_area_mouse_mode = MOUSE_MODE_ERASE;
+        }
+      }
+      /* If in draw mode, draw in the space if it isn't drawn yet */      
+      if (g_game_area_mouse_mode == MOUSE_MODE_DRAW) {
+        g_picture->pic_squares[square_offset].fill_value = g_cur_color;         
+        /* Update mistake/progress counters */                  
+        if (g_cur_color != pal_val && g_picture->mistakes[square_offset] == 0) {
+            if(g_picture->pic_squares[square_offset].correct == 0) {
+              g_picture->mistakes[square_offset] = g_cur_color;
+              g_mistake_count++;
+              g_picture->pic_squares[square_offset].correct = 0;
+            } 
+            else {
+              g_picture->pic_squares[square_offset].correct = 1;              
+            }
+        }             
+        if (fill_val == 0 && g_cur_color == pal_val) {
+          g_picture->draw_order[g_correct_count].x = g_draw_position_x;
+          g_picture->draw_order[g_correct_count].y = g_draw_position_y;       
+          g_picture->mistakes[square_offset] = 0;
+          g_correct_count++;
+          g_picture->pic_squares[square_offset].correct = 1;
+          /* Check to see if we're done with the picture */
+          done = check_completion();
+          if (done)
+           change_state(STATE_FINISHED, STATE_GAME);
+        }                     
+      }      
+      /* If in erase mode, erase the space if it's drawn incorrectly */      
+      if (g_game_area_mouse_mode == MOUSE_MODE_ERASE) {
+        if (!g_picture->pic_squares[square_offset].correct && g_picture->mistakes[square_offset] != 0) {
+          g_picture->pic_squares[square_offset].fill_value = 0;           
+          g_picture->mistakes[square_offset] = 0;
+          g_picture->pic_squares[square_offset].correct = 0;
+          g_mistake_count--;
+        }
+      }      
+     clear_render_components(&g_components);
+     update_overview_area_at((g_draw_position_x - 
+                            (g_draw_position_x % OVERVIEW_BLOCK_SIZE)) /
+                            OVERVIEW_BLOCK_SIZE,
+                            (g_draw_position_y - 
+                             (g_draw_position_y % OVERVIEW_BLOCK_SIZE)) /
+                             OVERVIEW_BLOCK_SIZE);   
+    }
+    g_components.render_draw_cursor = 1;
+    g_components.render_status_text = 1;
+    g_components.render_overview_display = 1;       
+  } /* is_in_game_area */  
 }
 
 /*=============================================================================
@@ -1110,7 +1252,11 @@ void input_state_game(void) {
     process_style_press();
     process_save_press();
     process_load_press();
-    process_main_area_keyboard_input();
+    // Only process keyboard movement if the keyboard has priority.
+    // The mouse input function will confirm its own priority since it needs
+    // to check to see if it's moving or the button is clicked first.
+    if (g_keyboard_has_priority)
+      process_main_area_keyboard_input();
     process_main_area_mouse_input();
 }
 
