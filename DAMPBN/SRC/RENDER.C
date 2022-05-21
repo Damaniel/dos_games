@@ -123,6 +123,9 @@ BITMAP *g_overview_box;
 BITMAP *g_overview_cursor;
 BITMAP *g_finished_dialog;
 BITMAP *g_mouse_cursor;
+BITMAP *g_help_next;
+BITMAP *g_help_previous;
+BITMAP *g_help_exit;
 
 RenderComponents g_components;
 TitleAnimation g_title_anim;
@@ -759,29 +762,30 @@ void render_help_text(BITMAP *dest, RenderComponents c) {
 
   switch(g_help_page) {
     case 0:
-      render_centered_prop_text(dest, "Welcome to Damaniel's Pixel by Number!", 160, 8);
-      render_centered_prop_text(dest, "(The most useless retro 'game' ever made!)", 160, 16);      
+      render_centered_prop_text(dest, "Welcome to Damaniel's Pixel by Number!", 160, 5);
+      render_centered_prop_text(dest, "(The most useless retro 'game' ever made!)", 160, 13);      
       
-      render_prop_text(dest, "This 'game' (if you want to call it that) is a hyper-casual", 8, 32);   
-      render_prop_text(dest, "paint by number thing.  Think 'old-school physical paint by", 8, 40);   
-      render_prop_text(dest, "number canvas' or 'modern diamond painting', but in a digital", 8, 48);   
-      render_prop_text(dest, "form for a totally obsolete OS!  Fun.", 8, 56);  
+      render_prop_text(dest, "This 'game' (if you want to call it that) is a hyper-casual", 8, 28);   
+      render_prop_text(dest, "paint by number thing.  Think 'old-school physical paint by", 8, 36);   
+      render_prop_text(dest, "number canvas' or 'modern diamond painting', but in a digital", 8, 44);   
+      render_prop_text(dest, "form for a totally obsolete OS!  Fun.", 8, 52);  
 
-      render_prop_text(dest, "The entire goal is to fill in every square of one or more of", 8, 72);  
-      render_prop_text(dest, "the provided picture files with the correct color,", 8, 80);  
-      render_prop_text(dest, "re-creating the original image file, one pixel at a time.", 8, 88);  
+      render_prop_text(dest, "The entire goal is to fill in every square of one or more of", 8, 68);  
+      render_prop_text(dest, "the provided picture files with the correct color,", 8, 76);  
+      render_prop_text(dest, "re-creating the original image file, one pixel at a time.", 8, 84);  
 
-      render_prop_text(dest, "The most relevant controls are:", 8, 96);
-      render_prop_text(dest, "- Arrow keys: move the cursor one square", 50, 112);
-      render_prop_text(dest, "- SHIFT + arrow keys: move the cursor one page", 50, 122);
-      render_prop_text(dest, "- [ / ]: Move up and down through the palette", 50, 132);
-      render_prop_text(dest, "- P: Switch palette pages", 50, 142);
-      render_prop_text(dest, "- Space: color a square in!", 50, 152);      
+      render_prop_text(dest, "The most relevant controls are:", 8, 92);
+      render_prop_text(dest, "- Arrow keys: move the cursor one square", 50, 108);
+      render_prop_text(dest, "- SHIFT + arrow keys: move the cursor one page", 50, 118);
+      render_prop_text(dest, "- [ / ]: Move up and down through the palette", 50, 128);
+      render_prop_text(dest, "- P: Switch palette pages", 50, 138);
+      render_prop_text(dest, "- Space: color a square in!", 50, 148);      
 
-      render_prop_text(dest, "See the following page for a list of every command.", 8, 168);
-      render_prop_text(dest, "Some are extremely useful!.", 8, 176);
+      render_prop_text(dest, "See the following page for a list of every command.", 8, 164);
+      render_prop_text(dest, "Some are extremely useful!.", 8, 172);
 
-      render_prop_text(dest, "- [N]ext Page -", 236, 188);
+      draw_sprite(dest, g_help_exit, 117, 185);
+      draw_sprite(dest, g_help_next, 220, 185);      
       break;
     case 1:
       render_centered_prop_text(dest, "Complete List of Controls", 160, 8);
@@ -800,34 +804,36 @@ void render_help_text(BITMAP *dest, RenderComponents c) {
       render_prop_text(dest, "H : Help (you must have discovered this one already!)", 8, 134);
       render_prop_text(dest, "ESC : Return to title, or exit the Help menu", 8, 144);      
 
-      render_prop_text(dest, "- [Previous] Page -", 8, 188);
-      render_prop_text(dest, "- [N]ext Page -", 236, 188);
+      draw_sprite(dest, g_help_previous, 15, 185);
+      draw_sprite(dest, g_help_exit, 117, 185);
+      draw_sprite(dest, g_help_next, 220, 185);     
       break;
     case 2:
-      render_centered_prop_text(dest, "Explanation of features", 160, 8);
+      render_centered_prop_text(dest, "Explanation of features", 160, 5);
 
-      render_prop_text(dest, "Highlighting the active color:", 8, 24);           
-      render_prop_text(dest, "  Pressing the K key toggles highlighting of the", 8, 34);
-      render_prop_text(dest, "  current color.  In this mode, unmarked squares of the", 8, 42);  
-      render_prop_text(dest, "  active color will be displayed in gray instead of white,", 8, 50);  
-      render_prop_text(dest, "  making them easier to find.", 8, 58);  
+      render_prop_text(dest, "Highlighting the active color:", 8, 20);           
+      render_prop_text(dest, "  Pressing the K key toggles highlighting of the", 8, 30);
+      render_prop_text(dest, "  current color.  In this mode, unmarked squares of the", 8, 38);  
+      render_prop_text(dest, "  active color will be displayed in gray instead of white,", 8, 46);
+      render_prop_text(dest, "  making them easier to find.", 8, 54);  
 
-      render_prop_text(dest, "The progress map:", 8, 74); 
-      render_prop_text(dest, "  Pressing the M key will bring up the progress map. This", 8, 84);
-      render_prop_text(dest, "  mode shows an overview of the entire picture, giving a ", 8, 92);
-      render_prop_text(dest, "  detailed overview of overall progress.  Press C to ", 8, 100);
-      render_prop_text(dest, "  toggle the help message on the map screen and M to ", 8, 108);
-      render_prop_text(dest, "  return to the game.", 8, 116);
+      render_prop_text(dest, "The progress map:", 8, 70); 
+      render_prop_text(dest, "  Pressing the M key will bring up the progress map. This", 8, 80);
+      render_prop_text(dest, "  mode shows an overview of the entire picture, giving a ", 8, 88);
+      render_prop_text(dest, "  detailed overview of overall progress.  Press C to ", 8, 96);
+      render_prop_text(dest, "  toggle the help message on the map screen and M to ", 8, 104);
+      render_prop_text(dest, "  return to the game.", 8, 112);
 
-      render_prop_text(dest, "The palette:", 8, 132); 
-      render_prop_text(dest, "  A picture can consist of up to 64 different colors.", 8, 142);      
-      render_prop_text(dest, "  The bracket keys ([ and ]) are used to move up and", 8, 150);      
-      render_prop_text(dest, "  down through colors in the palette.  For pictures with", 8, 158);
-      render_prop_text(dest, "  more than 32 colors, the additional colors are on a ", 8, 166);
-      render_prop_text(dest, "  second page.  Press P to switch between pages.", 8, 174);
+      render_prop_text(dest, "The palette:", 8, 128); 
+      render_prop_text(dest, "  A picture can consist of up to 64 different colors.", 8, 138);      
+      render_prop_text(dest, "  The bracket keys ([ and ]) are used to move up and", 8, 146);      
+      render_prop_text(dest, "  down through colors in the palette.  For pictures with", 8, 154);
+      render_prop_text(dest, "  more than 32 colors, the additional colors are on a ", 8, 162);
+      render_prop_text(dest, "  second page.  Press P to switch between pages.", 8, 170);
 
-      render_prop_text(dest, "- [Previous] Page -", 8, 188);
-      render_prop_text(dest, "- [N]ext Page -", 236, 188);
+      draw_sprite(dest, g_help_previous, 15, 185);
+      draw_sprite(dest, g_help_exit, 117, 185);
+      draw_sprite(dest, g_help_next, 220, 185);    
       break;
     case 3:
       render_centered_prop_text(dest, "Explanation of (more) features", 160, 8);    
@@ -851,8 +857,9 @@ void render_help_text(BITMAP *dest, RenderComponents c) {
       render_prop_text(dest, "  overview window will show a red pixel.  To fix it, just", 8, 158);
       render_prop_text(dest, "  use the Space bar to remove the offending square.", 8, 166);
 
-      render_prop_text(dest, "- [Previous] Page -", 8, 188);
-      render_prop_text(dest, "- [N]ext Page -", 236, 188);      
+      draw_sprite(dest, g_help_previous, 15, 185);
+      draw_sprite(dest, g_help_exit, 117, 185);
+      draw_sprite(dest, g_help_next, 220, 185);     
       break;
     case 4:
       render_centered_prop_text(dest, "Explanation of (yet more) features", 160, 8);
@@ -873,8 +880,9 @@ void render_help_text(BITMAP *dest, RenderComponents c) {
       render_prop_text(dest, "  In the load menu, press Up and down to select an image.", 8, 146);
       render_prop_text(dest, "  Press Enter to select the image, or Esc to cancel.", 8, 154);
 
-      render_prop_text(dest, "- [Previous] Page -", 8, 188);
-      render_prop_text(dest, "- [N]ext Page -", 236, 188);     
+      draw_sprite(dest, g_help_previous, 15, 185);
+      draw_sprite(dest, g_help_exit, 117, 185);
+      draw_sprite(dest, g_help_next, 220, 185);      
       break;
     case 5:
       render_centered_prop_text(dest, "About this program and the author", 160, 8);
@@ -897,7 +905,8 @@ void render_help_text(BITMAP *dest, RenderComponents c) {
 
       render_centered_prop_text(dest, "...yet.)", 160, 168);
 
-      render_prop_text(dest, "- [Previous] Page -", 8, 188);
+      draw_sprite(dest, g_help_previous, 15, 185);
+      draw_sprite(dest, g_help_exit, 117, 185);  
       break;
     default:
       break;
@@ -1282,6 +1291,9 @@ int load_graphics(void) {
   g_overview_box = create_bitmap(OVERVIEW_WIDTH, OVERVIEW_HEIGHT);
   g_overview_cursor = (BITMAP *)g_res[RES_OVERCURS].dat;
   g_mouse_cursor = (BITMAP *)g_res[RES_MOUSE].dat;
+  g_help_previous = (BITMAP *)g_res[RES_HELP_PREVIOUS].dat;
+  g_help_next = (BITMAP *)g_res[RES_HELP_NEXT].dat;
+  g_help_exit = (BITMAP *)g_res[RES_HELP_EXIT].dat;
 
   /* We only want to create this once, so we check for null before we 
      create it */

@@ -1004,6 +1004,17 @@ void input_state_help(void) {
       g_keypress_lockout[KEY_ESC] = 0;
     }   
 
+   if (key[KEY_X]) {
+    if (!g_keypress_lockout[KEY_E]) {
+        clear_keybuf();        
+        change_state(STATE_GAME, STATE_HELP);
+        g_keypress_lockout[KEY_E] = 1;          
+      }
+    }
+    if (!key[KEY_E] && g_keypress_lockout[KEY_E]) {
+      g_keypress_lockout[KEY_E] = 0;
+    }
+
    /* P or left arrow - previous help page */
    if (key[KEY_P]) {
     if (!g_keypress_lockout[KEY_P]) {
@@ -1051,6 +1062,26 @@ void input_state_help(void) {
   if (!key[KEY_RIGHT] && g_keypress_lockout[KEY_RIGHT]) {
     g_keypress_lockout[KEY_RIGHT] = 0;
   }   
+
+  /* If Previous Page is clicked */
+  if(mouse_clicked_here(15, 185, 97, 195, 1)) {
+    g_help_page--;
+    if(g_help_page < 0)
+      g_help_page = 0;     
+  }
+
+  /* If Previous Page is clicked */
+  if(mouse_clicked_here(117, 185, 199, 195, 1)) {
+        change_state(STATE_GAME, STATE_HELP);
+  }
+
+  /* If Next Page is clicked */
+  if(mouse_clicked_here(220, 185, 302, 195, 1)) {
+    g_help_page++;
+    if(g_help_page >= MAX_HELP_PAGES)
+      g_help_page = MAX_HELP_PAGES - 1;       
+  }
+
 }
 
 /*=============================================================================

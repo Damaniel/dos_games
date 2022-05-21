@@ -124,6 +124,9 @@ extern BITMAP *g_overview_box;
 extern BITMAP *g_overview_cursor;
 extern BITMAP *g_finished_dialog;
 extern BITMAP *g_mouse_cursor;
+extern BITMAP *g_help_previous;
+extern BITMAP *g_help_next;
+extern BITMAP *g_help_exit;
 
 /* The parts of the screen to render */
 extern RenderComponents g_components;
