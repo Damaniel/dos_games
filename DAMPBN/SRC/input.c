@@ -87,8 +87,24 @@ void process_input(int state) {
  *============================================================================*/
 int is_in_game_area(int x, int y) {
   int in_area = 0;
-  if(x >= DRAW_AREA_X && x < DRAW_AREA_X + DRAW_AREA_WIDTH &&
-     y >= DRAW_AREA_Y && y < DRAW_AREA_Y + DRAW_AREA_HEIGHT) {
+  int dx, dy, dw, dh;
+
+  dx = DRAW_AREA_X;
+  dy = DRAW_AREA_Y;
+  dw =  DRAW_AREA_X + DRAW_AREA_WIDTH;
+  dh = DRAW_AREA_Y + DRAW_AREA_HEIGHT;
+
+  if(g_picture->w < MAX_PLAY_AREA_WIDTH) {
+    dx = 0;
+    dw = g_picture->w * NUMBER_BOX_RENDER_X_OFFSET;
+  }
+  if (g_picture->h < MAX_PLAY_AREA_HEIGHT) {
+    dy = 0;
+    dh = g_picture->h * NUMBER_BOX_RENDER_Y_OFFSET;
+  }
+
+  if(x >= dx && x < dw &&
+     y >= dy && y < dh) {
        in_area = 1;
   }
   return in_area;
@@ -976,7 +992,7 @@ void process_main_area_mouse_input(void) {
                             (g_draw_position_y - 
                              (g_draw_position_y % OVERVIEW_BLOCK_SIZE)) /
                              OVERVIEW_BLOCK_SIZE);               
-                           
+        g_components.render_scrollbars = 1;                
       }    
     }
     g_components.render_draw_cursor = 1;
@@ -1243,7 +1259,28 @@ void input_state_logo(void) {
     if (mouse_clicked_here(0, 0, 319, 199, 1)) {
       change_state(STATE_TITLE, STATE_LOGO);
     }
-  /* Do nothing for now.  We just use a shorter logo sequence */
+
+/* Catch either the space bar or ENTER key, and if pressed, move to the title
+   screen */
+  if (key[KEY_ENTER]) {
+    if(!g_keypress_lockout[KEY_ENTER]) {
+      change_state(STATE_TITLE, STATE_LOGO);          
+      g_keypress_lockout[KEY_ENTER] = 1;
+    }
+  }
+  if (!key[KEY_ENTER] && g_keypress_lockout[KEY_ENTER]) {
+    g_keypress_lockout[KEY_ENTER] = 0;
+  }       
+
+  if (key[KEY_SPACE]) {
+    if(!g_keypress_lockout[KEY_SPACE]) {
+      change_state(STATE_TITLE, STATE_LOGO);          
+      g_keypress_lockout[KEY_SPACE] = 1;
+    }
+  }
+  if (!key[KEY_SPACE] && g_keypress_lockout[KEY_SPACE]) {
+    g_keypress_lockout[KEY_SPACE] = 0;
+  }        
 }
 
 /*=============================================================================
@@ -1279,6 +1316,28 @@ void input_state_title(void) {
  * input_state_map
  *============================================================================*/
 void input_state_map(void) {
+
+    /* did the mouse click the exit button when it's showing? */
+    if(mouse_clicked_here(118, 186, 200, 199, 1)) {
+        if (g_show_map_text == 1) {
+          change_state(STATE_GAME, STATE_MAP);
+        }
+        else {
+          g_show_map_text = 1;
+          clear_render_components(&g_components);
+          g_components.render_map = 1;          
+        }
+    }
+    /* Did the mouse click anywhere else? */
+    else if (mouse_clicked_here(0, 0, 319, 199, 1)) {
+        if (g_show_map_text == 0) {
+          g_show_map_text = 1;
+        } else {
+          g_show_map_text = 0;
+        }
+        clear_render_components(&g_components);
+        g_components.render_map = 1;
+    }
 
     if (key[KEY_M]) {
       if (!g_keypress_lockout[KEY_M]) {
@@ -1344,8 +1403,18 @@ void input_state_game(void) {
  * input_state_replay
  *============================================================================*/
 void input_state_replay(void) {
-    if(key[KEY_ENTER]) {
-      clear_keybuf();    
-      change_state(STATE_TITLE, STATE_REPLAY);
+
+  if (mouse_clicked_here(0, 0, 319, 199, 1)) {
+    change_state(STATE_TITLE, STATE_REPLAY);
+  }
+
+  if (key[KEY_ENTER]) {
+    if(!g_keypress_lockout[KEY_ENTER]) {
+      change_state(STATE_TITLE, STATE_REPLAY);          
+      g_keypress_lockout[KEY_ENTER] = 1;
     }
+  }
+  if (!key[KEY_ENTER] && g_keypress_lockout[KEY_ENTER]) {
+    g_keypress_lockout[KEY_ENTER] = 0;
+  }     
 }

@@ -217,7 +217,7 @@ void render_title_screen(BITMAP *dest, RenderComponents c) {
     hline(g_title_area, 0, 171, 319, 205);
 
     render_centered_prop_text(g_title_area, "Copyright 2022 Shaun Brandt / Holy Meatgoat Productions", 160, 12);
-    render_centered_prop_text(g_title_area, "-- Press ENTER to play! --", 160, 182);    
+    render_centered_prop_text(g_title_area, "-- Press ENTER or click to play! --", 160, 182);    
     g_title_anim.update_background = 0;
   }
 
@@ -534,8 +534,9 @@ void render_menu_buttons(BITMAP *dest) {
  * render_map_screen
  *============================================================================*/
 void render_map_screen(BITMAP *dest, RenderComponents c) {
-    int i, j, x_pos, y_pos, color, actual_color, row_1_width, center;
-    char text[40];
+    int i, j, x_pos, y_pos, color, actual_color, row_1_width,
+        row_2_width, exit_width, center, box_width;
+    char text[40], text2[40];
 
     if(c.render_map) {
       x_pos = (SCREEN_W - g_picture->w) / 2;
@@ -567,18 +568,32 @@ void render_map_screen(BITMAP *dest, RenderComponents c) {
       /* Display the map text if requested */
       if(g_show_map_text == 1) {
         center = SCREEN_W / 2;
-        sprintf(text, "Press C to toggle this message");
+        
+        sprintf(text, "Click or press C to toggle this message");
+        sprintf(text2, "Press Exit button or M to exit map mode");
         row_1_width = get_prop_text_width(text);
+        row_2_width = get_prop_text_width(text2);
+      
+        box_width = (row_1_width > row_2_width) ? row_1_width : row_2_width;
 
-        rectfill(dest, center - (row_1_width/2) - 2, 174,
-                center + (row_1_width/2) - 1, 192, 208);
-
-        render_centered_prop_text(dest, text, SCREEN_W / 2, 176);    
-        sprintf(text, "Press M to exit map mode");
-        render_centered_prop_text(dest, text, SCREEN_W / 2, 185);
+        rectfill(dest, center - (box_width/2) - 3, 163,
+                center + (box_width/2), 181, 208);
   
-        rect(dest, center - (row_1_width/2) - 2, 174,
-             center + (row_1_width/2) + 1, 193, 203);
+        rect(dest, center - (box_width/2) - 3, 163,
+             center + (box_width/2) + 2, 182, 203);
+
+        render_centered_prop_text(dest, text, SCREEN_W / 2, 165); 
+        render_centered_prop_text(dest, text2, SCREEN_W / 2, 174);             
+
+        sprintf(text, "Exit");
+        exit_width = get_prop_text_width(text);
+
+        rectfill(dest, center - (exit_width/2) - 20, 186,
+                center + (exit_width/2) + 17, 194, 208);  
+        rect(dest, center - (exit_width/2) - 20, 186,
+             center + (exit_width/2) + 17, 195, 203);        
+
+        render_centered_prop_text(dest, text, SCREEN_W / 2, 188);    
       } 
       clear_render_components(&g_components);
     }

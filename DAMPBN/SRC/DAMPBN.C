@@ -94,6 +94,7 @@ void change_state(State new_state, State prev_state) {
       /* Force display of loading message */
       load_progress_file(g_picture);        
       update_overview_area();         
+      g_highlight_load_button = 0;
       change_state(STATE_GAME, STATE_LOAD);
       break;
     case STATE_SAVE:
@@ -102,6 +103,7 @@ void change_state(State new_state, State prev_state) {
       /* Force display of saving message */
       do_render();
       save_progress_file(g_picture);
+      g_highlight_save_button = 0;
       change_state(STATE_GAME, STATE_SAVE);      
       break;
     case STATE_HELP:

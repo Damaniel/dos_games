@@ -564,9 +564,9 @@ void init_new_pic_defaults(void) {
   g_correct_count = 0;
   g_mark_current = 0;
   g_across_scrollbar_x = 0;
-  g_across_scrollbar_width = 0;
+  g_across_scrollbar_width = DRAW_AREA_WIDTH;
   g_down_scrollbar_y = 0;
-  g_down_scrollbar_height = 0;
+  g_down_scrollbar_height = DRAW_AREA_HEIGHT;
 
 }
 
