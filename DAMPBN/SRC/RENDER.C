@@ -21,6 +21,7 @@
 #include <allegro.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "../include/globals.h"
 
 /* Some stuff to cut down the executable size */
@@ -163,13 +164,12 @@ void update_scrollbar_positions(void) {
      g_down_scrollbar_height = Y_SCROLLBAR_AREA_HEIGHT - 1;
    } 
    else {
-     down_scroll_y = (float)g_pic_render_y / (float)g_picture->h *
-                      Y_SCROLLBAR_AREA_HEIGHT;
-     down_scroll_h = (float)g_play_area_h / (float)g_picture->h *
-                      Y_SCROLLBAR_AREA_HEIGHT;
-
-     g_down_scrollbar_y = (int)down_scroll_y;
-     g_down_scrollbar_height = (int)down_scroll_h;
+     down_scroll_y = ((float)g_pic_render_y / (float)g_picture->h) *
+                      (float)Y_SCROLLBAR_AREA_HEIGHT;
+     down_scroll_h = ((float)g_play_area_h / (float)g_picture->h) *
+                      (float)Y_SCROLLBAR_AREA_HEIGHT;
+     g_down_scrollbar_y = floor(down_scroll_y);
+     g_down_scrollbar_height = floor(down_scroll_h);
    }
 
    if (g_picture->w <= g_play_area_w) {
@@ -177,13 +177,13 @@ void update_scrollbar_positions(void) {
     g_across_scrollbar_width = X_SCROLLBAR_AREA_WIDTH - 1;
    }
    else {
-     across_scroll_x = (float)g_pic_render_x / (float)g_picture->w *
+     across_scroll_x = (g_pic_render_x / (float)g_picture->w) *
                         X_SCROLLBAR_AREA_WIDTH;
-     across_scroll_w = (float)g_play_area_w / (float)g_picture->w *
-                        X_SCROLLBAR_AREA_WIDTH;
+     across_scroll_w = (g_play_area_w / (float)g_picture->w) *
+                       X_SCROLLBAR_AREA_WIDTH;
 
-     g_across_scrollbar_x = (int)across_scroll_x;                           
-     g_across_scrollbar_width = (int)across_scroll_w;
+     g_across_scrollbar_x = floor(across_scroll_x);
+     g_across_scrollbar_width = floor(across_scroll_w);
    }
 }
 
@@ -666,8 +666,8 @@ void render_game_screen(BITMAP *dest, RenderComponents c) {
  
   if(c.render_scrollbars || c.render_all ) {
     // TODO: fix the update_scrollbar_positions function
-    //update_scrollbar_positions();
-    //render_scrollbars(dest);
+    update_scrollbar_positions();
+    render_scrollbars(dest);
   }
 
  /* Draw the various cursors */
@@ -774,7 +774,7 @@ void render_help_text(BITMAP *dest, RenderComponents c) {
       render_prop_text(dest, "the provided picture files with the correct color,", 8, 76);  
       render_prop_text(dest, "re-creating the original image file, one pixel at a time.", 8, 84);  
 
-      render_prop_text(dest, "The most relevant controls are:", 8, 92);
+      render_prop_text(dest, "The most relevant keyboard controls are:", 8, 92);
       render_prop_text(dest, "- Arrow keys: move the cursor one square", 50, 108);
       render_prop_text(dest, "- SHIFT + arrow keys: move the cursor one page", 50, 118);
       render_prop_text(dest, "- [ / ]: Move up and down through the palette", 50, 128);
@@ -885,6 +885,31 @@ void render_help_text(BITMAP *dest, RenderComponents c) {
       draw_sprite(dest, g_help_next, 220, 185);      
       break;
     case 5:
+      render_centered_prop_text(dest, "Mouse support (finally!)", 160, 8);
+      
+      render_prop_text(dest, "Mouse support is now available!  This page describes", 8, 24);
+      render_prop_text(dest, "key mouse-specific features.", 8, 32);
+
+      render_prop_text(dest, "Drawing and erasing in the play area:", 8, 48);  
+      render_prop_text(dest, "  To fill in an empty square in the play area, click", 8, 58);
+      render_prop_text(dest, "  on it.  If you hold down the mouse and move, you can", 8, 66); 
+      render_prop_text(dest, "  fill in any squares the mouse moves over.", 8, 74);
+      render_prop_text(dest, "  To erase a mistake, highlight it and click.  Like", 8, 82);
+      render_prop_text(dest, "  drawing, you can hold down the mouse and move to  ", 8, 90);      
+      render_prop_text(dest, "  erase any mistakes under the mouse cursor.  ", 8, 98);    
+      render_prop_text(dest, "  (Note that keyboard controls work even in mouse mode.)", 8, 106);
+
+      render_prop_text(dest, "Using the overview area to move the draw area:", 8, 122); 
+      render_prop_text(dest, "  By clicking in the overview area, you can move the draw", 8, 132);
+      render_prop_text(dest, "  area to match the region you clicked on.  Like drawing", 8, 140);
+      render_prop_text(dest, "  and erasing, you can click and drag to scroll", 8, 148);
+      render_prop_text(dest, "  through the entire play area.", 8, 156);
+
+      draw_sprite(dest, g_help_previous, 15, 185);
+      draw_sprite(dest, g_help_exit, 117, 185);
+      draw_sprite(dest, g_help_next, 220, 185);      
+      break;      
+    case 6:
       render_centered_prop_text(dest, "About this program and the author", 160, 8);
       render_prop_text(dest, "  Damaniel's Paint by Number is copyright 2021-2022 by", 8, 24);
       render_prop_text(dest, "  Shaun Brandt and his weird company, Holy Meatgoat", 8, 32);  

@@ -1081,7 +1081,6 @@ void input_state_help(void) {
     if(g_help_page >= MAX_HELP_PAGES)
       g_help_page = MAX_HELP_PAGES - 1;       
   }
-
 }
 
 /*=============================================================================

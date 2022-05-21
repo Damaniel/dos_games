@@ -42,7 +42,7 @@
 #define MAX_COLORS        64
 
 /* How many pages of help are there */
-#define MAX_HELP_PAGES     6
+#define MAX_HELP_PAGES     7
 
 /* The number of palette colors displayed at once */
 #define PALETTE_COLORS_PER_PAGE     32
