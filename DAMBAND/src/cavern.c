@@ -205,7 +205,7 @@ void clear_maze(MazeSquare *m) {
     }
 }
 
-void generate_maze() {
+void generate_maze(void) {
     int i, pct;
     char validMaze;
 
@@ -270,14 +270,14 @@ int init_maze_structs(int width, int height) {
 
 }
 
-void free_temp_maze_structs() {
+void free_temp_maze_structs(void) {
     if(g_temp_maze_data != NULL)
         free(g_temp_maze_data);
     if(g_fill_data != NULL)
         free(g_fill_data);      
 }
 
-void free_maze_structs() {
+void free_maze_structs(void) {
     if(g_maze_data != NULL)
         free(g_maze_data);
     free_temp_maze_structs();

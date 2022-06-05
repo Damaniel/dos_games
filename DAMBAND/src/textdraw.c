@@ -1,29 +1,17 @@
-// Copyright 2022 Shaun Brandt
-//   
-// Permission is hereby granted, free of charge, to any person obtaining a 
-// copy of this software and associated documentation files (the "Software"),
-// to deal in the Software without restriction, including without limitation
-// the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the
-// Software is furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-// DEALINGS IN THE SOFTWARE.
-#include <dpmi.h>
-#include <pc.h>
-#include <string.h>
 #include "textdraw.h"
+#include <dos.h>
 
-char *g_screen;
-int g_lines;
+char far *g_screen = (char far *)0xb8000000;
+
+char g_lines;
+
+Rect g_menu_bar;
+Rect g_main_window;
+Rect g_play_area;
+Rect g_status_area;
+Rect g_extra_area;
+Rect g_text_box_window;
+Rect g_text_box_text_area;
 
 void set_rect(Rect *r, int x1, int y1, int x2, int y2) {
   r->x1 = x1;
@@ -35,9 +23,9 @@ void set_rect(Rect *r, int x1, int y1, int x2, int y2) {
 }
 
 void set_bg_intensity(int enabled) {
-  __dpmi_regs regs;
+  union REGS regs;
   
-  memset(&regs, 0, sizeof regs);
+  //memset(&regs, 0, sizeof regs);   
   regs.x.ax = 0x1003;
   if (enabled) {
     regs.h.bl = 0x00;
@@ -46,7 +34,7 @@ void set_bg_intensity(int enabled) {
     regs.h.bl = 0x01;
     regs.h.bh = 0x00;
   }
-  __dpmi_int(0x10, &regs);
+  int86(0x10, &regs, &regs);
 }
 
 char make_attr(int fg, int bg) {
@@ -58,27 +46,27 @@ void clear_screen() {
    
    // Set the text values to empty.
    // Set the attribute values to the 'default' DOS values (gray fg, black bg)
-   for (i=0;i<80;i++) {
+   for (i=0;i<160;i+=2) {
      for(j=0;j<50;j++) {
-       g_screen[(j*80+i)*2] = 0;
-       g_screen[(j*80+i)*2+1] = make_attr(COLOR_LIGHT_GRAY, COLOR_BLACK);
+       g_screen[(j*160)+i] = 0;
+       g_screen[(j*160)+i+1] = make_attr(COLOR_LIGHT_GRAY, COLOR_BLACK);
      }
    }
 }
 
 int detect_adapter() {
-  __dpmi_regs regs;
+  union REGS regs;
   
-  memset(&regs, 0, sizeof regs);
+  //memset(&regs, 0, sizeof regs);
   regs.h.ah = 0x12;
   regs.h.bl = 0x10;
-  __dpmi_int(0x10, &regs);
+  int86(0x10, &regs, &regs);
   if(regs.h.bl == 0x10)
     return CARD_CGA;
 
-  memset(&regs, 0, sizeof regs);  
+  //memset(&regs, 0, sizeof regs);  
   regs.x.ax = 0x1a00;
-  __dpmi_int(0x10, &regs);
+  int86(0x10, &regs, &regs);
   
   if(regs.h.al == 0x1a)
     return CARD_VGA;
@@ -87,50 +75,49 @@ int detect_adapter() {
 }
 
 void hide_cursor() {
-  __dpmi_regs regs;
+  union REGS regs;
   
-  memset(&regs, 0, sizeof regs);
+  //memset(&regs, 0, sizeof regs);
   regs.h.ah = 0x01;
   regs.h.ch = 0x20;
   regs.h.cl = 0x00;
-  __dpmi_int(0x10, &regs);
+  int86(0x10, &regs, &regs);
 }
 
 void show_cursor() {
-   __dpmi_regs regs;
+   union REGS regs;
   
-  memset(&regs, 0, sizeof regs);
+  //memset(&regs, 0, sizeof regs);
   regs.h.ah = 0x01;
   regs.h.ch = 0x00;
   regs.h.cl = 0x00;
-  __dpmi_int(0x10, &regs); 
+  int86(0x10, &regs, &regs); 
 }
 
 void set_cursor_at(int x, int y) {
-   __dpmi_regs regs;
+   union REGS regs;
   
-  memset(&regs, 0, sizeof regs);
+  //memset(&regs, 0, sizeof regs);
   regs.h.ah = 0x02;
   regs.h.dh = y;
   regs.h.dl = x;
-  __dpmi_int(0x10, &regs);
+  int86(0x10, &regs, &regs);
 }
   
 void set_text_mode(int mode) {
-  __dpmi_regs regs;
-  
-  /* Clear register object */
-  memset(&regs, 0, sizeof regs);
-  
+  union REGS regs;
+    
   if (mode == MODE_80X50) {
     // Set the 8x8 font
     regs.x.ax = 0x1112;
-    __dpmi_int(0x10, &regs);
+    regs.h.bl = 0x00;
+    int86(0x10, &regs, &regs);
   } 
   else {   
     // Set the 8x14 font
     regs.x.ax = 0x1111;
-    __dpmi_int(0x10, &regs);    
+    regs.h.bl = 0x00;
+    int86(0x10, &regs, &regs);    
   }
   
   clear_screen();

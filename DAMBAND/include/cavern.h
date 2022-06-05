@@ -29,10 +29,13 @@ void fill_random_region(void);
 int check_fill_percentage(void);
 void backfill_maze(void);
 void clear_maze(MazeSquare *m);
-void generate_maze();
+void generate_maze(void);
 void print_maze(void);
 void set_maze_square(MazeSquare *m, int x, int y, char square_type);
 MazeSquare *get_maze_square(MazeSquare *m, int x, int y);
 void set_filled(MazeSquare *m, int x, int y, char filled);
+int init_maze_structs(int width, int height);
+void free_temp_maze_structs(void);
+void free_maze_structs(void);
 
 #endif

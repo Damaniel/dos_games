@@ -20,6 +20,9 @@
 #ifndef __TEXTDRAW_H__
 #define __TEXTDRAW_H__
 
+#include <dos.h>
+#include <string.h>
+
 #define CARD_CGA 0
 #define CARD_EGA 1
 #define CARD_VGA 2
@@ -55,16 +58,15 @@
 #define MODE_80X50             1
 
 typedef struct {
-  int x1;
-  int y1;
-  int x2;
-  int y2;
-  int w;
-  int h;
+  char x1;
+  char y1;
+  char x2;
+  char y2;
+  char w;
+  char h;
 } Rect;
 
-extern char *g_screen;
-extern int   g_lines;
+extern char far *g_screen;
 
 //-----------------------------------------------------------------------------
 // set_bg_intensity
@@ -72,7 +74,7 @@ extern int   g_lines;
 // Toggles the bit in the EGA/VGA that determines whether the high bit
 // of the attribute byte serves as a 'blink' bit or as an intensity bit.
 //-----------------------------------------------------------------------------
-void set_bg_intensity(int enabled);
+extern void set_bg_intensity(int enabled);
 
 
 //-----------------------------------------------------------------------------
@@ -81,7 +83,7 @@ void set_bg_intensity(int enabled);
 // Sets the 4 extents of the provided rectangle.  Also calculates the width
 // and height of the region and stores it.
 //-----------------------------------------------------------------------------
-void set_rect(Rect *r, int x, int y, int w, int h);
+extern void set_rect(Rect *r, int x, int y, int w, int h);
 
 //-----------------------------------------------------------------------------
 // make_attr
@@ -90,7 +92,7 @@ void set_rect(Rect *r, int x, int y, int w, int h);
 // a foreground and background color that define how a particular character on
 // the screen will be displayed. 
 //-----------------------------------------------------------------------------
-char make_attr(int fg, int bg);
+extern char make_attr(int fg, int bg);
 
 
 //-----------------------------------------------------------------------------
@@ -100,29 +102,29 @@ char make_attr(int fg, int bg);
 // the attribute bytes to 'gray foreground, black background) that DOS uses
 // by default.
 //-----------------------------------------------------------------------------
-void clear_screen();
+extern void clear_screen(void);
 
 //-----------------------------------------------------------------------------
 // detect_adapter
 //
 // Determines whether the program is running on a CGA or older, EGA, or VGA.
 //-----------------------------------------------------------------------------
-int  detect_adapter();
+extern int detect_adapter(void);
 
 //-----------------------------------------------------------------------------
 // hide_cursor / show_cursor
 //
 // Hides or shows the cursor.  That's all.
 //-----------------------------------------------------------------------------
-void hide_cursor();
-void show_cursor();
+extern void hide_cursor(void);
+extern void show_cursor(void);
 
 //-----------------------------------------------------------------------------
 // set_cursor_at
 //
 // Moves the cursor to the specified x/y position
 //-----------------------------------------------------------------------------
-void set_cursor_at(int x, int y);
+extern void set_cursor_at(int x, int y);
 
 //-----------------------------------------------------------------------------
 // set_text_mode
@@ -130,14 +132,14 @@ void set_cursor_at(int x, int y);
 // Sets either a 25 line, or a 43/50 line text mode, depending on the display
 // adapter (43 for EGA, 50 for VGA)
 //-----------------------------------------------------------------------------
-void set_text_mode(int mode);
+extern void set_text_mode(int mode);
 
 //-----------------------------------------------------------------------------
 // char_at
 // 
 // Places a character/attribute pair at the specified location.
 //-----------------------------------------------------------------------------
-void char_at(int x, int y, char c, char attr);
+extern void char_at(int x, int y, char c, char attr);
 
 //-----------------------------------------------------------------------------
 // hline_at / vline_at
@@ -145,15 +147,15 @@ void char_at(int x, int y, char c, char attr);
 // Places a row or column of character/attribute pairs starting at the 
 // specified x and y position, of the specified length.
 //-----------------------------------------------------------------------------
-void hline_at(int x, int y, int len, char c, char attr);
-void vline_at(int x, int y, int len, char c, char attr);
+extern void hline_at(int x, int y, int len, char c, char attr);
+extern void vline_at(int x, int y, int len, char c, char attr);
 
 //-----------------------------------------------------------------------------
 // string_at
 // 
 // Draws a string with the specified attribute at the specified location.
 //-----------------------------------------------------------------------------
-void string_at(int x, int y, char *str, char attr);
+extern void string_at(int x, int y, char *str, char attr);
 
 //-----------------------------------------------------------------------------
 // box_at
@@ -161,7 +163,7 @@ void string_at(int x, int y, char *str, char attr);
 // Draws a single or double lined box with the corners defined by 
 // x1, x2, y1 and y2.
 //-----------------------------------------------------------------------------
-void box_at(int x1, int y1, int x2, int y2, int border_type, char attr);
+extern void box_at(int x1, int y1, int x2, int y2, int border_type, char attr);
 
 //-----------------------------------------------------------------------------
 // box_at_rect
@@ -169,7 +171,7 @@ void box_at(int x1, int y1, int x2, int y2, int border_type, char attr);
 // Draws a single or double lined box with the corners defined by the provided
 // Rect.
 //-----------------------------------------------------------------------------
-void box_at_rect(Rect r, int border_type, char attr);
+extern void box_at_rect(Rect r, int border_type, char attr);
 
 //-----------------------------------------------------------------------------
 // fill_box_at
@@ -177,7 +179,7 @@ void box_at_rect(Rect r, int border_type, char attr);
 // Draws a filled box consisting of a single char/attribute pair,  with the 
 // corners defined by x1, x2, y1 and y2.
 //-----------------------------------------------------------------------------
-void fill_box_at(int x1, int y1, int x2, int y2, char c, char attr);
+extern void fill_box_at(int x1, int y1, int x2, int y2, char c, char attr);
 
 //-----------------------------------------------------------------------------
 // fill_box_rect
@@ -185,6 +187,6 @@ void fill_box_at(int x1, int y1, int x2, int y2, char c, char attr);
 // Draws a filled box consisting of a single char/attribute pair,  with the 
 // corners defined by the specified Rect.
 //-----------------------------------------------------------------------------
-void fill_box_at_rect(Rect r, char c, char attr);
+extern void fill_box_at_rect(Rect r, char c, char attr);
 
 #endif
