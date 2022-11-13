@@ -1,0 +1,61 @@
+## Tools
+
+### Map Editor
+The map editor is a tool that allows the developer to create a map that enemies
+can be found in.  The map is saved in a compressed format that can later be
+expanded into memory inside the game.  
+
+A map consists of a grid of tiles, representing things like walls, doors, 
+paths, water, and so on.  Any map can consist of up to 15 types of tiles (plus a 
+default, empty tile), consisting of a foreground/background attribute and
+a character.
+
+The maximum size of a map is 150x150.  Expanded in memory, this will consume
+22.5k - 1 byte per tile (though, in practice, only the lower 4 bits are used
+per tile), and each entry in the map array represents the index of one of the
+valid tiles.  
+
+### Map linkage
+Each map contains a list of linkages - a six byte value that represents the
+(x,y) position on the current map, the index of the target map and 
+an (x,y) position within the target map.  This helps to ensure that when a map
+is left, the player will move to the correct location on the new map.  The
+list of linkages is fixed at a size of 5, which means that no map can have
+more than 5 entrances/exits
+
+### Map file format
+#### Metadata:
+  - Magic number (2 bytes)
+  - Version (2 bytes)
+  - Map ID (2 bytes)
+  - Map name (20 bytes)
+  - Map width/height / 2 (2 bytes)
+  - Compression type (1 byte)
+  - 16 tiles (3 bytes - character, foreground/background, flags)
+  - 51 bytes for future expansion
+
+#### Map data:
+  - A run-length encoded, 'compressed' version of the (width*height) map data
+
+#### Compression:
+  - Each map location is defined using a 4-bit value (representing the tile
+    at the location).  In the map file, adjacent tiles (horizontally) are
+    packed into a single byte.  The resulting single bytes are then 
+    run-length encoded if the resulting size of the file would be smaller,
+    in the form <1 byte length, 1 byte packed data>.  Due to the extra length
+    byte, RLE will only likely be of beneift when a large area has the same
+    adjacent tile types.  The map compressor will determine the most efficient
+    way to store the map and set the compression type byte in the header
+    accordingly.
+
+#### Notes:
+In the header, the width and height of the map are stored as the width / 2
+and height / 2.  Maps are required to have an even width and height, so 
+the actual map size is calculated as (header value * 2).  Also note that for
+the purposes of the game, the width and height values are always set to the
+maximum size of the map area.  This means that the two bytes should be set
+to 75/75.  While the size values theoretically support a map size of 510x510
+tiles (by setting the size to 255/255), the game will set it to a fixed
+value of 150x150 tiles.  The map editor itself will also enforce this size
+limit.
+
