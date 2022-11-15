@@ -21,6 +21,8 @@
 #define PALETTE_AREA_X          63
 #define PALETTE_AREA_Y           2
 
+#define NUM_EXITS                5
+
 typedef struct {
     char cursor_x;          // position of the cursor on screen
     char cursor_y;          
@@ -56,12 +58,20 @@ typedef struct {
     unsigned char flags2;
 } PaletteEntry;
 
+typedef struct {
+    unsigned char is_set;
+    unsigned char target_room;
+    unsigned char x_pos;
+    unsigned char y_pos;
+} Exit;
+
 
 extern UIConfig g_ui_config;
 extern AppConfig g_app_config;
 
 extern RenderComponents g_render_components;
 extern PaletteEntry g_map_palette[];
+extern Exit g_exit_list[];
 
 void wait_for_key(void);
 void set_all_render_components(void);

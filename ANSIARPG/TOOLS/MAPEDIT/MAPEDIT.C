@@ -5,6 +5,7 @@ AppConfig g_app_config;
 
 RenderComponents g_render_components;
 PaletteEntry g_map_palette[NUM_PALETTE_ENTRIES];
+Exit g_exit_list[NUM_EXITS];
 
 unsigned char g_map[MAP_WIDTH][MAP_HEIGHT];
 
@@ -19,6 +20,33 @@ void clear_map() {
         for (j=0; j < MAP_HEIGHT; j++) {
             g_map[i][j] = 0;
         }
+    }
+}
+
+void set_exit(int index, int room_id, int x_pos, int y_pos) { 
+    if (index < 0 || index >= NUM_EXITS) {
+        return;
+    }
+    g_exit_list[index].is_set = 1;
+    g_exit_list[index].target_room = room_id;
+    g_exit_list[index].x_pos = x_pos;
+    g_exit_list[index].y_pos = y_pos;
+}
+
+void clear_exit(int index) {
+    if (index < 0 || index >= NUM_EXITS) {
+        return;
+    }
+    g_exit_list[index].is_set = 0;
+    g_exit_list[index].target_room = 0;
+    g_exit_list[index].x_pos = 0;
+    g_exit_list[index].y_pos = 0;
+}
+
+void initialize_exits(void) {
+    int i;
+    for (i = 0; i < NUM_EXITS; i++) {
+        clear_exit(i);
     }
 }
 
@@ -80,7 +108,7 @@ void set_palette_entry(int idx, PaletteEntry p_new) {
 
 void render() {
     int i, j, map_x, map_y, col;
-    char buf[8];
+    char buf[16];
 
     if (g_render_components.render_background) {
         // main box
@@ -167,7 +195,32 @@ void render() {
         string_at(76, 10, "No", g_ui_config.background_attr);
         string_at(74, 11, "None", g_ui_config.background_attr);                               
     }
-
+    if (g_render_components.render_exits_text) {
+        string_at(PALETTE_AREA_X + 5, 14, "Exits", g_ui_config.background_attr);
+        hline_at(PALETTE_AREA_X + 1, 15, 14, 205, g_ui_config.background_attr);
+        for(i = 0; i < NUM_EXITS; i++) {
+            if (g_exit_list[i].is_set) {
+                sprintf(buf, "%d - Set", i+1);
+            } else {
+                sprintf(buf, "%d - <empty>", i+1);
+            }
+            string_at(PALETTE_AREA_X + 1, 16+i, buf, g_ui_config.background_attr);
+        }
+        hline_at(PALETTE_AREA_X + 1, 21, 14, 205, g_ui_config.background_attr);        
+    }
+    if (g_render_components.render_exit_active) {
+        char_at(PALETTE_AREA_X, 16 + g_app_config.exit_entry, 16, 
+                make_attr(COLOR_YELLOW, COLOR_BLACK));
+        if (g_exit_list[g_app_config.exit_entry].is_set) {
+            sprintf(buf, "%d (%d,%d)", 
+                    g_exit_list[g_app_config.exit_entry].target_room,
+                    g_exit_list[g_app_config.exit_entry].x_pos,
+                    g_exit_list[g_app_config.exit_entry].y_pos);
+        } else {
+            sprintf(buf, "              ");
+        }
+        string_at(PALETTE_AREA_X+1, 22, buf, g_ui_config.background_attr);
+    }
     clear_render_components();
 }
 
@@ -176,9 +229,11 @@ int main(void) {
     PaletteEntry p;
 
     initialize_palette();
-
+    initialize_exits();
     set_text_mode(MODE_80X25);
     set_bg_intensity(1);
+
+    set_exit(0, 23, 17, 32);
 
     clear_screen();
     hide_cursor();
