@@ -9,11 +9,42 @@ Exit g_exit_list[NUM_EXITS];
 
 unsigned char g_map[MAP_WIDTH][MAP_HEIGHT];
 
-void wait_for_key(void) {
-  while(!_bios_keybrd(_KEYBRD_READY)) {}
-  _bios_keybrd(0x00);
-}
+void process_input(void) {
+    unsigned short key, shift_status;
+    unsigned char ascii_code, scan_code;
 
+    // Get the shift state since it's non-blocking
+    shift_status = _bios_keybrd(_KEYBRD_SHIFTSTATUS);
+    // Is there a key ready?
+    if (_bios_keybrd(_KEYBRD_READY)) {
+        key = _bios_keybrd(_KEYBRD_READ);
+        ascii_code = (key & 0xFF);
+        scan_code = (key >> 8);
+        switch(scan_code) {
+            case KEY_ESC:
+                g_app_config.quit = 1;
+                break;
+            case KEY_RIGHT:
+                // move the cursor right
+                g_app_config.old_cursor_x = g_app_config.cursor_x;
+                g_app_config.cursor_x = g_app_config.cursor_x + 1;
+                if (g_app_config.cursor_x > MAX_SCREEN_CURSOR_X) {
+                    // if all the way over, don't move the cursor, but move the map
+                    g_app_config.cursor_x = MAX_SCREEN_CURSOR_X;
+                    g_app_config.map_x = g_app_config.map_x + 1;
+                    // If past the end of the map, don't move the map either.
+                    if(g_app_config.map_x > MAX_SCREEN_MAP_X) {
+                        g_app_config.map_x = MAX_SCREEN_MAP_X;
+                    }
+                }
+                g_render_components.render_cursor = 1;
+                g_render_components.render_cursor_position = 1;
+                break;
+            default:
+                break;
+        }
+    }
+}
 void clear_map() {
     int i, j;
     for (i=0 ; i< MAP_WIDTH; i++) { 
@@ -60,6 +91,8 @@ void set_all_render_components(void) {
     g_render_components.render_exits_text = 1;
     g_render_components.render_exit_active = 1;
     g_render_components.render_map_area = 1;
+    g_render_components.render_cursor_position = 1;
+    g_render_components.render_cursor = 1;
 }
 
 // Helper function - disable the rendering of all components
@@ -72,6 +105,8 @@ void clear_render_components(void) {
     g_render_components.render_exits_text = 0;
     g_render_components.render_exit_active = 0;
     g_render_components.render_map_area = 0;
+    g_render_components.render_cursor_position = 0;
+    g_render_components.render_cursor = 0;
 }
 
 void set_map_at(int x, int y, unsigned char palette_entry) {
@@ -109,6 +144,7 @@ void set_palette_entry(int idx, PaletteEntry p_new) {
 void render() {
     int i, j, map_x, map_y, col;
     char buf[16];
+    char rendered = 0;
 
     if (g_render_components.render_background) {
         // main box
@@ -125,9 +161,11 @@ void render() {
         hline_at(63, 13, 16, 196, g_ui_config.background_attr);
         char_at(62, 13, 195, g_ui_config.background_attr);
         char_at(79, 13, 180, g_ui_config.background_attr);    
+        g_render_components.render_background = 0;
     }
     if (g_render_components.render_menu) {
-        hline_at(0, 0, 80, ' ', g_ui_config.menu_attr);        
+        hline_at(0, 0, 80, ' ', g_ui_config.menu_attr);  
+        g_render_components.render_menu = 0;           
     }
     if (g_render_components.render_map_area) {
         // Note - the map area will never scroll past the edges of the 
@@ -149,6 +187,7 @@ void render() {
             }
             map_y++;
         }
+        g_render_components.render_map_area = 0;     
     }
     if (g_render_components.render_palette) {
         for (i=0; i < NUM_PALETTE_ENTRIES; i++ ) {
@@ -156,6 +195,7 @@ void render() {
                     g_map_palette[i].glyph,
                     make_attr(g_map_palette[i].fg, g_map_palette[i].bg));
         }
+        g_render_components.render_palette = 0;   
     }
     if (g_render_components.render_palette_active) {
         // redraw the palette area line and put an arrow at the current entry
@@ -163,6 +203,7 @@ void render() {
                  g_ui_config.background_attr);
         char_at(PALETTE_AREA_X + g_app_config.palette_entry, PALETTE_AREA_Y+1,
                 24, make_attr(COLOR_YELLOW, COLOR_BLACK));
+        g_render_components.render_palette_active = 0;
     }
     if (g_render_components.render_palette_text) {
         // -- Fixed components
@@ -194,6 +235,7 @@ void render() {
         // Flags (just hard coded for now)
         string_at(76, 10, "No", g_ui_config.background_attr);
         string_at(74, 11, "None", g_ui_config.background_attr);                               
+        g_render_components.render_palette_text = 0;        
     }
     if (g_render_components.render_exits_text) {
         string_at(PALETTE_AREA_X + 5, 14, "Exits", g_ui_config.background_attr);
@@ -206,7 +248,8 @@ void render() {
             }
             string_at(PALETTE_AREA_X + 1, 16+i, buf, g_ui_config.background_attr);
         }
-        hline_at(PALETTE_AREA_X + 1, 21, 14, 205, g_ui_config.background_attr);        
+        hline_at(PALETTE_AREA_X + 1, 21, 14, 205, g_ui_config.background_attr);  
+        g_render_components.render_exits_text = 0;             
     }
     if (g_render_components.render_exit_active) {
         char_at(PALETTE_AREA_X, 16 + g_app_config.exit_entry, 16, 
@@ -220,13 +263,41 @@ void render() {
             sprintf(buf, "              ");
         }
         string_at(PALETTE_AREA_X+1, 22, buf, g_ui_config.background_attr);
+        g_render_components.render_exit_active = 0;        
     }
-    clear_render_components();
+    if (g_render_components.render_cursor_position) {
+        hline_at(1, 24, 10, 196, g_ui_config.background_attr);
+        sprintf(buf, "(%d,%d)", g_app_config.map_x + g_app_config.cursor_x - MAP_AREA_X, 
+                g_app_config.map_y + g_app_config.cursor_y - MAP_AREA_Y);
+        string_at(1, 24, buf, g_ui_config.background_attr);
+        g_render_components.render_cursor_position = 0;       
+    }
+    if (g_render_components.render_cursor) {
+        // Replace the old cursor location with the map location that goes
+        // under it
+        map_x = g_app_config.map_x + g_app_config.old_cursor_x;
+        map_y = g_app_config.map_y + g_app_config.old_cursor_y;
+        col = g_map[map_x][map_y];
+        char_at(g_app_config.old_cursor_x,
+                g_app_config.old_cursor_y,
+                g_map_palette[col].glyph,
+                make_attr(g_map_palette[col].fg, g_map_palette[col].bg));
+
+        // Draw the cursor in the new location
+        char_at(g_app_config.cursor_x, g_app_config.cursor_y, 219, make_attr(14, 0));
+        g_render_components.render_cursor = 0;        
+    }
 }
 
 int main(void) {
 
     PaletteEntry p;
+
+    g_app_config.quit = 0;
+    g_app_config.old_cursor_x = MAP_AREA_X;
+    g_app_config.old_cursor_y = MAP_AREA_Y;
+    g_app_config.cursor_x = 1;
+    g_app_config.cursor_y = 2;
 
     initialize_palette();
     initialize_exits();
@@ -243,10 +314,13 @@ int main(void) {
     set_all_render_components();
 
     g_map_palette[0].glyph = 177;
-    strncpy(g_map_palette[0].name, "TILE1", 8);
-    render();
+    g_map_palette[0].fg = 11;
+    g_map_palette[0].bg = 1;
 
-    wait_for_key();
+    while(!g_app_config.quit) {
+        process_input();
+        render();
+    }
     clear_screen();
 
     show_cursor();
