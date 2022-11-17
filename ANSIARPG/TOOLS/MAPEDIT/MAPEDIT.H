@@ -44,15 +44,15 @@
 #define NUM_EXITS                5
 
 typedef struct {
-    char cursor_x;          // position of the cursor in the map area
-    char cursor_y;          
-    char old_cursor_x;      // The previous position of the cursor.  Used to
-    char old_cursor_y;      // remove the old cursor when moving
-    char map_x;             // position of the map at the upper left corner of
-    char map_y;             // the draw area
-    char palette_entry;
-    char exit_entry;    
-    char quit;              // Quit the program?
+    unsigned char cursor_x;          // position of the cursor in the map area
+    unsigned char cursor_y;          
+    unsigned char old_cursor_x;      // The previous position of the cursor.  Used to
+    unsigned char old_cursor_y;      // remove the old cursor when moving
+    unsigned char map_x;             // position of the map at the upper left corner of
+    unsigned char map_y;             // the draw area
+    unsigned char palette_entry;
+    unsigned char exit_entry;    
+    unsigned char quit;              // Quit the program?
 } AppConfig;
 
 typedef struct {
