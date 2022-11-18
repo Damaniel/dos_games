@@ -31,8 +31,23 @@ more than 5 entrances/exits
   - Map name (20 bytes)
   - Map width/height / 2 (2 bytes)
   - Compression type (1 byte)
-  - 16 tiles (3 bytes - character, foreground/background, flags)
-  - 51 bytes for future expansion
+  - 99 bytes for future expansion
+
+#### Tile data:
+There are a total of 16 tiles per map (208 bytes total):
+  - character ID (1 byte)
+  - tile name (8 bytes)
+  - foreground color (1 byte)
+  - background color (1 byte)
+  - flags (2 bytes)
+
+The 'tile name' value is mainly used for the map editor, so the map maker
+can remember what the tile is supposed to represent.  
+
+Flags represent general values applicable to a tile type:
+  - Damage type (none, low, medium, high)
+  - Solid
+  - TBD
 
 #### Map data:
   - A run-length encoded, 'compressed' version of the (width*height) map data

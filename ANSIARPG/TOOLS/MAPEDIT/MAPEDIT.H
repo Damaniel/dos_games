@@ -2,19 +2,14 @@
 #define __MAPEDIT_H__
 
 #include "textdraw.h"
+#include "render.h"
+#include "input.h"
+
 #include <bios.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-// Keyboard scancodes
-#define KEY_ESC                 0x01
-#define KEY_UP                  0x48
-#define KEY_DOWN                0x50
-#define KEY_LEFT                0x4B
-#define KEY_RIGHT               0x4D
-
-#define NUM_PALETTE_ENTRIES     16
 #define MAP_WIDTH              150
 #define MAP_HEIGHT             150
 
@@ -61,19 +56,6 @@ typedef struct {
 } UIConfig;
 
 typedef struct {
-    char render_background;
-    char render_menu;
-    char render_palette;
-    char render_palette_text;
-    char render_palette_active;
-    char render_exits_text;
-    char render_exit_active;
-    char render_map_area;
-    char render_cursor_position;
-    char render_cursor;
-} RenderComponents;
-
-typedef struct {
     unsigned char id;
     char name[9];
     unsigned char glyph;
@@ -90,17 +72,13 @@ typedef struct {
     unsigned char y_pos;
 } Exit;
 
-
 extern UIConfig g_ui_config;
 extern AppConfig g_app_config;
 
-extern RenderComponents g_render_components;
 extern PaletteEntry g_map_palette[];
 extern Exit g_exit_list[];
+extern unsigned char g_map[][MAP_HEIGHT];
 
-void wait_for_key(void);
-void set_all_render_components(void);
-void clear_render_components(void);
 void initialize_attributes(void);
 void render(void);
 void set_map_at(int x, int y, unsigned char palette_entry);
