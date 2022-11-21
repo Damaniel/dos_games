@@ -36,6 +36,11 @@
 #define PALETTE_AREA_X          63
 #define PALETTE_AREA_Y           2
 
+// Palette 0 can't be redefined.  
+#define NUM_PALETTE_ENTRIES     16
+#define MIN_PALETTE_ENTRY        1
+#define MAX_PALETTE_ENTRY       NUM_PALETTE_ENTRIES - 1
+
 #define NUM_EXITS                5
 
 typedef struct {
@@ -82,5 +87,6 @@ extern unsigned char g_map[][MAP_HEIGHT];
 void initialize_attributes(void);
 void render(void);
 void set_map_at(int x, int y, unsigned char palette_entry);
+char get_map_at(int x, int y);
 
 #endif

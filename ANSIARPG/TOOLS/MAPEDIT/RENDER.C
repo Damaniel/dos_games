@@ -3,7 +3,7 @@
 RenderComponents g_render_components;
 
 void render() {
-    int i, j, map_x, map_y, col;
+    int i, j, map_x, map_y, col, cur_attr;
     char buf[16];
     char rendered = 0;
 
@@ -138,14 +138,22 @@ void render() {
         // under it
         map_x = g_app_config.map_x + g_app_config.old_cursor_x - MAP_AREA_X;
         map_y = g_app_config.map_y + g_app_config.old_cursor_y - MAP_AREA_Y;
-        col = g_map[map_x][map_y];
+        col = get_map_at(map_x, map_y);
         char_at(g_app_config.old_cursor_x,
                 g_app_config.old_cursor_y,
                 g_map_palette[col].glyph,
                 make_attr(g_map_palette[col].fg, g_map_palette[col].bg));
 
         // Draw the cursor in the new location
-        char_at(g_app_config.cursor_x, g_app_config.cursor_y, 219, make_attr(14, 0));
+        map_x = g_app_config.map_x + g_app_config.cursor_x - MAP_AREA_X;
+        map_y = g_app_config.map_y + g_app_config.cursor_y - MAP_AREA_Y;        
+        col = get_map_at(map_x, map_y);
+        if (col == 0) {
+            cur_attr = make_attr(7, 0);;
+        } else {
+            cur_attr = make_attr(14, 0);
+        }        
+        char_at(g_app_config.cursor_x, g_app_config.cursor_y, 219, cur_attr);
         g_render_components.render_cursor = 0;        
     }
 }

@@ -10,13 +10,13 @@ DEL /Q ..\LIBS\TEXTDRAW.LIB
 ECHO ********************* Building TEXTDRAW.LIB *************************
 WCC TEXTDRAW.C /zq %MEMMODEL% /i..\include
 WLIB TEXTDRAW +TEXTDRAW /q
-MOVE TEXTDRAW.LIB ..\LIBS
+MOVE TEXTDRAW.LIB ..\LIBS >NUL
 REM build gmae app
 ECHO ********************* Building ANSIARPG *************************
 WCL MAIN.C /zq /i..\INCLUDE %MEMMODEL% /fe=ANSIARPG.EXE ..\LIBS\TEXTDRAW.LIB
 REM clean objects and move main app to base directory
 DEL *.OBJ
-MOVE ANSIARPG.EXE ..
+MOVE ANSIARPG.EXE .. >NUL
 REM change to the tools directory
 CD ..
 CD TOOLS
@@ -25,7 +25,7 @@ ECHO ********************* Building MAPEDIT *************************
 CD MAPEDIT
 WCL INPUT.C RENDER.C MAPEDIT.C /zq /i..\..\INCLUDE %MEMMODEL% /fe=MAPEDIT.EXE ..\..\LIBS\TEXTDRAW.LIB
 DEL *.OBJ
-MOVE MAPEDIT.EXE ..\..
+MOVE MAPEDIT.EXE ..\.. >NUL
 REM  MAPEDIT is built, go back to tools dir
 CD ..
 REM tools are built, go back to base dir

@@ -48,6 +48,9 @@ void set_map_at(int x, int y, unsigned char palette_entry) {
     g_map[x][y] = palette_entry;
 }
 
+char get_map_at(int x, int y) {
+    return g_map[x][y];
+}
 
 void initialize_attributes(void) {
     g_ui_config.background_attr = make_attr(COLOR_WHITE, COLOR_BLACK);
@@ -67,6 +70,15 @@ void initialize_palette(void) {
     }
 }
 
+void initialize_app_defaults(void) {
+    g_app_config.palette_entry = 1;
+    g_app_config.quit = 0;
+    g_app_config.old_cursor_x = MAP_AREA_X;
+    g_app_config.old_cursor_y = MAP_AREA_Y;
+    g_app_config.cursor_x = 1;
+    g_app_config.cursor_y = 2;    
+}
+
 void set_palette_entry(int idx, PaletteEntry p_new) {
     g_map_palette[idx].id = idx;
     g_map_palette[idx].bg = p_new.bg;
@@ -80,14 +92,10 @@ int main(void) {
 
     PaletteEntry p;
 
-    g_app_config.quit = 0;
-    g_app_config.old_cursor_x = MAP_AREA_X;
-    g_app_config.old_cursor_y = MAP_AREA_Y;
-    g_app_config.cursor_x = 1;
-    g_app_config.cursor_y = 2;
-
     initialize_palette();
     initialize_exits();
+    initialize_app_defaults();
+
     set_text_mode(MODE_80X25);
     set_bg_intensity(1);
 
@@ -100,9 +108,9 @@ int main(void) {
     initialize_attributes();
     set_all_render_components();
 
-    g_map_palette[0].glyph = 177;
-    g_map_palette[0].fg = 11;
-    g_map_palette[0].bg = 1;
+    g_map_palette[1].glyph = 177;
+    g_map_palette[1].fg = 11;
+    g_map_palette[1].bg = 1;
 
     while(!g_app_config.quit) {
         process_input();

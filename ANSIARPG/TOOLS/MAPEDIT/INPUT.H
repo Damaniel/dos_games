@@ -11,8 +11,6 @@
 #define KEY_RBRACKET            0x1B
 #define KEY_SPACE               0x39
 
-#define NUM_PALETTE_ENTRIES     16
-
 void process_input(void);
 
 #endif

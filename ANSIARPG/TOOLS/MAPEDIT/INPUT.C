@@ -3,6 +3,7 @@
 void process_input(void) {
     unsigned short key, shift_status;
     unsigned char ascii_code, scan_code;
+    int x, y;
 
     // Get the shift state since it's non-blocking
     shift_status = _bios_keybrd(_KEYBRD_SHIFTSTATUS);
@@ -95,27 +96,34 @@ void process_input(void) {
                 g_render_components.render_cursor = 1;
                 g_render_components.render_cursor_position = 1;
                 break;
+            // Note that entry 0 can't be selected - it's always blank.
             case KEY_LBRACKET:
-                if (g_app_config.palette_entry > 0) {
+                if (g_app_config.palette_entry > MIN_PALETTE_ENTRY) {
                     g_app_config.palette_entry = g_app_config.palette_entry - 1;                    
                 } else {
-                    g_app_config.palette_entry = NUM_PALETTE_ENTRIES - 1;
+                    g_app_config.palette_entry = MAX_PALETTE_ENTRY;
                 }
                 g_render_components.render_palette_active = 1;
                 g_render_components.render_palette_text = 1;                 
                 break;
             case KEY_RBRACKET:
                 g_app_config.palette_entry = g_app_config.palette_entry + 1;
-                if (g_app_config.palette_entry >= NUM_PALETTE_ENTRIES) {
-                    g_app_config.palette_entry = 0;
+                if (g_app_config.palette_entry > MAX_PALETTE_ENTRY) {
+                    g_app_config.palette_entry = MIN_PALETTE_ENTRY;
                 }     
                 g_render_components.render_palette_active = 1;
                 g_render_components.render_palette_text = 1;                 
                 break;
             case KEY_SPACE:
-                set_map_at(g_app_config.cursor_x + g_app_config.map_x - MAP_AREA_X,
-                           g_app_config.cursor_y + g_app_config.map_y - MAP_AREA_Y,
-                           g_app_config.palette_entry);
+                x = g_app_config.cursor_x + g_app_config.map_x - MAP_AREA_X;
+                y = g_app_config.cursor_y + g_app_config.map_y - MAP_AREA_Y;
+                if (get_map_at(x, y) == 0) {
+                    set_map_at(x, y, g_app_config.palette_entry);
+                } else
+                {
+                    set_map_at(x, y, 0);
+                }
+                g_render_components.render_cursor = 1;
                 break;
             default:
                 break;
