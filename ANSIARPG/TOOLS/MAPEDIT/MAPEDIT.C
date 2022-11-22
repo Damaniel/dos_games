@@ -68,6 +68,7 @@ char get_map_at(int x, int y) {
 void initialize_attributes(void) {
     g_ui_config.background_attr = make_attr(COLOR_WHITE, COLOR_BLACK);
     g_ui_config.menu_attr = make_attr(COLOR_WHITE, COLOR_BLUE);
+    g_ui_config.highlight_attr = make_attr(COLOR_YELLOW, COLOR_BLACK);
 }
 
 void initialize_palette(void) {
@@ -111,6 +112,18 @@ void set_palette_entry(int idx, PaletteEntry p_new) {
     g_map_palette[idx].flags2 = p_new.flags2;
 }
 
+void set_palette_flags(int index, char solid_value, char damage_value) {
+    g_map_palette[index].flags1 = solid_value | (damage_value << 1);
+}
+
+char get_palette_damage_value(int index) {
+    return (g_map_palette[index].flags1 & FLAG_DAMAGE_MASK) >> 1;
+}
+
+char get_palette_solid_value(int index) {
+    return (g_map_palette[index].flags1 & FLAG_SOLID_MASK);
+}
+
 int main(void) {
 
     PaletteEntry p;
@@ -138,18 +151,21 @@ int main(void) {
     g_map_palette[1].glyph = 177;
     g_map_palette[1].fg = 11;
     g_map_palette[1].bg = 1;
+    set_palette_flags(1, FLAG_PASSABLE, FLAG_DAMAGE_HIGH);
 
-    render();
-    render_palette_edit_screen();
+    
+    set_state(PALETTE_EDIT);
+    render_main_screen();
 
     while(!g_app_config.quit) {
         process_input();
     //    render();
-    //    render_palette_edit_screen();
+        render_palette_edit_screen();
     }
     clear_screen();
 
     show_cursor();
     set_bg_intensity(0);
-    return 0;
+
+   return 0;
 }

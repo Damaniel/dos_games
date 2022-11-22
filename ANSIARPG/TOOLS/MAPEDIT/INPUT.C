@@ -125,7 +125,41 @@ void process_main_screen_input(unsigned char ascii_code,
 void process_palette_edit_input(unsigned char ascii_code, 
                                 unsigned char scan_code,
                                 unsigned char shift_status) {
-    //
+    switch (scan_code) {
+        // TEMP: ESC is just for testing!
+        case KEY_ESC:
+            g_app_config.quit = 1;
+            break;        
+        case KEY_DOWN:
+            switch (g_palette_menu_config.active_item) {
+                case PI_NAME:
+                    g_palette_menu_config.active_item = PI_FOREGROUND;
+                    break;
+                case PI_FOREGROUND:
+                    g_palette_menu_config.active_item = PI_BACKGROUND;
+                    break;
+                case PI_BACKGROUND:
+                    g_palette_menu_config.active_item = PI_CHARACTER;
+                    break;
+                case PI_CHARACTER:
+                    g_palette_menu_config.active_item = PI_SOLID;
+                    break;
+                case PI_SOLID:
+                    g_palette_menu_config.active_item = PI_DAMAGE;
+                    break;
+                case PI_DAMAGE:
+                    g_palette_menu_config.active_item = PI_OK;
+                    break;
+                case PI_OK:
+                    g_palette_menu_config.active_item = PI_CANCEL;
+                    break;
+                case PI_CANCEL:
+                    g_palette_menu_config.active_item = PI_NAME;
+                    break;
+            }
+            g_render_palette_edit_components.render_active_item = 1;
+            break;
+    }
 }
 
 void process_input(void) {
@@ -142,6 +176,9 @@ void process_input(void) {
         switch(g_state) {
             case MAIN_SCREEN:
                 process_main_screen_input(ascii_code, scan_code, shift_status);
+                break;
+            case PALETTE_EDIT:
+                process_palette_edit_input(ascii_code, scan_code, shift_status);
                 break;
             default:
                 break;

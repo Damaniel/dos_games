@@ -161,7 +161,8 @@ void render_main_screen(void) {
 
 void render_palette_edit_screen(void) {
     char buf[32];
-    int i, max;
+    int i, max, x_off;
+    char damage;
 
     if(g_render_palette_edit_components.render_main) {
         // Render background
@@ -210,11 +211,13 @@ void render_palette_edit_screen(void) {
         string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 3, "Name:", g_ui_config.background_attr);
         string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 4, "Foreground:", g_ui_config.background_attr);
         string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 5, "Background:", g_ui_config.background_attr);
-        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 6, "Solid?", g_ui_config.background_attr);    
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 6, "Character:", g_ui_config.background_attr);    
         string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 7, "Solid?", g_ui_config.background_attr);
         string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 8, "Damage:", g_ui_config.background_attr);
-        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 10, "Preview:", g_ui_config.background_attr);
-        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 12, "[ OK ]    [ Cancel ]", g_ui_config.background_attr);    
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 10, "Preview:         [ ]", g_ui_config.background_attr);
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 12, "[ OK ]    [ Cancel ]", g_ui_config.background_attr); 
+
+        g_render_palette_edit_components.render_main = 0;   
     }
 
     // render values
@@ -233,9 +236,130 @@ void render_palette_edit_screen(void) {
         // Mark the end of the string
         buf[PALETTE_ITEM_NAME_LENGTH] = '\0';
         string_at(PALETTE_EDIT_X + 14, PALETTE_EDIT_Y + 3, buf, g_ui_config.background_attr);
+
+        g_render_palette_edit_components.render_name = 0;
+    }
+
+    if (g_render_palette_edit_components.render_foreground) {
+        if (g_map_palette[g_app_config.palette_entry].fg < 10) {
+            x_off = PALETTE_EDIT_X + 21;
+        } else {
+            x_off = PALETTE_EDIT_X + 20;
+        }
+        itoa(g_map_palette[g_app_config.palette_entry].fg, buf, 10);
+        string_at(x_off, PALETTE_EDIT_Y + 4, buf, g_ui_config.background_attr);
+
+        g_render_palette_edit_components.render_foreground = 0;
+    }
+
+    if (g_render_palette_edit_components.render_background) {
+        if (g_map_palette[g_app_config.palette_entry].bg < 10) {
+            x_off = PALETTE_EDIT_X + 21;
+        } else {
+            x_off = PALETTE_EDIT_X + 20;
+        }
+        itoa(g_map_palette[g_app_config.palette_entry].bg, buf, 10);
+        string_at(x_off, PALETTE_EDIT_Y + 5, buf, g_ui_config.background_attr);
+
+        g_render_palette_edit_components.render_background = 0;
+    }
+
+    if (g_render_palette_edit_components.render_character) {
+        if (g_map_palette[g_app_config.palette_entry].glyph < 10) {
+            x_off = PALETTE_EDIT_X + 21;
+        } else if (g_map_palette[g_app_config.palette_entry].glyph < 100){
+            x_off = PALETTE_EDIT_X + 20;
+        } else {
+            x_off = PALETTE_EDIT_X + 19;
+        }
+        itoa(g_map_palette[g_app_config.palette_entry].glyph, buf, 10);
+        string_at(x_off, PALETTE_EDIT_Y + 6, buf, g_ui_config.background_attr);
+
+        g_render_palette_edit_components.render_character = 0;
+    }
+
+    if (g_render_palette_edit_components.render_solid) {
+        if (g_map_palette[g_app_config.palette_entry].flags1 & FLAG_SOLID) {
+            string_at(PALETTE_EDIT_X + 19, PALETTE_EDIT_Y + 7, "[X]", g_ui_config.background_attr);
+        } else {
+            string_at(PALETTE_EDIT_X + 19, PALETTE_EDIT_Y + 7, "[ ]", g_ui_config.background_attr);
+        }
+
+        g_render_palette_edit_components.render_solid = 0;
+    }
+
+    if (g_render_palette_edit_components.render_damage) {
+        damage = get_palette_damage_value(g_app_config.palette_entry);
+        if (damage == FLAG_DAMAGE_NONE) {
+              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  None", g_ui_config.background_attr);
+        }       
+        if (damage == FLAG_DAMAGE_LOW) {
+              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "   Low", g_ui_config.background_attr);
+        }               
+        if (damage ==  FLAG_DAMAGE_MEDIUM) {
+              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "Medium", g_ui_config.background_attr);
+        }        
+        if (damage == FLAG_DAMAGE_HIGH) {
+              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  High", g_ui_config.background_attr);
+        }                      
+        if (damage == FLAG_DAMAGE_OHKO) {
+              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  OHKO", g_ui_config.background_attr);
+        }             
+        g_render_palette_edit_components.render_damage = 0;  
+    }
+
+    if (g_render_palette_edit_components.render_preview) {
+        char_at(PALETTE_EDIT_X + 20, PALETTE_EDIT_Y + 10,
+                g_map_palette[g_app_config.palette_entry].glyph,
+                make_attr(g_map_palette[g_app_config.palette_entry].fg,
+                          g_map_palette[g_app_config.palette_entry].bg));
+
+        g_render_palette_edit_components.render_preview = 0;
     }
 
     // render current highlighted item
+    if (g_render_palette_edit_components.render_active_item) {
+        // clear all the locations the arrow can be
+        char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 3, ' ', g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 4, ' ', g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 5, ' ', g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 6, ' ', g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 7, ' ', g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 8, ' ', g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 12, ' ', g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + 11, PALETTE_EDIT_Y + 12, ' ', g_ui_config.background_attr);
+
+        // Draw the new arrow in the correct place
+        switch (g_palette_menu_config.active_item) {
+            case PI_NAME:
+                char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 3, 16, g_ui_config.highlight_attr);
+                break;
+            case PI_FOREGROUND:
+                char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 4, 16, g_ui_config.highlight_attr);            
+                break;
+            case PI_BACKGROUND:
+                char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 5, 16, g_ui_config.highlight_attr);            
+                break;
+            case PI_CHARACTER:
+                char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 6, 16, g_ui_config.highlight_attr);            
+                break;
+            case PI_SOLID:
+                char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 7, 16, g_ui_config.highlight_attr);            
+                break;
+            case PI_DAMAGE:
+                char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 8, 16, g_ui_config.highlight_attr);            
+                break;
+            case PI_OK:
+                char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 12, 16, g_ui_config.highlight_attr);
+                break;
+            case PI_CANCEL:
+                char_at(PALETTE_EDIT_X + 11, PALETTE_EDIT_Y + 12, 16, g_ui_config.highlight_attr);
+                break;
+            default:
+                break;
+        }
+        g_render_palette_edit_components.render_active_item = 0;
+    }
 }
 
 
@@ -289,6 +413,7 @@ void set_all_palette_edit_components(void) {
     g_render_palette_edit_components.render_character = 1;
     g_render_palette_edit_components.render_solid = 1;
     g_render_palette_edit_components.render_damage = 1;
+    g_render_palette_edit_components.render_preview = 1;
     g_render_palette_edit_components.render_active_item = 1;
 }
 

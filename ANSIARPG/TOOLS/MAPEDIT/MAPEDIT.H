@@ -51,6 +51,19 @@
 
 #define PALETTE_ITEM_NAME_LENGTH    8
 
+// Flag 1 bits
+// bit 0     solid (1) / passable (0)
+#define FLAG_SOLID_MASK               0x01
+#define FLAG_PASSABLE                 0x00
+#define FLAG_SOLID                    0x01
+// bits 1-3  floor damage types (000 - none, 001 - low, 010 - medium, 011 - high, 100 - OHKO)
+#define FLAG_DAMAGE_MASK              0x0E
+#define FLAG_DAMAGE_NONE              0x00
+#define FLAG_DAMAGE_LOW               0x01
+#define FLAG_DAMAGE_MEDIUM            0x02
+#define FLAG_DAMAGE_HIGH              0x03
+#define FLAG_DAMAGE_OHKO              0x04
+
 typedef struct {
     unsigned char cursor_x;          // position of the cursor in the map area
     unsigned char cursor_y;          
@@ -66,6 +79,7 @@ typedef struct {
 typedef struct {
     char background_attr;
     char menu_attr;
+    char highlight_attr;
 } UIConfig;
 
 typedef enum {
@@ -130,6 +144,10 @@ extern PaletteMenuConfig g_palette_menu_config;
 extern PaletteEntry g_map_palette[];
 extern Exit g_exit_list[];
 extern unsigned char g_map[][MAP_HEIGHT];
+
+void set_palette_flags(int index, char solid_value, char damage_value);
+char get_palette_damage_value(int index);
+char get_palette_solid_value(int index);
 
 void initialize_attributes(void);
 void initialize_app_defaults(void);
