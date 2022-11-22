@@ -14,10 +14,28 @@ typedef struct {
     char render_cursor;
 } RenderComponents;
 
-extern RenderComponents g_render_components;
+typedef struct {
+    char render_main;
+    char render_name;
+    char render_foreground;
+    char render_background;
+    char render_character;
+    char render_solid;
+    char render_damage;
+    char render_preview;
+    char render_active_item;
+} RenderPaletteEditComponents;
 
-void render();
+extern RenderComponents g_render_components;
+extern RenderPaletteEditComponents g_render_palette_edit_components;
+
+void render(void);
 void set_all_render_components(void);
 void clear_render_components(void);
+void set_all_palette_edit_components(void);
+void clear_all_palette_edit_components(void);
+void render_main_screen(void);
+void render_palette_edit_screen(void);
+
 
 #endif

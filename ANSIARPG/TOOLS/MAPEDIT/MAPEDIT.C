@@ -2,11 +2,24 @@
 
 UIConfig g_ui_config;
 AppConfig g_app_config;
+PaletteMenuConfig g_palette_menu_config;
 
 PaletteEntry g_map_palette[NUM_PALETTE_ENTRIES];
 Exit g_exit_list[NUM_EXITS];
+State g_state;
 
 unsigned char g_map[MAP_WIDTH][MAP_HEIGHT];
+
+void set_state(State s) {
+    g_state = s;
+    // Perform any state-specific actions required
+    switch(g_state) {
+        case MAIN_SCREEN:
+            break;
+        case PALETTE_EDIT:
+            break;
+    }
+}
 
 void clear_map() {
     int i, j;
@@ -79,6 +92,16 @@ void initialize_app_defaults(void) {
     g_app_config.cursor_y = 2;    
 }
 
+void initialize_palette_menu_defaults(void) {
+    g_palette_menu_config.name_idx = 0;
+    strncpy(g_palette_menu_config.name, "        ", 8);
+    g_palette_menu_config.active_item = PI_NAME;
+    g_palette_menu_config.background = 0;
+    g_palette_menu_config.foreground = 15;
+    g_palette_menu_config.character = 65;
+    g_palette_menu_config.solid = 1;
+}
+
 void set_palette_entry(int idx, PaletteEntry p_new) {
     g_map_palette[idx].id = idx;
     g_map_palette[idx].bg = p_new.bg;
@@ -92,9 +115,12 @@ int main(void) {
 
     PaletteEntry p;
 
+    set_state(MAIN_SCREEN);
+
     initialize_palette();
     initialize_exits();
     initialize_app_defaults();
+    initialize_palette_menu_defaults();
 
     set_text_mode(MODE_80X25);
     set_bg_intensity(1);
@@ -107,14 +133,19 @@ int main(void) {
     clear_map();
     initialize_attributes();
     set_all_render_components();
+    set_all_palette_edit_components();
 
     g_map_palette[1].glyph = 177;
     g_map_palette[1].fg = 11;
     g_map_palette[1].bg = 1;
 
+    render();
+    render_palette_edit_screen();
+
     while(!g_app_config.quit) {
         process_input();
-        render();
+    //    render();
+    //    render_palette_edit_screen();
     }
     clear_screen();
 

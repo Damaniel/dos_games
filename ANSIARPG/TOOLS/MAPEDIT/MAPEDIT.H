@@ -43,6 +43,14 @@
 
 #define NUM_EXITS                5
 
+#define PALETTE_EDIT_X          20
+#define PALETTE_EDIT_Y           6
+
+#define PALETTE_EDIT_WIDTH      24
+#define PALETTE_EDIT_HEIGHT     14
+
+#define PALETTE_ITEM_NAME_LENGTH    8
+
 typedef struct {
     unsigned char cursor_x;          // position of the cursor in the map area
     unsigned char cursor_y;          
@@ -59,6 +67,36 @@ typedef struct {
     char background_attr;
     char menu_attr;
 } UIConfig;
+
+typedef enum {
+    PI_NAME,
+    PI_FOREGROUND,
+    PI_BACKGROUND,
+    PI_CHARACTER,
+    PI_SOLID,
+    PI_DAMAGE,
+    PI_OK,
+    PI_CANCEL
+} PaletteMenuItem;
+
+typedef enum {
+    DT_NONE,
+    DT_LOW,
+    DT_MEDIUM,
+    DT_HIGH,
+    DT_OHKO
+} DamageType;
+
+typedef struct {
+    PaletteMenuItem active_item;
+    unsigned char name_idx;
+    char name[9];
+    unsigned char foreground;
+    unsigned char background;
+    unsigned char character;
+    unsigned char solid;
+    DamageType damage_type;
+} PaletteMenuConfig;
 
 typedef struct {
     unsigned char id;
@@ -77,14 +115,25 @@ typedef struct {
     unsigned char y_pos;
 } Exit;
 
+typedef enum {
+    MAIN_SCREEN,
+    EXIT_EDIT,
+    PALETTE_EDIT
+} State;
+
+extern State g_state;
+
 extern UIConfig g_ui_config;
 extern AppConfig g_app_config;
+extern PaletteMenuConfig g_palette_menu_config;
 
 extern PaletteEntry g_map_palette[];
 extern Exit g_exit_list[];
 extern unsigned char g_map[][MAP_HEIGHT];
 
 void initialize_attributes(void);
+void initialize_app_defaults(void);
+void initialize_palette_menu_defaults(void);
 void render(void);
 void set_map_at(int x, int y, unsigned char palette_entry);
 char get_map_at(int x, int y);

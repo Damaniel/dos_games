@@ -12,5 +12,11 @@
 #define KEY_SPACE               0x39
 
 void process_input(void);
-
+void process_main_screen_input(unsigned char ascii_code, 
+                               unsigned char scan_code, 
+                               unsigned char shift_status);
+void process_palette_edit_input(unsigned char ascii_code, 
+                                unsigned char scan_code,
+                                unsigned char shift_status);
+                                                               
 #endif

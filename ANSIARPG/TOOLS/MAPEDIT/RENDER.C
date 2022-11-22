@@ -1,8 +1,9 @@
 #include "mapedit.h"
 
 RenderComponents g_render_components;
+RenderPaletteEditComponents g_render_palette_edit_components;
 
-void render() {
+void render_main_screen(void) {
     int i, j, map_x, map_y, col, cur_attr;
     char buf[16];
     char rendered = 0;
@@ -155,6 +156,99 @@ void render() {
         }        
         char_at(g_app_config.cursor_x, g_app_config.cursor_y, 219, cur_attr);
         g_render_components.render_cursor = 0;        
+    }    
+}
+
+void render_palette_edit_screen(void) {
+    char buf[32];
+    int i, max;
+
+    if(g_render_palette_edit_components.render_main) {
+        // Render background
+        fill_box_at(MAP_AREA_X, 
+                    MAP_AREA_Y, 
+                    MAP_AREA_X + MAP_AREA_WIDTH - 1,
+                    MAP_AREA_Y + MAP_AREA_HEIGHT - 1,
+                    177,
+                    make_attr(9, 1));
+
+        // Render menu box
+        box_at(PALETTE_EDIT_X, PALETTE_EDIT_Y,
+               PALETTE_EDIT_X + PALETTE_EDIT_WIDTH - 1,
+               PALETTE_EDIT_Y + PALETTE_EDIT_HEIGHT -1,
+               BORDER_SINGLE, g_ui_config.background_attr);
+        fill_box_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 1,
+                PALETTE_EDIT_X + PALETTE_EDIT_WIDTH - 2,
+                PALETTE_EDIT_Y + PALETTE_EDIT_HEIGHT -2,
+                ' ', g_ui_config.background_attr);
+        hline_at(PALETTE_EDIT_X, PALETTE_EDIT_Y + 2, PALETTE_EDIT_WIDTH, 196, 
+                 g_ui_config.background_attr);
+        hline_at(PALETTE_EDIT_X, PALETTE_EDIT_Y + 9, PALETTE_EDIT_WIDTH, 196,
+                 g_ui_config.background_attr); 
+        hline_at(PALETTE_EDIT_X, PALETTE_EDIT_Y + 11, PALETTE_EDIT_WIDTH, 196, 
+                 g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X, PALETTE_EDIT_Y + 2, 195, 
+                g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + PALETTE_EDIT_WIDTH - 1, PALETTE_EDIT_Y + 2, 180, 
+                g_ui_config.background_attr);    
+        char_at(PALETTE_EDIT_X, PALETTE_EDIT_Y + 9, 195, 
+                g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + PALETTE_EDIT_WIDTH - 1, PALETTE_EDIT_Y + 9, 180, 
+                g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X, PALETTE_EDIT_Y + 11, 195, 
+                g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + PALETTE_EDIT_WIDTH - 1, PALETTE_EDIT_Y + 11, 180, 
+                g_ui_config.background_attr);               
+            
+        // render text items
+        if (g_app_config.palette_entry < 10) {
+            sprintf(buf, " -- Editing tile %d --", g_app_config.palette_entry);
+        } else {
+            sprintf(buf, " -- Editing tile %d -", g_app_config.palette_entry);        
+        }
+        string_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 1, buf, g_ui_config.background_attr);
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 3, "Name:", g_ui_config.background_attr);
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 4, "Foreground:", g_ui_config.background_attr);
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 5, "Background:", g_ui_config.background_attr);
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 6, "Solid?", g_ui_config.background_attr);    
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 7, "Solid?", g_ui_config.background_attr);
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 8, "Damage:", g_ui_config.background_attr);
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 10, "Preview:", g_ui_config.background_attr);
+        string_at(PALETTE_EDIT_X + 2, PALETTE_EDIT_Y + 12, "[ OK ]    [ Cancel ]", g_ui_config.background_attr);    
+    }
+
+    // render values
+    if (g_render_palette_edit_components.render_name) {
+        // Set the default to all underscores
+        strncpy(buf, "________", 8);
+        // replace underscores as needed with letters from the stored name data
+        if (g_palette_menu_config.name_idx >= PALETTE_ITEM_NAME_LENGTH) {
+            max = PALETTE_ITEM_NAME_LENGTH;
+        } else {
+            max = g_palette_menu_config.name_idx;
+        }
+        for(i = 0; i < max; i++) {
+            buf[i] = g_palette_menu_config.name[i];
+        }
+        // Mark the end of the string
+        buf[PALETTE_ITEM_NAME_LENGTH] = '\0';
+        string_at(PALETTE_EDIT_X + 14, PALETTE_EDIT_Y + 3, buf, g_ui_config.background_attr);
+    }
+
+    // render current highlighted item
+}
+
+
+void render() {
+    switch(g_state) {
+        case MAIN_SCREEN:
+            render_main_screen();
+            break;
+        case PALETTE_EDIT:
+            render_palette_edit_screen();
+            break;
+        default:
+            break;
     }
 }
 
@@ -184,4 +278,28 @@ void clear_render_components(void) {
     g_render_components.render_map_area = 0;
     g_render_components.render_cursor_position = 0;
     g_render_components.render_cursor = 0;
+}
+
+void set_all_palette_edit_components(void) {
+    g_render_palette_edit_components.render_main = 1;
+    g_render_palette_edit_components.render_background = 1;
+    g_render_palette_edit_components.render_name = 1;
+    g_render_palette_edit_components.render_foreground = 1;
+    g_render_palette_edit_components.render_background = 1;
+    g_render_palette_edit_components.render_character = 1;
+    g_render_palette_edit_components.render_solid = 1;
+    g_render_palette_edit_components.render_damage = 1;
+    g_render_palette_edit_components.render_active_item = 1;
+}
+
+void clear_all_palette_edit_components(void) {
+    g_render_palette_edit_components.render_main = 0;
+    g_render_palette_edit_components.render_background = 0;
+    g_render_palette_edit_components.render_name = 0;
+    g_render_palette_edit_components.render_foreground = 0;
+    g_render_palette_edit_components.render_background = 0;
+    g_render_palette_edit_components.render_character = 0;
+    g_render_palette_edit_components.render_solid = 0;
+    g_render_palette_edit_components.render_damage = 0;
+    g_render_palette_edit_components.render_active_item = 0;
 }
