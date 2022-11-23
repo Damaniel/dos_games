@@ -59,4 +59,6 @@ extern Exit g_exit_list[];
 // The map itself
 extern unsigned char g_map[][MAP_HEIGHT];
 
+void set_state(State s);
+
 #endif

@@ -27,17 +27,21 @@ PaletteMenuConfig g_palette_menu_config;
 PaletteEntry g_map_palette[NUM_PALETTE_ENTRIES];
 Exit g_exit_list[NUM_EXITS];
 State g_state;
+State g_prev_state;
 
 unsigned char g_map[MAP_WIDTH][MAP_HEIGHT];
 
 void set_state(State s) {
+    g_prev_state = g_state;
     g_state = s;
     // Perform any state-specific actions required
     switch(g_state) {
         case MAIN_SCREEN:
+            set_all_render_components();        
             break;
         case PALETTE_EDIT:
-            copy_palette_to_edit_menu(g_app_config.palette_entry);
+            set_all_palette_edit_components();        
+            copy_palette_to_edit_menu(g_app_config.palette_entry);            
             break;
     }
 }
@@ -70,15 +74,12 @@ int main(void) {
     g_map_palette[1].fg = 11;
     g_map_palette[1].bg = 1;
     set_palette_flags(1, FLAG_PASSABLE, FLAG_DAMAGE_HIGH);
-
     
-    set_state(PALETTE_EDIT);
-    render_main_screen();
+    set_state(MAIN_SCREEN);
 
     while(!g_app_config.quit) {
         process_input();
-    //    render();
-        render_palette_edit_screen();
+        render();
     }
     clear_screen();
 

@@ -28,6 +28,9 @@ void process_main_screen_input(unsigned char ascii_code,
         case KEY_ESC:
             g_app_config.quit = 1;
             break;
+        case KEY_BACKSLASH:
+            set_state(PALETTE_EDIT);
+            break;
         case KEY_RIGHT:
             // move the cursor right
             g_app_config.old_cursor_x = g_app_config.cursor_x;
@@ -148,7 +151,7 @@ void process_palette_edit_input(unsigned char ascii_code,
     switch (scan_code) {
         // TEMP: ESC is just for testing!
         case KEY_ESC:
-            g_app_config.quit = 1;
+            set_state(MAIN_SCREEN);
             break;        
         case KEY_DOWN:
             switch (g_palette_menu_config.active_item) {
@@ -235,6 +238,34 @@ void process_palette_edit_input(unsigned char ascii_code,
                     g_render_palette_edit_components.render_character = 1;
                     g_render_palette_edit_components.render_preview = 1;
                     break;
+                case PI_SOLID:
+                    if (g_palette_menu_config.solid == FLAG_SOLID) {
+                        g_palette_menu_config.solid = FLAG_PASSABLE;
+                    } else {
+                        g_palette_menu_config.solid = FLAG_SOLID; 
+                    }
+                    g_render_palette_edit_components.render_solid = 1;
+                    break;
+                case PI_DAMAGE:
+                    switch (g_palette_menu_config.damage_type) {
+                        case FLAG_DAMAGE_NONE:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_LOW;
+                            break;
+                        case FLAG_DAMAGE_LOW:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_MEDIUM;
+                            break;
+                        case FLAG_DAMAGE_MEDIUM:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_HIGH;
+                            break;
+                        case FLAG_DAMAGE_HIGH:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_OHKO;                                                                            
+                            break;
+                        case FLAG_DAMAGE_OHKO:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_NONE;
+                            break;                        
+                    }
+                    g_render_palette_edit_components.render_damage = 1;                    
+                    break;
             }   
             break;
         case KEY_LEFT:
@@ -266,8 +297,51 @@ void process_palette_edit_input(unsigned char ascii_code,
                     g_render_palette_edit_components.render_character = 1;
                     g_render_palette_edit_components.render_preview = 1;
                     break;
+                case PI_SOLID:
+                    if (g_palette_menu_config.solid == FLAG_SOLID) {
+                        g_palette_menu_config.solid = FLAG_PASSABLE;
+                    } else {
+                        g_palette_menu_config.solid = FLAG_SOLID; 
+                    }
+                    g_render_palette_edit_components.render_solid = 1;
+                    break;
+                case PI_DAMAGE:
+                    switch (g_palette_menu_config.damage_type) {
+                        case FLAG_DAMAGE_NONE:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_OHKO;
+                            break;
+                        case FLAG_DAMAGE_LOW:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_NONE;
+                            break;
+                        case FLAG_DAMAGE_MEDIUM:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_LOW;
+                            break;
+                        case FLAG_DAMAGE_HIGH:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_MEDIUM;                                                                            
+                            break;
+                        case FLAG_DAMAGE_OHKO:
+                            g_palette_menu_config.damage_type = FLAG_DAMAGE_HIGH;
+                            break;                        
+                    }
+                    g_render_palette_edit_components.render_damage = 1;
+                    break;                            
             }   
-            break;            
+            break;    
+        case KEY_ENTER:
+        case KEY_SPACE:
+            // Both keys do the same when OK or Cancel are selected
+            switch (g_palette_menu_config.active_item) {
+                case PI_OK:
+                    // Save changes to palette then return to main screen.
+                    copy_edit_menu_to_palette(g_app_config.palette_entry);
+                    set_state(MAIN_SCREEN);
+                    break;
+                case PI_CANCEL:
+                    // Same as ESC.  Exit without saving changes. 
+                    set_state(MAIN_SCREEN);
+                    break;
+            }
+            break;        
     }
 }
 

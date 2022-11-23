@@ -40,5 +40,6 @@ char get_map_at(int x, int y);
 
 void set_palette_entry(int idx, PaletteEntry p_new);
 void copy_palette_to_edit_menu(int idx);
+void copy_edit_menu_to_palette(int idx);
 
 #endif

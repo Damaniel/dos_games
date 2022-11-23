@@ -111,6 +111,14 @@ void copy_palette_to_edit_menu(int idx) {
     g_palette_menu_config.damage_type = get_palette_damage_value(idx);
 }
 
+void copy_edit_menu_to_palette(int idx) {
+    g_map_palette[idx].fg = g_palette_menu_config.foreground;
+    g_map_palette[idx].bg = g_palette_menu_config.background;
+    strncpy(g_map_palette[idx].name, g_palette_menu_config.name, 8);
+    g_map_palette[idx].glyph = g_palette_menu_config.character;
+    set_palette_flags(idx, g_palette_menu_config.solid, g_palette_menu_config.damage_type);
+}
+
 void set_palette_entry(int idx, PaletteEntry p_new) {
     g_map_palette[idx].id = idx;
     g_map_palette[idx].bg = p_new.bg;

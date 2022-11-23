@@ -30,6 +30,8 @@
 #define KEY_LBRACKET            0x1A
 #define KEY_RBRACKET            0x1B
 #define KEY_SPACE               0x39
+#define KEY_BACKSLASH           0x2B
+#define KEY_ENTER               0x1C
 
 void process_input(void);
 void process_main_screen_input(unsigned char ascii_code, 

@@ -208,7 +208,6 @@ void render_main_screen(void) {
 void render_palette_edit_screen(void) {
     char buf[32];
     int i, max, x_off;
-    char damage;
 
     if(g_render_palette_edit_components.render_main) {
         // Render background
@@ -328,32 +327,32 @@ void render_palette_edit_screen(void) {
     }
 
     if (g_render_palette_edit_components.render_solid) {
-        if (g_map_palette[g_app_config.palette_entry].flags1 & FLAG_SOLID) {
+        if (g_palette_menu_config.solid == FLAG_SOLID) {
             string_at(PALETTE_EDIT_X + 19, PALETTE_EDIT_Y + 7, "[X]", g_ui_config.background_attr);
         } else {
             string_at(PALETTE_EDIT_X + 19, PALETTE_EDIT_Y + 7, "[ ]", g_ui_config.background_attr);
         }
-
         g_render_palette_edit_components.render_solid = 0;
     }
 
     if (g_render_palette_edit_components.render_damage) {
-        damage = get_palette_damage_value(g_app_config.palette_entry);
-        if (damage == FLAG_DAMAGE_NONE) {
-              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  None", g_ui_config.background_attr);
-        }       
-        if (damage == FLAG_DAMAGE_LOW) {
-              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "   Low", g_ui_config.background_attr);
-        }               
-        if (damage ==  FLAG_DAMAGE_MEDIUM) {
-              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "Medium", g_ui_config.background_attr);
-        }        
-        if (damage == FLAG_DAMAGE_HIGH) {
-              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  High", g_ui_config.background_attr);
-        }                      
-        if (damage == FLAG_DAMAGE_OHKO) {
-              string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  OHKO", g_ui_config.background_attr);
-        }             
+        switch (g_palette_menu_config.damage_type) {
+            case FLAG_DAMAGE_NONE:
+                string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  None", g_ui_config.background_attr);
+                break;
+            case FLAG_DAMAGE_LOW:
+                string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "   Low", g_ui_config.background_attr);
+                break;
+            case FLAG_DAMAGE_MEDIUM:
+                string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "Medium", g_ui_config.background_attr);
+                break;
+            case FLAG_DAMAGE_HIGH:
+                string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  High", g_ui_config.background_attr);
+                break;
+            case FLAG_DAMAGE_OHKO:
+                string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  OHKO", g_ui_config.background_attr);
+                break;
+        }  
         g_render_palette_edit_components.render_damage = 0;  
     }
 
