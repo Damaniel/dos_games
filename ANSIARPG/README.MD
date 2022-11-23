@@ -1,3 +1,19 @@
+# ANSIARPG (working title)
+
+## About
+This will eventually be a Diablo-like game, but using text mode.  The goal isn't
+to be like ZZT (which isn't really the same thing), but to be a real-time game
+with loot, attacks and skills, leveling up, and all the ARPG things.  
+
+There's also a map editor to create the levels (as they aren't intended to be
+randomly generated - at least not yet).  See the relevant section below.
+
+## Building
+These tools require Watcom C/C++.  I'm using version 11.0, but any OpenWatcom
+version should work fine too.  There are no other external dependencies.
+
+Run 'build.bat' to build the program and tools.
+
 ## Tools
 
 ### Map Editor
@@ -16,12 +32,12 @@ per tile), and each entry in the map array represents the index of one of the
 valid tiles.  
 
 ### Map linkage
-Each map contains a list of linkages - a six byte value that represents the
-(x,y) position on the current map, the index of the target map and 
+Each map contains a list of linkages - an eight byte value that represents the
+square defined by (x1,y1)-(x2,y2) on the current map, the index of the target map and 
 an (x,y) position within the target map.  This helps to ensure that when a map
 is left, the player will move to the correct location on the new map.  The
 list of linkages is fixed at a size of 5, which means that no map can have
-more than 5 entrances/exits
+more than 5 entrances/exits.
 
 ### Map file format
 #### Metadata:

@@ -179,6 +179,95 @@ void process_palette_edit_input(unsigned char ascii_code,
             }
             g_render_palette_edit_components.render_active_item = 1;
             break;
+        case KEY_UP:
+            switch (g_palette_menu_config.active_item) {
+                case PI_NAME:
+                    g_palette_menu_config.active_item = PI_CANCEL;
+                    break;
+                case PI_FOREGROUND:
+                    g_palette_menu_config.active_item = PI_NAME;
+                    break;
+                case PI_BACKGROUND:
+                    g_palette_menu_config.active_item = PI_FOREGROUND;
+                    break;
+                case PI_CHARACTER:
+                    g_palette_menu_config.active_item = PI_BACKGROUND;
+                    break;
+                case PI_SOLID:
+                    g_palette_menu_config.active_item = PI_CHARACTER;
+                    break;
+                case PI_DAMAGE:
+                    g_palette_menu_config.active_item = PI_SOLID;
+                    break;
+                case PI_OK:
+                    g_palette_menu_config.active_item = PI_DAMAGE;
+                    break;
+                case PI_CANCEL:
+                    g_palette_menu_config.active_item = PI_OK;
+                    break;
+            }
+            g_render_palette_edit_components.render_active_item = 1;
+            break;        
+        case KEY_RIGHT:
+            switch (g_palette_menu_config.active_item) {
+                case PI_FOREGROUND:
+                    ++g_palette_menu_config.foreground;
+                    if (g_palette_menu_config.foreground > 15) {
+                        g_palette_menu_config.foreground = 0;
+                    }
+                    g_render_palette_edit_components.render_foreground = 1;
+                    g_render_palette_edit_components.render_preview = 1;
+                    break;
+                case PI_BACKGROUND:
+                    ++g_palette_menu_config.background;
+                    if (g_palette_menu_config.background > 15) {
+                        g_palette_menu_config.background = 0;
+                    }
+                    g_render_palette_edit_components.render_background = 1;
+                    g_render_palette_edit_components.render_preview = 1;
+                    break;                    
+                case PI_CHARACTER:
+                    if (g_palette_menu_config.character == 255) {
+                        g_palette_menu_config.character = 0;
+                    } else {
+                        ++g_palette_menu_config.character;
+                    }
+                    g_render_palette_edit_components.render_character = 1;
+                    g_render_palette_edit_components.render_preview = 1;
+                    break;
+            }   
+            break;
+        case KEY_LEFT:
+            switch (g_palette_menu_config.active_item) {
+                case PI_FOREGROUND:
+                    if (g_palette_menu_config.foreground == 0) {
+                        g_palette_menu_config.foreground = 15;
+                    } else {
+                        --g_palette_menu_config.foreground;
+                    }
+                    g_render_palette_edit_components.render_foreground = 1;
+                    g_render_palette_edit_components.render_preview = 1;
+                    break;         
+                case PI_BACKGROUND:
+                    if (g_palette_menu_config.background == 0) {
+                        g_palette_menu_config.background = 15;
+                    } else {
+                        --g_palette_menu_config.background;
+                    }
+                    g_render_palette_edit_components.render_background = 1;
+                    g_render_palette_edit_components.render_preview = 1;
+                    break;                           
+                case PI_CHARACTER:
+                    if (g_palette_menu_config.character == 0) {
+                        g_palette_menu_config.character = 255;
+                    } else {
+                        --g_palette_menu_config.character;
+                    }                
+                    g_render_palette_edit_components.render_character = 1;
+                    g_render_palette_edit_components.render_preview = 1;
+                    break;
+            }   
+            break;            
     }
 }
 

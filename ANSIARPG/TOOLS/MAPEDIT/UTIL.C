@@ -35,8 +35,8 @@ void set_exit(int index, int room_id, int x_pos, int y_pos) {
     }
     g_exit_list[index].is_set = 1;
     g_exit_list[index].target_room = room_id;
-    g_exit_list[index].x_pos = x_pos;
-    g_exit_list[index].y_pos = y_pos;
+    g_exit_list[index].target_x_pos = x_pos;
+    g_exit_list[index].target_y_pos = y_pos;
 }
 
 void clear_exit(int index) {
@@ -45,8 +45,8 @@ void clear_exit(int index) {
     }
     g_exit_list[index].is_set = 0;
     g_exit_list[index].target_room = 0;
-    g_exit_list[index].x_pos = 0;
-    g_exit_list[index].y_pos = 0;
+    g_exit_list[index].target_x_pos = 0;
+    g_exit_list[index].target_y_pos = 0;
 }
 
 void initialize_exits(void) {
@@ -100,6 +100,15 @@ void initialize_palette_menu_defaults(void) {
     g_palette_menu_config.foreground = 15;
     g_palette_menu_config.character = 65;
     g_palette_menu_config.solid = 1;
+}
+
+void copy_palette_to_edit_menu(int idx) {
+    g_palette_menu_config.foreground = g_map_palette[idx].fg;
+    g_palette_menu_config.background = g_map_palette[idx].bg;
+    strncpy(g_palette_menu_config.name, g_map_palette[idx].name, 8);
+    g_palette_menu_config.character = g_map_palette[idx].glyph;
+    g_palette_menu_config.solid = get_palette_solid_value(idx);
+    g_palette_menu_config.damage_type = get_palette_damage_value(idx);
 }
 
 void set_palette_entry(int idx, PaletteEntry p_new) {

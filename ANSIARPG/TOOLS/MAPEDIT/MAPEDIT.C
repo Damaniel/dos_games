@@ -37,6 +37,7 @@ void set_state(State s) {
         case MAIN_SCREEN:
             break;
         case PALETTE_EDIT:
+            copy_palette_to_edit_menu(g_app_config.palette_entry);
             break;
     }
 }

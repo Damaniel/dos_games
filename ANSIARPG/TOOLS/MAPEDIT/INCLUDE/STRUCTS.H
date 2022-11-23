@@ -21,6 +21,7 @@
 #ifndef __STRUCTS_H__
 #define __STRUCTS_H__
 
+// AppConfig - a set of global app configuration settings
 typedef struct {
     unsigned char cursor_x;          // position of the cursor in the map area
     unsigned char cursor_y;          
@@ -33,12 +34,14 @@ typedef struct {
     unsigned char quit;              // Quit the program?
 } AppConfig;
 
+// UIConfig - a set of global styles for the UI
 typedef struct {
     char background_attr;
     char menu_attr;
     char highlight_attr;
 } UIConfig;
 
+// PaletteMenuItem - a list of options in the palette edit menu.
 typedef enum {
     PI_NAME,
     PI_FOREGROUND,
@@ -50,6 +53,7 @@ typedef enum {
     PI_CANCEL
 } PaletteMenuItem;
 
+// DamageType - how much damage a particular tile type can cause when walked on.
 typedef enum {
     DT_NONE,
     DT_LOW,
@@ -58,6 +62,8 @@ typedef enum {
     DT_OHKO
 } DamageType;
 
+// PaletteMenuConfig - all components necessary to edit a palette entry.  
+//                     The values will be copied to the palette on confirmation.
 typedef struct {
     PaletteMenuItem active_item;
     unsigned char name_idx;
@@ -69,6 +75,8 @@ typedef struct {
     DamageType damage_type;
 } PaletteMenuConfig;
 
+// PaletteEntry - defines one of the 16 tile types that are valid for a 
+//                particular map.  
 typedef struct {
     unsigned char id;
     char name[9];
@@ -79,13 +87,22 @@ typedef struct {
     unsigned char flags2;
 } PaletteEntry;
 
+// Exit - defines an 'exit'; a region of the current map that leads to the 
+//        specified destination of the target map.
 typedef struct {
     unsigned char is_set;
+    unsigned char source_x1_pos;
+    unsigned char source_y1_pos;
+    unsigned char source_x2_pos;
+    unsigned char source_y2_pos;
     unsigned char target_room;
-    unsigned char x_pos;
-    unsigned char y_pos;
+    unsigned char target_x_pos;
+    unsigned char target_y_pos;
 } Exit;
 
+// State - the game state.  Used to determine how controls work, what needs to 
+//         be drawn, and what activies can be done depending on the actions
+//         the user chooses in the editor.
 typedef enum {
     MAIN_SCREEN,
     EXIT_EDIT,

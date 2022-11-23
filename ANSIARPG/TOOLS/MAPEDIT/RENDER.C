@@ -27,6 +27,7 @@ void render_main_screen(void) {
     int i, j, map_x, map_y, col, cur_attr;
     char buf[16];
     char rendered = 0;
+    char damage, solid;
 
     if (g_render_components.render_background) {
         // main box
@@ -115,8 +116,33 @@ void render_main_screen(void) {
         itoa(g_map_palette[g_app_config.palette_entry].glyph, buf, 10);
         string_at(78 - strlen(buf), 9, buf, g_ui_config.background_attr); 
         // Flags (just hard coded for now)
-        string_at(76, 10, "No", g_ui_config.background_attr);
-        string_at(74, 11, "None", g_ui_config.background_attr);                               
+        damage = get_palette_damage_value(g_app_config.palette_entry);
+        solid = get_palette_solid_value(g_app_config.palette_entry);
+        if (solid == FLAG_SOLID) {
+            string_at(75, 10, "Yes", g_ui_config.background_attr);
+        } else {
+            string_at(75, 10, " No", g_ui_config.background_attr);
+        }
+        switch (damage) {
+            case FLAG_DAMAGE_NONE:
+                string_at(72, 11, "  None", g_ui_config.background_attr);
+                break;
+            case FLAG_DAMAGE_LOW:
+                string_at(72, 11, "   Low", g_ui_config.background_attr);
+                break;
+            case FLAG_DAMAGE_MEDIUM:
+                string_at(72, 11, "Medium", g_ui_config.background_attr);
+                break;
+            case FLAG_DAMAGE_HIGH:
+                string_at(72, 11, "  High", g_ui_config.background_attr);
+                break;
+            case FLAG_DAMAGE_OHKO:
+                string_at(72, 11, "  OHKO", g_ui_config.background_attr);
+                break;
+            default:
+                string_at(72, 11, "   ???", g_ui_config.background_attr);
+                break;                
+        }
         g_render_components.render_palette_text = 0;        
     }
     if (g_render_components.render_exits_text) {
@@ -139,8 +165,8 @@ void render_main_screen(void) {
         if (g_exit_list[g_app_config.exit_entry].is_set) {
             sprintf(buf, "%d (%d,%d)", 
                     g_exit_list[g_app_config.exit_entry].target_room,
-                    g_exit_list[g_app_config.exit_entry].x_pos,
-                    g_exit_list[g_app_config.exit_entry].y_pos);
+                    g_exit_list[g_app_config.exit_entry].target_x_pos,
+                    g_exit_list[g_app_config.exit_entry].target_y_pos);
         } else {
             sprintf(buf, "              ");
         }
@@ -261,38 +287,41 @@ void render_palette_edit_screen(void) {
     }
 
     if (g_render_palette_edit_components.render_foreground) {
-        if (g_map_palette[g_app_config.palette_entry].fg < 10) {
+        if (g_palette_menu_config.foreground < 10) {
             x_off = PALETTE_EDIT_X + 21;
         } else {
             x_off = PALETTE_EDIT_X + 20;
         }
-        itoa(g_map_palette[g_app_config.palette_entry].fg, buf, 10);
+        itoa(g_palette_menu_config.foreground, buf, 10);
+        string_at(PALETTE_EDIT_X + 20, PALETTE_EDIT_Y + 4, "  ", g_ui_config.background_attr);
         string_at(x_off, PALETTE_EDIT_Y + 4, buf, g_ui_config.background_attr);
 
         g_render_palette_edit_components.render_foreground = 0;
     }
 
     if (g_render_palette_edit_components.render_background) {
-        if (g_map_palette[g_app_config.palette_entry].bg < 10) {
+        if (g_palette_menu_config.background < 10) {
             x_off = PALETTE_EDIT_X + 21;
         } else {
             x_off = PALETTE_EDIT_X + 20;
         }
-        itoa(g_map_palette[g_app_config.palette_entry].bg, buf, 10);
+        itoa(g_palette_menu_config.background, buf, 10);
+        string_at(PALETTE_EDIT_X + 20, PALETTE_EDIT_Y + 5, "  ", g_ui_config.background_attr);        
         string_at(x_off, PALETTE_EDIT_Y + 5, buf, g_ui_config.background_attr);
 
         g_render_palette_edit_components.render_background = 0;
     }
 
     if (g_render_palette_edit_components.render_character) {
-        if (g_map_palette[g_app_config.palette_entry].glyph < 10) {
+        if (g_palette_menu_config.character < 10) {
             x_off = PALETTE_EDIT_X + 21;
-        } else if (g_map_palette[g_app_config.palette_entry].glyph < 100){
+        } else if (g_palette_menu_config.character < 100){
             x_off = PALETTE_EDIT_X + 20;
         } else {
             x_off = PALETTE_EDIT_X + 19;
         }
-        itoa(g_map_palette[g_app_config.palette_entry].glyph, buf, 10);
+        itoa(g_palette_menu_config.character, buf, 10);
+        string_at(PALETTE_EDIT_X + 19, PALETTE_EDIT_Y + 6, "   ", g_ui_config.background_attr);
         string_at(x_off, PALETTE_EDIT_Y + 6, buf, g_ui_config.background_attr);
 
         g_render_palette_edit_components.render_character = 0;
@@ -330,9 +359,9 @@ void render_palette_edit_screen(void) {
 
     if (g_render_palette_edit_components.render_preview) {
         char_at(PALETTE_EDIT_X + 20, PALETTE_EDIT_Y + 10,
-                g_map_palette[g_app_config.palette_entry].glyph,
-                make_attr(g_map_palette[g_app_config.palette_entry].fg,
-                          g_map_palette[g_app_config.palette_entry].bg));
+                g_palette_menu_config.character,
+                make_attr(g_palette_menu_config.foreground,
+                          g_palette_menu_config.background));
 
         g_render_palette_edit_components.render_preview = 0;
     }
