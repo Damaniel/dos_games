@@ -23,7 +23,7 @@ CD TOOLS
 REM build all the tools
 ECHO ********************* Building MAPEDIT *************************
 CD MAPEDIT
-WCL INPUT.C RENDER.C MAPEDIT.C /zq /i..\..\INCLUDE %MEMMODEL% /fe=MAPEDIT.EXE ..\..\LIBS\TEXTDRAW.LIB
+WCL INPUT.C UTIL.C RENDER.C MAPEDIT.C /zq /i..\..\INCLUDE /i.\INCLUDE %MEMMODEL% /fe=MAPEDIT.EXE ..\..\LIBS\TEXTDRAW.LIB
 DEL *.OBJ
 MOVE MAPEDIT.EXE ..\.. >NUL
 REM  MAPEDIT is built, go back to tools dir
