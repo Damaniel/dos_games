@@ -145,24 +145,50 @@ void process_main_screen_input(unsigned char ascii_code,
     }
 }
 
-// Managing tile names
-//
-// Tile names are uppercase only, and support the characters A-Z, 0-9, dash
-// and space.  The left and right arrow keys move the cursor left and right,
-// the appropriate letter/number key puts the character in the cursor location
-// and moves the cursor one space to the right, and the backspace key deletes
-// the character under the cursor and moves it one space to the left.  In the
-// case of both backspace and adding a letter, the cursor wraps (so if you 
-// delete the 0th position, the cursor moves to the last position, and if you
-// add a character to the 8th position, the cursor moves to the 0th).
+// Process the OK button being 'pressed'
+void handle_ok_logic(void) {
+    // Save changes to palette then return to main screen.
+    copy_edit_menu_to_palette(g_app_config.palette_entry);
+    set_state(MAIN_SCREEN);
+}
+
+// Process the cancel button being 'pressed'
+void handle_cancel_logic(void) {
+    set_state(MAIN_SCREEN);
+}
+
+// Process the change of solid/passable state.  The left and right arrows,
+// and the space bar, can toggle it.
+void toggle_solid_state(void) {
+    if (g_palette_menu_config.solid == FLAG_SOLID) {
+        g_palette_menu_config.solid = FLAG_PASSABLE;
+    } else {
+        g_palette_menu_config.solid = FLAG_SOLID; 
+    }
+    g_render_palette_edit_components.render_solid = 1;
+}
+
 void process_palette_edit_input(unsigned char ascii_code, 
                                 unsigned char scan_code,
                                 unsigned char shift_status) {
 
+    // Notes about tile name input:
+    //
+    // Tile names support the characters A-Z, a-z, 0-9, space and dash.
+    // The left and right arrow keys move the cursor left and right,
+    // the appropriate letter/number key puts the character in the cursor location
+    // and moves the cursor one space to the right, and the backspace key deletes
+    // the character under the cursor and moves it one space to the left.  In the
+    // case of both backspace and adding a letter, the cursor wraps (so if you 
+    // delete the 0th position, the cursor moves to the last position, and if you
+    // add a character to the 8th position, the cursor moves to the 0th).
+
     // Handle character input seperately from scan code input.  We never use
-    // these keys in this menu as raw scan codes, so we can process them as
-    // their ASCII values.
-    // The box can support uppercase, lowercase, numbers and dash.
+    // (most of) these keys in this menu as raw scan codes, so we can process them as
+    // their ASCII values instead.  Space is the main exception as it's used for
+    // a toggle in the 'Solid?' option and as an alternative to Enter on the
+    // OK/cancel menus.  We check for that later.
+    // The box can support uppercase, lowercase, numbers, space and dash.
     if (ascii_code == 32 || ascii_code == 45 || 
         (ascii_code >= 48 && ascii_code <=57) ||
         (ascii_code >= 65 && ascii_code <=90) ||
@@ -277,12 +303,7 @@ void process_palette_edit_input(unsigned char ascii_code,
                     g_render_palette_edit_components.render_preview = 1;
                     break;
                 case PI_SOLID:
-                    if (g_palette_menu_config.solid == FLAG_SOLID) {
-                        g_palette_menu_config.solid = FLAG_PASSABLE;
-                    } else {
-                        g_palette_menu_config.solid = FLAG_SOLID; 
-                    }
-                    g_render_palette_edit_components.render_solid = 1;
+                    toggle_solid_state();
                     break;
                 case PI_DAMAGE:
                     switch (g_palette_menu_config.damage_type) {
@@ -345,12 +366,7 @@ void process_palette_edit_input(unsigned char ascii_code,
                     g_render_palette_edit_components.render_preview = 1;
                     break;
                 case PI_SOLID:
-                    if (g_palette_menu_config.solid == FLAG_SOLID) {
-                        g_palette_menu_config.solid = FLAG_PASSABLE;
-                    } else {
-                        g_palette_menu_config.solid = FLAG_SOLID; 
-                    }
-                    g_render_palette_edit_components.render_solid = 1;
+                    toggle_solid_state();
                     break;
                 case PI_DAMAGE:
                     switch (g_palette_menu_config.damage_type) {
@@ -377,16 +393,26 @@ void process_palette_edit_input(unsigned char ascii_code,
         case KEY_ENTER:
             switch (g_palette_menu_config.active_item) {
                 case PI_OK:
-                    // Save changes to palette then return to main screen.
-                    copy_edit_menu_to_palette(g_app_config.palette_entry);
-                    set_state(MAIN_SCREEN);
+                    handle_ok_logic();
                     break;
                 case PI_CANCEL:
-                    // Same as ESC.  Exit without saving changes. 
-                    set_state(MAIN_SCREEN);
+                    handle_cancel_logic();
                     break;
             }
-            break;       
+            break;
+        case KEY_SPACE:
+            switch (g_palette_menu_config.active_item) {
+                case PI_OK:
+                    handle_ok_logic();
+                    break;
+                case PI_CANCEL:
+                    handle_cancel_logic();
+                    break;
+                case PI_SOLID:
+                    toggle_solid_state();
+                    break;                
+            }
+            break;        
         case KEY_BACKSPACE:
             switch (g_palette_menu_config.active_item) {
                 case PI_NAME:
