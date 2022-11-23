@@ -40,7 +40,8 @@ void set_state(State s) {
             set_all_render_components();        
             break;
         case PALETTE_EDIT:
-            set_all_palette_edit_components();        
+            set_all_palette_edit_components();
+            initialize_palette_menu_defaults();
             copy_palette_to_edit_menu(g_app_config.palette_entry);            
             break;
     }
@@ -70,11 +71,6 @@ int main(void) {
     set_all_render_components();
     set_all_palette_edit_components();
 
-    g_map_palette[1].glyph = 177;
-    g_map_palette[1].fg = 11;
-    g_map_palette[1].bg = 1;
-    set_palette_flags(1, FLAG_PASSABLE, FLAG_DAMAGE_HIGH);
-    
     set_state(MAIN_SCREEN);
 
     while(!g_app_config.quit) {

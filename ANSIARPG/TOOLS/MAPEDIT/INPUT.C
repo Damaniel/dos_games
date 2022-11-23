@@ -145,9 +145,38 @@ void process_main_screen_input(unsigned char ascii_code,
     }
 }
 
+// Managing tile names
+//
+// Tile names are uppercase only, and support the characters A-Z, 0-9, dash
+// and space.  The left and right arrow keys move the cursor left and right,
+// the appropriate letter/number key puts the character in the cursor location
+// and moves the cursor one space to the right, and the backspace key deletes
+// the character under the cursor and moves it one space to the left.  In the
+// case of both backspace and adding a letter, the cursor wraps (so if you 
+// delete the 0th position, the cursor moves to the last position, and if you
+// add a character to the 8th position, the cursor moves to the 0th).
 void process_palette_edit_input(unsigned char ascii_code, 
                                 unsigned char scan_code,
                                 unsigned char shift_status) {
+
+    // Handle character input seperately from scan code input.  We never use
+    // these keys in this menu as raw scan codes, so we can process them as
+    // their ASCII values.
+    // The box can support uppercase, lowercase, numbers and dash.
+    if (ascii_code == 32 || ascii_code == 45 || 
+        (ascii_code >= 48 && ascii_code <=57) ||
+        (ascii_code >= 65 && ascii_code <=90) ||
+        (ascii_code >= 97 && ascii_code <=122)) {
+            if (g_palette_menu_config.active_item == PI_NAME) {
+                g_palette_menu_config.name[g_palette_menu_config.name_idx] = ascii_code;
+                g_palette_menu_config.name_idx++;
+                if (g_palette_menu_config.name_idx >= 8) {
+                    g_palette_menu_config.name_idx = 0;
+                }
+                g_render_palette_edit_components.render_name = 1;
+                g_render_palette_edit_components.render_active_item = 1;
+            }
+    }
     switch (scan_code) {
         // TEMP: ESC is just for testing!
         case KEY_ESC:
@@ -213,6 +242,15 @@ void process_palette_edit_input(unsigned char ascii_code,
             break;        
         case KEY_RIGHT:
             switch (g_palette_menu_config.active_item) {
+                case PI_NAME:
+                    if (g_palette_menu_config.name_idx < PALETTE_ITEM_NAME_LENGTH - 1) {
+                        g_palette_menu_config.name_idx++;
+                    } else {
+                        g_palette_menu_config.name_idx = 0;
+                    }
+                    g_render_palette_edit_components.render_name = 1;
+                    g_render_palette_edit_components.render_active_item = 1;                    
+                    break;                
                 case PI_FOREGROUND:
                     ++g_palette_menu_config.foreground;
                     if (g_palette_menu_config.foreground > 15) {
@@ -270,6 +308,15 @@ void process_palette_edit_input(unsigned char ascii_code,
             break;
         case KEY_LEFT:
             switch (g_palette_menu_config.active_item) {
+                case PI_NAME:
+                    if (g_palette_menu_config.name_idx > 0) {
+                        g_palette_menu_config.name_idx--;
+                    } else {
+                        g_palette_menu_config.name_idx = PALETTE_ITEM_NAME_LENGTH - 1;
+                    }
+                    g_render_palette_edit_components.render_name = 1;
+                    g_render_palette_edit_components.render_active_item = 1;                    
+                    break;
                 case PI_FOREGROUND:
                     if (g_palette_menu_config.foreground == 0) {
                         g_palette_menu_config.foreground = 15;
@@ -328,8 +375,6 @@ void process_palette_edit_input(unsigned char ascii_code,
             }   
             break;    
         case KEY_ENTER:
-        case KEY_SPACE:
-            // Both keys do the same when OK or Cancel are selected
             switch (g_palette_menu_config.active_item) {
                 case PI_OK:
                     // Save changes to palette then return to main screen.
@@ -341,7 +386,22 @@ void process_palette_edit_input(unsigned char ascii_code,
                     set_state(MAIN_SCREEN);
                     break;
             }
-            break;        
+            break;       
+        case KEY_BACKSPACE:
+            switch (g_palette_menu_config.active_item) {
+                case PI_NAME:
+                    g_palette_menu_config.name[g_palette_menu_config.name_idx] = ' ';
+
+                    if (g_palette_menu_config.name_idx > 0) {
+                        g_palette_menu_config.name_idx--;
+                    } else {
+                        g_palette_menu_config.name_idx = PALETTE_ITEM_NAME_LENGTH - 1;
+                    }
+                    g_render_palette_edit_components.render_name = 1;
+                    g_render_palette_edit_components.render_active_item = 1;                    
+                    break;             
+            }
+            break;          
     }
 }
 

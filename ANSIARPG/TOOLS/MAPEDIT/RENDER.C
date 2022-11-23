@@ -207,7 +207,7 @@ void render_main_screen(void) {
 
 void render_palette_edit_screen(void) {
     char buf[32];
-    int i, max, x_off;
+    int i, x_off;
 
     if(g_render_palette_edit_components.render_main) {
         // Render background
@@ -267,20 +267,14 @@ void render_palette_edit_screen(void) {
 
     // render values
     if (g_render_palette_edit_components.render_name) {
-        // Set the default to all underscores
-        strncpy(buf, "________", 8);
-        // replace underscores as needed with letters from the stored name data
-        if (g_palette_menu_config.name_idx >= PALETTE_ITEM_NAME_LENGTH) {
-            max = PALETTE_ITEM_NAME_LENGTH;
-        } else {
-            max = g_palette_menu_config.name_idx;
-        }
-        for(i = 0; i < max; i++) {
+        char_at(PALETTE_EDIT_X + 12, PALETTE_EDIT_Y + 3, '[', g_ui_config.background_attr);
+        char_at(PALETTE_EDIT_X + 21, PALETTE_EDIT_Y + 3, ']', g_ui_config.background_attr);        
+        for(i = 0; i < PALETTE_ITEM_NAME_LENGTH; i++) {
             buf[i] = g_palette_menu_config.name[i];
         }
         // Mark the end of the string
         buf[PALETTE_ITEM_NAME_LENGTH] = '\0';
-        string_at(PALETTE_EDIT_X + 14, PALETTE_EDIT_Y + 3, buf, g_ui_config.background_attr);
+        string_at(PALETTE_EDIT_X + 13, PALETTE_EDIT_Y + 3, buf, g_ui_config.background_attr);
 
         g_render_palette_edit_components.render_name = 0;
     }
@@ -381,6 +375,8 @@ void render_palette_edit_screen(void) {
         switch (g_palette_menu_config.active_item) {
             case PI_NAME:
                 char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 3, 16, g_ui_config.highlight_attr);
+                char_at(PALETTE_EDIT_X + 13 + g_palette_menu_config.name_idx, PALETTE_EDIT_Y + 3, 
+                        g_palette_menu_config.name[g_palette_menu_config.name_idx], make_attr(15, 7));
                 break;
             case PI_FOREGROUND:
                 char_at(PALETTE_EDIT_X + 1, PALETTE_EDIT_Y + 4, 16, g_ui_config.highlight_attr);            

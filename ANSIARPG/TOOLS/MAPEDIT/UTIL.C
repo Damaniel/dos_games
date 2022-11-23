@@ -94,12 +94,7 @@ void initialize_app_defaults(void) {
 
 void initialize_palette_menu_defaults(void) {
     g_palette_menu_config.name_idx = 0;
-    strncpy(g_palette_menu_config.name, "        ", 8);
     g_palette_menu_config.active_item = PI_NAME;
-    g_palette_menu_config.background = 0;
-    g_palette_menu_config.foreground = 15;
-    g_palette_menu_config.character = 65;
-    g_palette_menu_config.solid = 1;
 }
 
 void copy_palette_to_edit_menu(int idx) {
