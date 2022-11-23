@@ -106,7 +106,8 @@ typedef struct {
 typedef enum {
     MAIN_SCREEN,
     EXIT_EDIT,
-    PALETTE_EDIT
+    PALETTE_EDIT,
+    HELP_SCREEN
 } State;
 
 #endif

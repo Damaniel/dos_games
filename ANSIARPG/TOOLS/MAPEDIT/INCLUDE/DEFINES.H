@@ -21,6 +21,8 @@
 #ifndef __DEFINES_H__
 #define __DEFINES_H__
 
+#define APP_VERSION            "0.1"
+
 #define MAP_WIDTH              150
 #define MAP_HEIGHT             150
 

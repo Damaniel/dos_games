@@ -48,6 +48,9 @@ void render_main_screen(void) {
     }
     if (g_render_components.render_menu) {
         hline_at(0, 0, 80, ' ', g_ui_config.menu_attr);  
+        sprintf(buf, "ANSIARPG Map Editor v%s", APP_VERSION);
+        string_at(2, 0, buf, g_ui_config.menu_attr);
+        string_at(62, 0, "Press H for help", g_ui_config.menu_attr);
         g_render_components.render_menu = 0;           
     }
     if (g_render_components.render_map_area) {

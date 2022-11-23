@@ -77,9 +77,17 @@ void initialize_palette(void) {
         g_map_palette[i].id = i;
         g_map_palette[i].bg = 0;
         g_map_palette[i].fg = 15;
-        strncpy(g_map_palette[i].name, "        ", 8);
-        g_map_palette[i].flags1 = 0x00;
-        g_map_palette[i].flags2 = 0x00;
+        // For the first redefineable tile (tile 1), set it to a resonable default
+        // (solid white, solid, no damage).  All other tiles are blank.
+        if(i == 1) {
+            g_map_palette[i].glyph = 219;
+            set_palette_flags(i, FLAG_SOLID, FLAG_DAMAGE_NONE);
+            strncpy(g_map_palette[i].name, "Wall    ", 8);
+        } else {
+            g_map_palette[i].glyph = 0;
+            set_palette_flags(i, FLAG_PASSABLE, FLAG_DAMAGE_NONE);
+            strncpy(g_map_palette[i].name, "        ", 8);
+        }
     }
 }
 
