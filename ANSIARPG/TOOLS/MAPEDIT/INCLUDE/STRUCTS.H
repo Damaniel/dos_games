@@ -39,6 +39,9 @@ typedef struct {
     char background_attr;
     char menu_attr;
     char highlight_attr;
+    char help_text_attr;
+    char help_background_attr;
+    char help_highlight_attr;
 } UIConfig;
 
 // PaletteMenuItem - a list of options in the palette edit menu.

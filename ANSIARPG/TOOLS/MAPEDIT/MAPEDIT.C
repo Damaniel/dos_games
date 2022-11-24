@@ -31,6 +31,8 @@ State g_prev_state;
 
 unsigned char g_map[MAP_WIDTH][MAP_HEIGHT];
 
+int g_help_page;
+
 void set_state(State s) {
     g_prev_state = g_state;
     g_state = s;
@@ -43,6 +45,10 @@ void set_state(State s) {
             set_all_palette_edit_components();
             initialize_palette_menu_defaults();
             copy_palette_to_edit_menu(g_app_config.palette_entry);            
+            break;
+        case HELP_SCREEN:
+            g_help_page = 0;
+            set_all_help_screen_components();
             break;
     }
 }

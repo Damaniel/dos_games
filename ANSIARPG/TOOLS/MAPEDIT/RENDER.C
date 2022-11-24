@@ -22,6 +22,7 @@
 
 RenderComponents g_render_components;
 RenderPaletteEditComponents g_render_palette_edit_components;
+RenderHelpScreenComponents g_render_help_screen_components;
 
 void render_main_screen(void) {
     int i, j, map_x, map_y, col, cur_attr;
@@ -409,6 +410,47 @@ void render_palette_edit_screen(void) {
     }
 }
 
+void render_help_screen(void) {
+    if (g_render_help_screen_components.render_background) {
+        box_at(MAP_AREA_X , MAP_AREA_Y, MAP_AREA_X + MAP_AREA_WIDTH - 1,
+               MAP_AREA_Y + MAP_AREA_HEIGHT - 1, BORDER_DOUBLE, g_ui_config.help_background_attr);
+        fill_box_at(MAP_AREA_X + 1, MAP_AREA_Y + 1, MAP_AREA_X + MAP_AREA_WIDTH - 2,
+                    MAP_AREA_Y + MAP_AREA_HEIGHT - 2, ' ', g_ui_config.help_background_attr);
+        g_render_help_screen_components.render_background = 0;
+    }
+
+    if (g_render_help_screen_components.render_text) {
+        switch (g_help_page) {
+            case 0:
+                string_at(20, 3, "ANSIARPG Map Editor Help", g_ui_config.help_highlight_attr);
+                string_at(7, 5, "(Press ESC at any time to exit this help screen)", g_ui_config.help_text_attr);
+                string_at(3, 7, "Controls (main window):", g_ui_config.help_highlight_attr);
+                string_at(4, 8, "Arrows - move the cursor in the map area", g_ui_config.help_text_attr);
+                string_at(4, 9, "SHIFT+Arrows - move the map area one screen at a time", g_ui_config.help_text_attr);
+                string_at(4, 10, "[ / ] - Select a tile entry from the palette", g_ui_config.help_text_attr);
+                string_at(4, 11, "Space - Place a tile (or remove it if one is present)", g_ui_config.help_text_attr);
+                string_at(4, 12, "\\ - Enter tile edit mode", g_ui_config.help_text_attr);
+                string_at(4, 13, "PageUp / PageDown - Select an exit from the list", g_ui_config.help_text_attr);
+                string_at(4, 14, "` - Enter exit editing mode", g_ui_config.help_text_attr);
+                string_at(4, 15, "= - Place the top left corner of the exit", g_ui_config.help_text_attr);
+                string_at(4, 16, "H - View help screen", g_ui_config.help_text_attr);
+                string_at(4, 17, "ESC - Exit editor", g_ui_config.help_text_attr);
+                string_at(4, 18, "S - Save the current map", g_ui_config.help_text_attr);
+                break;
+        }
+        g_render_help_screen_components.render_text = 0;
+    }
+
+    if (g_render_help_screen_components.render_page_markers) {
+        if (g_help_page != NUM_HELP_PAGES - 1) {
+            string_at(46, 21, "(N)ext Page ->", g_ui_config.help_highlight_attr);
+        }
+        if (g_help_page != 0) {
+            string_at(3, 21, "<- (P)revious Page", g_ui_config.help_highlight_attr);
+        }
+        g_render_help_screen_components.render_page_markers = 0;
+    }
+}
 
 void render() {
     switch(g_state) {
@@ -417,6 +459,9 @@ void render() {
             break;
         case PALETTE_EDIT:
             render_palette_edit_screen();
+            break;
+        case HELP_SCREEN:
+            render_help_screen();
             break;
         default:
             break;
@@ -474,4 +519,16 @@ void clear_all_palette_edit_components(void) {
     g_render_palette_edit_components.render_solid = 0;
     g_render_palette_edit_components.render_damage = 0;
     g_render_palette_edit_components.render_active_item = 0;
+}
+
+void set_all_help_screen_components(void) {
+    g_render_help_screen_components.render_background = 1;
+    g_render_help_screen_components.render_page_markers = 1;
+    g_render_help_screen_components.render_text = 1;
+}
+
+void clear_all_help_screen_components(void) {
+    g_render_help_screen_components.render_background = 0;
+    g_render_help_screen_components.render_page_markers = 0;
+    g_render_help_screen_components.render_text = 0;
 }

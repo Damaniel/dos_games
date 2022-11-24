@@ -46,8 +46,15 @@ typedef struct {
     char render_active_item;
 } RenderPaletteEditComponents;
 
+typedef struct {
+    char render_background;
+    char render_text;
+    char render_page_markers;
+} RenderHelpScreenComponents;
+
 extern RenderComponents g_render_components;
 extern RenderPaletteEditComponents g_render_palette_edit_components;
+extern RenderHelpScreenComponents g_render_help_screen_components;
 
 void render(void);
 void set_all_render_components(void);
@@ -56,6 +63,8 @@ void set_all_palette_edit_components(void);
 void clear_all_palette_edit_components(void);
 void render_main_screen(void);
 void render_palette_edit_screen(void);
-
+void render_help_screen(void);
+void clear_all_help_screen_components(void);
+void set_all_help_screen_components(void);
 
 #endif

@@ -68,6 +68,9 @@ void initialize_attributes(void) {
     g_ui_config.background_attr = make_attr(COLOR_WHITE, COLOR_BLACK);
     g_ui_config.menu_attr = make_attr(COLOR_WHITE, COLOR_BLUE);
     g_ui_config.highlight_attr = make_attr(COLOR_YELLOW, COLOR_BLACK);
+    g_ui_config.help_background_attr = make_attr(COLOR_WHITE, COLOR_BLUE);
+    g_ui_config.help_text_attr = make_attr(COLOR_WHITE, COLOR_BLUE);
+    g_ui_config.help_highlight_attr = make_attr(COLOR_YELLOW, COLOR_BLUE);
 }
 
 void initialize_palette(void) {
@@ -111,7 +114,7 @@ void copy_palette_to_edit_menu(int idx) {
     strncpy(g_palette_menu_config.name, g_map_palette[idx].name, 8);
     g_palette_menu_config.character = g_map_palette[idx].glyph;
     g_palette_menu_config.solid = get_palette_solid_value(idx);
-    g_palette_menu_config.damage_type = get_palette_damage_value(idx);
+    g_palette_menu_config.damage_type = (DamageType)(get_palette_damage_value(idx));
 }
 
 void copy_edit_menu_to_palette(int idx) {

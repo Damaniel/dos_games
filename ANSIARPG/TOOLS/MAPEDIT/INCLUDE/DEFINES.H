@@ -77,4 +77,6 @@
 #define FLAG_DAMAGE_HIGH              0x03
 #define FLAG_DAMAGE_OHKO              0x04
 
+#define NUM_HELP_PAGES                   4
+
 #endif

@@ -28,6 +28,9 @@ void process_main_screen_input(unsigned char ascii_code,
         case KEY_ESC:
             g_app_config.quit = 1;
             break;
+        case KEY_H:
+            set_state(HELP_SCREEN);
+            break;
         case KEY_BACKSLASH:
             set_state(PALETTE_EDIT);
             break;
@@ -452,6 +455,16 @@ void process_palette_edit_input(unsigned char ascii_code,
     }
 }
 
+void process_help_screen_input(unsigned char ascii_code, 
+                               unsigned char scan_code, 
+                               unsigned char shift_status) {
+    switch (scan_code) {
+        case KEY_ESC:
+            set_state(MAIN_SCREEN);
+            break;        
+    }
+}
+
 void process_input(void) {
     unsigned short key, shift_status;
     unsigned char ascii_code, scan_code;
@@ -469,6 +482,9 @@ void process_input(void) {
                 break;
             case PALETTE_EDIT:
                 process_palette_edit_input(ascii_code, scan_code, shift_status);
+                break;
+            case HELP_SCREEN:
+                process_help_screen_input(ascii_code, scan_code, shift_status);
                 break;
             default:
                 break;
