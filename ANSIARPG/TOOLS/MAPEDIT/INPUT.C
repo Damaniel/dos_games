@@ -462,6 +462,20 @@ void process_help_screen_input(unsigned char ascii_code,
         case KEY_ESC:
             set_state(MAIN_SCREEN);
             break;        
+        case KEY_LEFT:
+        case KEY_P:
+            if (g_help_page > 0) {
+                g_help_page--;
+                set_all_help_screen_components();                
+            }
+            break;
+        case KEY_RIGHT:
+        case KEY_N:
+            if (g_help_page < NUM_HELP_PAGES - 1) {
+                g_help_page++;
+                set_all_help_screen_components();                
+            }
+            break;
     }
 }
 

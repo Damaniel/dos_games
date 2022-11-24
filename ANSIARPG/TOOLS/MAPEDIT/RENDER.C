@@ -425,17 +425,47 @@ void render_help_screen(void) {
                 string_at(20, 3, "ANSIARPG Map Editor Help", g_ui_config.help_highlight_attr);
                 string_at(7, 5, "(Press ESC at any time to exit this help screen)", g_ui_config.help_text_attr);
                 string_at(3, 7, "Controls (main window):", g_ui_config.help_highlight_attr);
-                string_at(4, 8, "Arrows - move the cursor in the map area", g_ui_config.help_text_attr);
-                string_at(4, 9, "SHIFT+Arrows - move the map area one screen at a time", g_ui_config.help_text_attr);
-                string_at(4, 10, "[ / ] - Select a tile entry from the palette", g_ui_config.help_text_attr);
-                string_at(4, 11, "Space - Place a tile (or remove it if one is present)", g_ui_config.help_text_attr);
-                string_at(4, 12, "\\ - Enter tile edit mode", g_ui_config.help_text_attr);
-                string_at(4, 13, "PageUp / PageDown - Select an exit from the list", g_ui_config.help_text_attr);
-                string_at(4, 14, "` - Enter exit editing mode", g_ui_config.help_text_attr);
-                string_at(4, 15, "= - Place the top left corner of the exit", g_ui_config.help_text_attr);
-                string_at(4, 16, "H - View help screen", g_ui_config.help_text_attr);
-                string_at(4, 17, "ESC - Exit editor", g_ui_config.help_text_attr);
-                string_at(4, 18, "S - Save the current map", g_ui_config.help_text_attr);
+                string_at(4, 8, "  Arrows - move the cursor in the map area", g_ui_config.help_text_attr);
+                string_at(4, 9, "  SHIFT+Arrows - move the map area one screen at a time", g_ui_config.help_text_attr);
+                string_at(4, 10, "  [ / ] - Select a tile entry from the palette", g_ui_config.help_text_attr);
+                string_at(4, 11, "  Space - Place a tile (or remove it if one is present)", g_ui_config.help_text_attr);
+                string_at(4, 12, "  \\ - Enter tile edit mode", g_ui_config.help_text_attr);
+                string_at(4, 13, "  PageUp / PageDown - Select an exit from the list", g_ui_config.help_text_attr);
+                string_at(4, 14, "  ` - Enter exit editing mode", g_ui_config.help_text_attr);
+                string_at(4, 15, "  = - Place the top left corner of the exit", g_ui_config.help_text_attr);
+                string_at(4, 16, "  H - View help screen", g_ui_config.help_text_attr);
+                string_at(4, 17, "  ESC - Exit editor", g_ui_config.help_text_attr);
+                string_at(4, 18, "  S - Save the current map", g_ui_config.help_text_attr);
+                break;
+            case 1:
+                string_at(18, 3, "Palettes / Palette Edit Mode:", g_ui_config.help_highlight_attr);
+                string_at(3, 5, "Each square of the map's area is defined by a unit called", g_ui_config.help_text_attr);
+                string_at(3, 6, "a tile.  The collection of tiles (16 in total, 15 user-", g_ui_config.help_text_attr);
+                string_at(3, 7, "defined) is called the palette.  Each tile in the palette", g_ui_config.help_text_attr);
+                string_at(3, 8, "defines the following information:", g_ui_config.help_text_attr);
+                string_at(4, 10, "- A descriptive name (8 characters max)", g_ui_config.help_text_attr);
+                string_at(4, 11, "- A foreground and background color", g_ui_config.help_text_attr);
+                string_at(4, 12, "- A character index", g_ui_config.help_text_attr);
+                string_at(4, 13, "- Is the tile solid?", g_ui_config.help_text_attr);
+                string_at(4, 14, "- Does the tile damage the player?", g_ui_config.help_text_attr);
+                string_at(3, 16, "Press [ or ] to move through the user-defineable palette.", g_ui_config.help_text_attr);
+                string_at(3, 17, "Press the backspace '\\' key to edit the selected tile.", g_ui_config.help_text_attr);
+                break;
+            case 2:
+                string_at(13, 3, "Palettes / Palette Edit Mode (continued)", g_ui_config.help_highlight_attr);            
+                string_at(3, 5, "Controls in the palette edit mode:", g_ui_config.help_highlight_attr);
+                string_at(4, 6, "  Up/down arrows - move between settings", g_ui_config.help_text_attr);
+                string_at(4, 7, "  Left/right arrows - change settings values", g_ui_config.help_text_attr);
+                string_at(4, 8, "  Space/Enter - (on OK or cancel) selects the option", g_ui_config.help_text_attr);
+                string_at(4, 9, "  ESC - Exits without making changes", g_ui_config.help_text_attr);
+                string_at(3, 11, "In the Name field, characters can be typed to specify the", g_ui_config.help_text_attr);
+                string_at(3, 12, "name for the tile.  Letters, numbers, space, and dash are", g_ui_config.help_text_attr);
+                string_at(3, 13, "valid characters.  The arrow keys can be used to move", g_ui_config.help_text_attr);
+                string_at(3, 14, "through the name.  The backspace key deletes the", g_ui_config.help_text_attr);
+                string_at(3, 15, "highlighted character.", g_ui_config.help_text_attr);
+                break;
+            case 3:
+                string_at(3, 3, "This is page 4", g_ui_config.help_highlight_attr);
                 break;
         }
         g_render_help_screen_components.render_text = 0;
