@@ -21,6 +21,30 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
+#define MAP_NAME_LENGTH         20
+
+#define COMPRESSION_NONE         0
+#define COMPRESSION_RLE          1
+#define COMPRESSION_PACKED       2
+#define COMPRESSION_PACKED_RLE   3
+
+typedef struct {
+  char magic[2];
+  unsigned char major_version;
+  unsigned char minor_version;
+  unsigned short map_id;
+  char name[MAP_NAME_LENGTH];
+  unsigned char map_width;
+  unsigned char map_height;
+  unsigned char compression;
+  unsigned char pc_start_x;
+  unsigned char pc_start_y;
+  unsigned char padding[97];
+} MapHeader;
+
+int write_map_file(char *filename, char compression);
+int read_map_file(char *filename);
+
 void clear_map(void);
 void set_exit(int index, int room_id, int x_pos, int y_pos);
 void clear_exit(int index);
