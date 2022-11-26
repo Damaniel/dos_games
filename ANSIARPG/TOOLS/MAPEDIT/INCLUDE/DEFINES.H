@@ -69,13 +69,8 @@
 #define FLAG_SOLID_MASK               0x01
 #define FLAG_PASSABLE                 0x00
 #define FLAG_SOLID                    0x01
-// bits 1-3  floor damage types (000 - none, 001 - low, 010 - medium, 011 - high, 100 - OHKO)
+// Used to extract the damage flag from the flag byte
 #define FLAG_DAMAGE_MASK              0x0E
-#define FLAG_DAMAGE_NONE              0x00
-#define FLAG_DAMAGE_LOW               0x01
-#define FLAG_DAMAGE_MEDIUM            0x02
-#define FLAG_DAMAGE_HIGH              0x03
-#define FLAG_DAMAGE_OHKO              0x04
 
 #define NUM_HELP_PAGES                   4
 #define MAP_NAME_LENGTH         20

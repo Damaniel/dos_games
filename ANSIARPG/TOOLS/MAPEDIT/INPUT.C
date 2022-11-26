@@ -331,20 +331,20 @@ void process_palette_edit_input(unsigned char ascii_code,
                     break;
                 case PI_DAMAGE:
                     switch (g_palette_menu_config.damage_type) {
-                        case FLAG_DAMAGE_NONE:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_LOW;
+                        case DT_NONE:
+                            g_palette_menu_config.damage_type = DT_OHKO;
                             break;
-                        case FLAG_DAMAGE_LOW:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_MEDIUM;
+                        case DT_LOW:
+                            g_palette_menu_config.damage_type = DT_MEDIUM;
                             break;
-                        case FLAG_DAMAGE_MEDIUM:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_HIGH;
+                        case DT_MEDIUM:
+                            g_palette_menu_config.damage_type = DT_HIGH;
                             break;
-                        case FLAG_DAMAGE_HIGH:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_OHKO;                                                                            
+                        case DT_HIGH:
+                            g_palette_menu_config.damage_type = DT_OHKO;
                             break;
-                        case FLAG_DAMAGE_OHKO:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_NONE;
+                        case DT_OHKO:
+                            g_palette_menu_config.damage_type = DT_NONE;
                             break;                        
                     }
                     g_render_palette_edit_components.render_damage = 1;                    
@@ -394,20 +394,20 @@ void process_palette_edit_input(unsigned char ascii_code,
                     break;
                 case PI_DAMAGE:
                     switch (g_palette_menu_config.damage_type) {
-                        case FLAG_DAMAGE_NONE:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_OHKO;
+                        case DT_NONE:
+                            g_palette_menu_config.damage_type = DT_OHKO;
                             break;
-                        case FLAG_DAMAGE_LOW:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_NONE;
+                        case DT_LOW:
+                            g_palette_menu_config.damage_type = DT_NONE;
                             break;
-                        case FLAG_DAMAGE_MEDIUM:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_LOW;
+                        case DT_MEDIUM:
+                            g_palette_menu_config.damage_type = DT_LOW;
                             break;
-                        case FLAG_DAMAGE_HIGH:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_MEDIUM;                                                                            
+                        case DT_HIGH:
+                            g_palette_menu_config.damage_type = DT_MEDIUM;
                             break;
-                        case FLAG_DAMAGE_OHKO:
-                            g_palette_menu_config.damage_type = FLAG_DAMAGE_HIGH;
+                        case DT_OHKO:
+                            g_palette_menu_config.damage_type = DT_HIGH;
                             break;                        
                     }
                     g_render_palette_edit_components.render_damage = 1;

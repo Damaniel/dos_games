@@ -128,19 +128,19 @@ void render_main_screen(void) {
             string_at(75, 10, " No", g_ui_config.background_attr);
         }
         switch (damage) {
-            case FLAG_DAMAGE_NONE:
+            case DT_NONE:
                 string_at(72, 11, "  None", g_ui_config.background_attr);
                 break;
-            case FLAG_DAMAGE_LOW:
+            case DT_LOW:
                 string_at(72, 11, "   Low", g_ui_config.background_attr);
                 break;
-            case FLAG_DAMAGE_MEDIUM:
+            case DT_MEDIUM:
                 string_at(72, 11, "Medium", g_ui_config.background_attr);
                 break;
-            case FLAG_DAMAGE_HIGH:
+            case DT_HIGH:
                 string_at(72, 11, "  High", g_ui_config.background_attr);
                 break;
-            case FLAG_DAMAGE_OHKO:
+            case DT_OHKO:
                 string_at(72, 11, "  OHKO", g_ui_config.background_attr);
                 break;
             default:
@@ -335,19 +335,19 @@ void render_palette_edit_screen(void) {
 
     if (g_render_palette_edit_components.render_damage) {
         switch (g_palette_menu_config.damage_type) {
-            case FLAG_DAMAGE_NONE:
+            case DT_NONE:
                 string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  None", g_ui_config.background_attr);
                 break;
-            case FLAG_DAMAGE_LOW:
+            case DT_LOW:
                 string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "   Low", g_ui_config.background_attr);
                 break;
-            case FLAG_DAMAGE_MEDIUM:
+            case DT_MEDIUM:
                 string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "Medium", g_ui_config.background_attr);
                 break;
-            case FLAG_DAMAGE_HIGH:
+            case DT_HIGH:
                 string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  High", g_ui_config.background_attr);
                 break;
-            case FLAG_DAMAGE_OHKO:
+            case DT_OHKO:
                 string_at(PALETTE_EDIT_X + 16, PALETTE_EDIT_Y + 8, "  OHKO", g_ui_config.background_attr);
                 break;
         }  

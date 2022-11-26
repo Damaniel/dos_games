@@ -84,11 +84,11 @@ void initialize_palette(void) {
         // (solid white, solid, no damage).  All other tiles are blank.
         if(i == 1) {
             g_map_palette[i].glyph = 219;
-            set_palette_flags(i, FLAG_SOLID, FLAG_DAMAGE_NONE);
+            set_palette_flags(i, FLAG_SOLID, DT_NONE);
             strncpy(g_map_palette[i].name, "Wall    ", 8);
         } else {
             g_map_palette[i].glyph = 0;
-            set_palette_flags(i, FLAG_PASSABLE, FLAG_DAMAGE_NONE);
+            set_palette_flags(i, FLAG_PASSABLE, DT_NONE);
             strncpy(g_map_palette[i].name, "        ", 8);
         }
     }
