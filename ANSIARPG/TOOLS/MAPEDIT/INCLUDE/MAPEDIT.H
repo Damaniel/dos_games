@@ -68,5 +68,7 @@ extern MapHeader g_map_header;
 extern char g_map_file_name[MAP_FILE_NAME_LENGTH];
 
 void set_state(State s);
+void initialize(void);
+void cleanup(void);
 
 #endif

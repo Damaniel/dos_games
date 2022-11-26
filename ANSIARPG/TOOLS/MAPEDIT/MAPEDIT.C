@@ -65,6 +65,36 @@ void set_state(State s) {
     }
 }
 
+void initialize(void) {
+    // Clear the exits structure
+    initialize_exits();
+    // Set default app settings
+    initialize_app_defaults();
+    // Set the default values for the palette edit menu
+    initialize_palette_menu_defaults();
+    // Initialize the map header (in case a new file is being created)
+    initialize_map_header();  
+    // Create all of the text attributes used (foreground + background color)
+    initialize_attributes();  
+
+    // Set the graphics mode and settings
+    set_text_mode(MODE_80X25);
+    // Set intensity bit to add extra colors and not blink
+    set_bg_intensity(1);
+    // Clear the screen and hide the cursor (since we never use it)
+    clear_screen();
+    hide_cursor();    
+
+}
+
+void cleanup(void) {
+    // Erase everything on screen
+    clear_screen();
+    // Restore cursor and default background intensity bit behavior
+    show_cursor();
+    set_bg_intensity(0);
+}
+
 int main(int argc, char *argv[]) {
 
     PaletteEntry p;
@@ -77,26 +107,10 @@ int main(int argc, char *argv[]) {
         strncpy(g_map_file_name, argv[1], MAP_FILE_NAME_LENGTH - 1);
     }
 
-    initialize_exits();
-    initialize_app_defaults();
-    initialize_palette_menu_defaults();
-    initialize_map_header();  
-    
-    set_text_mode(MODE_80X25);
-    set_bg_intensity(1);
-
+    initialize();
     set_exit(0, 23, 17, 32);
 
-    clear_screen();
-    hide_cursor();
-
-    initialize_attributes();  
-    set_all_render_components();
-    set_all_palette_edit_components();
-
-    printf("%s\n", g_map_file_name);
     result = read_map_file(g_map_file_name);
-    printf("%d\n", result);
     if(result != 0) {
         if (result == -1) {
             printf("Unable to open file!\n");
@@ -117,9 +131,7 @@ int main(int argc, char *argv[]) {
         process_input();
         render();
     }
-    clear_screen();
 
-    show_cursor();
-    set_bg_intensity(0);
+   cleanup();
    return 0;
 }
