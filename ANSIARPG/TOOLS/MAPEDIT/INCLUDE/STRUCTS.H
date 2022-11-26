@@ -113,4 +113,18 @@ typedef enum {
     HELP_SCREEN
 } State;
 
+typedef struct {
+  char magic[2];
+  unsigned char major_version;
+  unsigned char minor_version;
+  unsigned short map_id;
+  char name[MAP_NAME_LENGTH];
+  unsigned char map_width;
+  unsigned char map_height;
+  unsigned char compression;
+  unsigned char pc_start_x;
+  unsigned char pc_start_y;
+  unsigned char padding[99];
+} MapHeader;
+
 #endif

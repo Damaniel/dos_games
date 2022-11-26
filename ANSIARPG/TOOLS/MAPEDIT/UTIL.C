@@ -145,3 +145,81 @@ char get_palette_damage_value(int index) {
 char get_palette_solid_value(int index) {
     return (g_map_palette[index].flags1 & FLAG_SOLID_MASK);
 }
+
+void initialize_map_header(void) {
+    int i;
+
+    g_map_header.magic[0] = 'D';
+    g_map_header.magic[1] = 'H';
+    g_map_header.major_version = 0;
+    g_map_header.minor_version = 1;
+    for(i=0; i<20; i++) {
+        g_map_header.name[i] = ' ';
+    }
+    g_map_header.map_width = MAP_WIDTH;
+    g_map_header.map_height = MAP_HEIGHT;
+    g_map_header.compression = COMPRESSION_NONE;
+    g_map_header.pc_start_x = 2;
+    g_map_header.pc_start_y = 2;
+}
+
+int write_map_file(char *filename) {
+    // For now, no RLE.
+    FILE *fp;
+    int i, j;
+    char data;
+
+    // Open the file
+    fp = fopen(filename, "wb");
+    if (fp == NULL) {
+        return -1;
+    }
+
+    // // Write the header
+    fwrite(&(g_map_header.magic[0]), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.magic[1]), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.major_version), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.minor_version), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.name[0]), sizeof(char), MAP_NAME_LENGTH, fp);
+    fwrite(&(g_map_header.map_width), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.map_height), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.compression), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.pc_start_x), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.pc_start_y), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.padding[0]), sizeof(char), 99, fp);
+
+    // Write the palette
+    for (i=0; i< NUM_PALETTE_ENTRIES; i++ ) {
+        fwrite(&(g_map_palette[i].id), sizeof(char), 1, fp);
+        fwrite(&(g_map_palette[i].name[0]), sizeof(char), 8, fp);
+        fwrite(&(g_map_palette[i].glyph), sizeof(char), 1, fp);
+        fwrite(&(g_map_palette[i].fg), sizeof(char), 1, fp);
+        fwrite(&(g_map_palette[i].bg), sizeof(char), 1, fp);
+        fwrite(&(g_map_palette[i].flags1), sizeof(char), 1, fp);
+        fwrite(&(g_map_palette[i].flags2), sizeof(char), 1, fp);
+    }
+    // Write the map data
+    switch(g_map_header.compression) {
+        case COMPRESSION_NONE:
+        case COMPRESSION_RLE:
+            for(j=0; j < MAP_HEIGHT; j++) {
+                for(i=0; i < MAP_WIDTH; i+=2) {
+                    fwrite(&(g_map[i][j]), sizeof(char), 1, fp);
+                }
+            }
+            break;
+            break;
+        case COMPRESSION_PACKED:
+        case COMPRESSION_PACKED_RLE:
+            for(j=0; j < MAP_HEIGHT; j++) {
+                for(i=0; i < MAP_WIDTH; i+=2) {
+                    data = (g_map[i][j] << 4) | g_map[i+1][j];
+                    fwrite(&data, sizeof(char), 1, fp);
+                }
+            }
+            break;
+    }
+    // Close the file
+    fclose(fp);
+    return 0;
+}

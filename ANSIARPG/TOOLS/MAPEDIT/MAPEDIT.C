@@ -29,6 +29,8 @@ Exit g_exit_list[NUM_EXITS];
 State g_state;
 State g_prev_state;
 
+MapHeader g_map_header;
+
 unsigned char g_map[MAP_WIDTH][MAP_HEIGHT];
 
 int g_help_page;
@@ -63,6 +65,7 @@ int main(void) {
     initialize_exits();
     initialize_app_defaults();
     initialize_palette_menu_defaults();
+    initialize_map_header();
 
     set_text_mode(MODE_80X25);
     set_bg_intensity(1);
@@ -87,6 +90,6 @@ int main(void) {
 
     show_cursor();
     set_bg_intensity(0);
-
+    write_map_file("test.map");
    return 0;
 }

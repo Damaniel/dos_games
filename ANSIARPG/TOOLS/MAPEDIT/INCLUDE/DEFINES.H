@@ -78,5 +78,11 @@
 #define FLAG_DAMAGE_OHKO              0x04
 
 #define NUM_HELP_PAGES                   4
+#define MAP_NAME_LENGTH         20
+
+#define COMPRESSION_NONE         0
+#define COMPRESSION_RLE          1
+#define COMPRESSION_PACKED       2
+#define COMPRESSION_PACKED_RLE   3
 
 #endif

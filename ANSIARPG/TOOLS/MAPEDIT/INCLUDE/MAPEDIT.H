@@ -21,10 +21,10 @@
 #ifndef __MAPEDIT_H__
 #define __MAPEDIT_H__
 
-// Structures are all defined here
-#include "structs.h"
 // All defines/constants are defined here
 #include "defines.h"
+// Structures are all defined here
+#include "structs.h"
 // Text drawing library
 #include "textdraw.h"
 // Code related to drawing the screen
@@ -61,6 +61,8 @@ extern unsigned char g_map[][MAP_HEIGHT];
 
 // What help page is visible
 extern int g_help_page;
+
+extern MapHeader g_map_header;
 
 void set_state(State s);
 
