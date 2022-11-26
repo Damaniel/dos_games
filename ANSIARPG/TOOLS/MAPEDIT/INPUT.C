@@ -42,7 +42,7 @@ void process_main_screen_input(unsigned char ascii_code,
                 if(g_app_config.map_x > MAX_SCREEN_MAP_X) {
                     g_app_config.map_x = MAX_SCREEN_MAP_X;
                 }
-                g_render_components.render_map_area = 1;                                
+                g_render_components.render_map_area = 1;                            
             } else {
                 // Otherwise, move one space at a time, scrolling as needed
                 g_app_config.old_cursor_x = g_app_config.cursor_x;
@@ -72,7 +72,7 @@ void process_main_screen_input(unsigned char ascii_code,
                 if (g_app_config.map_x < MAP_AREA_WIDTH) {
                     g_app_config.map_x = 0;
                 } else {
-                    g_app_config.map_x = MAX_SCREEN_MAP_X;
+                    g_app_config.map_x -= MAP_AREA_WIDTH;
                 }
                 g_render_components.render_map_area = 1;                                
             } else {
@@ -97,39 +97,58 @@ void process_main_screen_input(unsigned char ascii_code,
             g_render_components.render_cursor_position = 1;
             break;
         case KEY_UP:
-            // move the cursor left
-            g_app_config.old_cursor_x = g_app_config.cursor_x;
-            g_app_config.old_cursor_y = g_app_config.cursor_y;
-            g_app_config.cursor_y = g_app_config.cursor_y - 1;
-            if (g_app_config.cursor_y < MIN_SCREEN_CURSOR_Y) {
-                // if all the way over, don't move the cursor, but move the map...
-                g_app_config.cursor_y = MIN_SCREEN_CURSOR_Y;
-                // ... but only if there's room.                    
-                if(g_app_config.map_y > MIN_SCREEN_MAP_Y) {
-                    g_app_config.map_y = g_app_config.map_y - 1;
-                    g_render_components.render_map_area = 1;
+            // move the cursor up
+            // If SHIFT is held down, move a screen at a time
+            if (shift_status & 0x01 || shift_status & 0x02) {
+                if (g_app_config.map_y < MAP_AREA_HEIGHT) {
+                    g_app_config.map_y = 0;
                 } else {
-                    g_render_components.render_background = 0;
+                    g_app_config.map_y -= MAP_AREA_HEIGHT;
+                }
+                g_render_components.render_map_area = 1;                                
+            } else {            
+                g_app_config.old_cursor_x = g_app_config.cursor_x;
+                g_app_config.old_cursor_y = g_app_config.cursor_y;
+                g_app_config.cursor_y = g_app_config.cursor_y - 1;
+                if (g_app_config.cursor_y < MIN_SCREEN_CURSOR_Y) {
+                    // if all the way over, don't move the cursor, but move the map...
+                    g_app_config.cursor_y = MIN_SCREEN_CURSOR_Y;
+                    // ... but only if there's room.                    
+                    if(g_app_config.map_y > MIN_SCREEN_MAP_Y) {
+                        g_app_config.map_y = g_app_config.map_y - 1;
+                        g_render_components.render_map_area = 1;
+                    } else {
+                        g_render_components.render_background = 0;
+                    }
                 }
             }
             g_render_components.render_cursor = 1;
             g_render_components.render_cursor_position = 1;
             break;     
         case KEY_DOWN:
-            // move the cursor right
-            g_app_config.old_cursor_x = g_app_config.cursor_x;
-            g_app_config.old_cursor_y = g_app_config.cursor_y;
-            g_app_config.cursor_y = g_app_config.cursor_y + 1;
-            if (g_app_config.cursor_y > MAX_SCREEN_CURSOR_Y) {
-                // if all the way over, don't move the cursor, but move the map
-                g_app_config.cursor_y = MAX_SCREEN_CURSOR_Y;
-                g_app_config.map_y = g_app_config.map_y + 1;
-                // If past the end of the map, don't move the map either.
+            // move the cursor down
+            // If SHIFT is held down, move a screen at a time
+            if (shift_status & 0x01 || shift_status & 0x02) {
+                g_app_config.map_y += MAP_AREA_HEIGHT;
                 if(g_app_config.map_y > MAX_SCREEN_MAP_Y) {
                     g_app_config.map_y = MAX_SCREEN_MAP_Y;
-                    g_render_components.render_map_area = 0;
-                } else {
-                    g_render_components.render_map_area = 1;
+                }
+                g_render_components.render_map_area = 1;                            
+            } else {            
+                g_app_config.old_cursor_x = g_app_config.cursor_x;
+                g_app_config.old_cursor_y = g_app_config.cursor_y;
+                g_app_config.cursor_y = g_app_config.cursor_y + 1;
+                if (g_app_config.cursor_y > MAX_SCREEN_CURSOR_Y) {
+                    // if all the way over, don't move the cursor, but move the map
+                    g_app_config.cursor_y = MAX_SCREEN_CURSOR_Y;
+                    g_app_config.map_y = g_app_config.map_y + 1;
+                    // If past the end of the map, don't move the map either.
+                    if(g_app_config.map_y > MAX_SCREEN_MAP_Y) {
+                        g_app_config.map_y = MAX_SCREEN_MAP_Y;
+                        g_render_components.render_map_area = 0;
+                    } else {
+                        g_render_components.render_map_area = 1;
+                    }
                 }
             }
             g_render_components.render_cursor = 1;
