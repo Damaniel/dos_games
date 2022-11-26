@@ -163,6 +163,77 @@ void initialize_map_header(void) {
     g_map_header.pc_start_y = 2;
 }
 
+int read_map_file(char *filename) {
+    FILE *fp;
+    int i, j;
+    char data, data2, magic, magic2;
+
+    // Open the file
+    fp = fopen(filename, "rb");
+    if (fp == NULL) {
+        return -1;
+    }
+
+    // Read the header if a valid file
+    fread(&magic, sizeof(char), 1, fp);
+    fread(&magic2, sizeof(char), 1, fp);
+
+    if(magic != 'D' || magic2 != 'H') {
+        return -1;
+    }
+
+    fread(&(g_map_header.major_version), sizeof(char), 1, fp);
+    fread(&(g_map_header.minor_version), sizeof(char), 1, fp);
+    fread(&(g_map_header.map_id), sizeof(short), 1, fp);
+    fread(&(g_map_header.name[0]), sizeof(char), MAP_NAME_LENGTH, fp);
+    fread(&(g_map_header.map_width), sizeof(char), 1, fp);
+    fread(&(g_map_header.map_height), sizeof(char), 1, fp);
+    fread(&(g_map_header.compression), sizeof(char), 1, fp);
+    fread(&(g_map_header.pc_start_x), sizeof(char), 1, fp);
+    fread(&(g_map_header.pc_start_y), sizeof(char), 1, fp);
+    fread(&(g_map_header.padding), sizeof(char), 97, fp);
+
+    // Read and set the palette data
+    for (i=0; i< NUM_PALETTE_ENTRIES; i++ ) {
+        fread(&(g_map_palette[i].id), sizeof(char), 1, fp);
+        fread(&(g_map_palette[i].name[0]), sizeof(char), 8, fp);
+        g_map_palette[i].name[8] = '\0';
+        fread(&(g_map_palette[i].glyph), sizeof(char), 1, fp);
+        fread(&(g_map_palette[i].fg), sizeof(char), 1, fp);
+        fread(&(g_map_palette[i].bg), sizeof(char), 1, fp);
+        fread(&(g_map_palette[i].flags1), sizeof(char), 1, fp);
+        fread(&(g_map_palette[i].flags2), sizeof(char), 1, fp);
+    }
+
+    // Read and set the map data
+    switch(g_map_header.compression) {
+        case COMPRESSION_NONE:
+        case COMPRESSION_RLE:
+            for(j=0; j < MAP_HEIGHT; j++) {
+                for(i=0; i < MAP_WIDTH; i++) {
+                    fread(&(g_map[i][j]), sizeof(char), 1, fp);
+                }
+            }
+            break;
+        case COMPRESSION_PACKED:
+        case COMPRESSION_PACKED_RLE:
+            for(j=0; j < MAP_HEIGHT; j++) {
+                for(i=0; i < (MAP_WIDTH >> 1); i++) {
+                    fread(&data, sizeof(char), 1, fp);
+                    fread(&data2, sizeof(char), 1, fp);
+                    g_map[i<<1][j] = data;
+                    g_map[(i<<1)+1][j] = data2;
+                }
+            }
+            break;
+    }
+
+    // Close the file
+    fclose(fp);
+
+    return 0;
+}
+
 int write_map_file(char *filename) {
     // For now, no RLE.
     FILE *fp;
@@ -180,13 +251,14 @@ int write_map_file(char *filename) {
     fwrite(&(g_map_header.magic[1]), sizeof(char), 1, fp);
     fwrite(&(g_map_header.major_version), sizeof(char), 1, fp);
     fwrite(&(g_map_header.minor_version), sizeof(char), 1, fp);
+    fwrite(&(g_map_header.map_id), sizeof(short), 1, fp);
     fwrite(&(g_map_header.name[0]), sizeof(char), MAP_NAME_LENGTH, fp);
     fwrite(&(g_map_header.map_width), sizeof(char), 1, fp);
     fwrite(&(g_map_header.map_height), sizeof(char), 1, fp);
     fwrite(&(g_map_header.compression), sizeof(char), 1, fp);
     fwrite(&(g_map_header.pc_start_x), sizeof(char), 1, fp);
     fwrite(&(g_map_header.pc_start_y), sizeof(char), 1, fp);
-    fwrite(&(g_map_header.padding[0]), sizeof(char), 99, fp);
+    fwrite(&(g_map_header.padding[0]), sizeof(char), 97, fp);
 
     // Write the palette
     for (i=0; i< NUM_PALETTE_ENTRIES; i++ ) {
@@ -203,7 +275,7 @@ int write_map_file(char *filename) {
         case COMPRESSION_NONE:
         case COMPRESSION_RLE:
             for(j=0; j < MAP_HEIGHT; j++) {
-                for(i=0; i < MAP_WIDTH; i+=2) {
+                for(i=0; i < MAP_WIDTH; i++) {
                     fwrite(&(g_map[i][j]), sizeof(char), 1, fp);
                 }
             }

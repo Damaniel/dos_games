@@ -58,6 +58,7 @@ void set_state(State s) {
 int main(void) {
 
     PaletteEntry p;
+    int result;
 
     set_state(MAIN_SCREEN);
 
@@ -80,6 +81,14 @@ int main(void) {
     set_all_render_components();
     set_all_palette_edit_components();
 
+    result = read_map_file("test.map");
+    if(result == -1) {
+        printf("Fail\n");
+        show_cursor();
+        set_bg_intensity(0);
+        exit(-1);
+    }
+
     set_state(MAIN_SCREEN);
 
     while(!g_app_config.quit) {
@@ -90,6 +99,6 @@ int main(void) {
 
     show_cursor();
     set_bg_intensity(0);
-    write_map_file("test.map");
+    //write_map_file("test.map");
    return 0;
 }

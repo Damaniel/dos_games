@@ -40,14 +40,40 @@ list of linkages is fixed at a size of 5, which means that no map can have
 more than 5 entrances/exits.
 
 ### Map file format
-#### Metadata:
+#### Metadata
   - Magic number (2 bytes)
   - Version (2 bytes)
   - Map ID (2 bytes)
   - Map name (20 bytes)
   - Map width/height / 2 (2 bytes)
   - Compression type (1 byte)
-  - 99 bytes for future expansion
+  - Default PC position (2 bytes)
+  - 97 bytes for future expansion
+
+##### Notes about metadata
+The magic number identies the file.  It's set to 'DH'.
+
+Version is specified as 2 bytes - 1 for major number, 1 for minor number
+
+Map ID is the unique identifier associated with this map.  The game itself will
+use some kind of mapping system (filename->ID or metafile->ID) to determine 
+which map to load, so this field is mainly informational
+
+Map name is a ASCII representation of the name of the map.  
+
+Map width and height specify the size of the map.  It can support 256x256 
+maps, but in practice maps will be smaller.
+
+Compression type: either unpacked (00), unpacked RLE (01), packed (10) or
+packed RLE (11).  Unpacked compression stores each map tile in 1 byte, while
+packed compression sticks 2 tiles per byte.  RLE will run length encode either
+type of packed/unpacked format.  The map editor will store maps in uncompressed
+format, but it could auto-calculate the most efficient encoding and use that
+instead, code space permitting. 
+
+Default PC position specifies where a player will start if the location wasn't
+specified from the exit of another map.  This is helpful if the map either isn't
+linked from another map, or if this is the starting map of a region.
 
 #### Tile data:
 There are a total of 16 tiles per map (208 bytes total):
