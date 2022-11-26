@@ -80,4 +80,5 @@
 #define COMPRESSION_PACKED       2
 #define COMPRESSION_PACKED_RLE   3
 
+#define MAP_FILE_NAME_LENGTH     256
 #endif

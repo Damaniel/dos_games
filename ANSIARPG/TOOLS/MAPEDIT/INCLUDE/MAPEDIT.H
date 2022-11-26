@@ -39,6 +39,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 // --- extern definitions for program globals ---
 
@@ -63,6 +64,8 @@ extern unsigned char g_map[][MAP_HEIGHT];
 extern int g_help_page;
 
 extern MapHeader g_map_header;
+
+extern char g_map_file_name[MAP_FILE_NAME_LENGTH];
 
 void set_state(State s);
 

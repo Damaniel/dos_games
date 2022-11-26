@@ -174,7 +174,14 @@ int read_map_file(char *filename) {
     // Open the file
     fp = fopen(filename, "rb");
     if (fp == NULL) {
-        return -1;
+        // file doesn't exist.  Initialize the map, palette and header 
+        // data and return a non-zero (but not an 'error')
+        if (errno == ENOENT) {
+            return 1;
+        }
+        else {
+            return -1;
+        }
     }
 
     // Read the header if a valid file
