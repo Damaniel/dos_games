@@ -36,6 +36,8 @@ unsigned char g_map[MAP_WIDTH][MAP_HEIGHT];
 int g_help_page;
 
 void set_state(State s) {
+    int result;
+
     g_prev_state = g_state;
     g_state = s;
     // Perform any state-specific actions required
@@ -51,6 +53,14 @@ void set_state(State s) {
         case HELP_SCREEN:
             g_help_page = 0;
             set_all_help_screen_components();
+            break;
+        case FILE_SAVE:
+            result = write_map_file("test.map");
+            if (result == 0) {
+                g_render_save_file_components.render_saved_text = 1;
+            } else {
+                g_render_save_file_components.render_save_failed_text = 1;
+            }
             break;
     }
 }

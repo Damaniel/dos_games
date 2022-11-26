@@ -71,6 +71,9 @@ void initialize_attributes(void) {
     g_ui_config.help_background_attr = make_attr(COLOR_WHITE, COLOR_BLUE);
     g_ui_config.help_text_attr = make_attr(COLOR_WHITE, COLOR_BLUE);
     g_ui_config.help_highlight_attr = make_attr(COLOR_YELLOW, COLOR_BLUE);
+    g_ui_config.failed_background_attr = make_attr(COLOR_WHITE, COLOR_RED);
+    g_ui_config.failed_text_attr = make_attr(COLOR_WHITE, COLOR_RED);
+    g_ui_config.failed_highlight_attr = make_attr(COLOR_YELLOW, COLOR_RED);
 }
 
 void initialize_palette(void) {

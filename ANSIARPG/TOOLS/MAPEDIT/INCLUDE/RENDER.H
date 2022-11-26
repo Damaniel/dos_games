@@ -52,9 +52,16 @@ typedef struct {
     char render_page_markers;
 } RenderHelpScreenComponents;
 
+typedef struct {
+    char render_saved_text;
+    char render_save_failed_text;
+    char render_save_text_underlay;
+} RenderSaveFileComponents;
+
 extern RenderComponents g_render_components;
 extern RenderPaletteEditComponents g_render_palette_edit_components;
 extern RenderHelpScreenComponents g_render_help_screen_components;
+extern RenderSaveFileComponents g_render_save_file_components;
 
 void render(void);
 void set_all_render_components(void);
@@ -66,5 +73,7 @@ void render_palette_edit_screen(void);
 void render_help_screen(void);
 void clear_all_help_screen_components(void);
 void set_all_help_screen_components(void);
+void clear_all_save_file_components(void);
+void render_file_save_dialog(void);
 
 #endif

@@ -23,6 +23,7 @@
 RenderComponents g_render_components;
 RenderPaletteEditComponents g_render_palette_edit_components;
 RenderHelpScreenComponents g_render_help_screen_components;
+RenderSaveFileComponents g_render_save_file_components;
 
 void render_main_screen(void) {
     int i, j, map_x, map_y, col, cur_attr;
@@ -482,6 +483,21 @@ void render_help_screen(void) {
     }
 }
 
+void render_file_save_dialog(void) {
+    if (g_render_save_file_components.render_saved_text) {
+        box_at(19, 10, 46, 13, BORDER_DOUBLE, g_ui_config.help_background_attr);
+        string_at(20, 11, " Saved file successfully. ", g_ui_config.help_highlight_attr);
+        string_at(20, 12, "     (Press any key)      ", g_ui_config.help_text_attr);
+        g_render_save_file_components.render_saved_text = 0;
+    }
+    if (g_render_save_file_components.render_save_failed_text) {
+        box_at(19, 10, 46, 13, BORDER_DOUBLE, g_ui_config.failed_background_attr);
+        string_at(20, 11, " Error while saving file! ", g_ui_config.failed_highlight_attr);
+        string_at(20, 12, "     (Press any key)      ", g_ui_config.failed_text_attr);
+        g_render_save_file_components.render_save_failed_text = 0;        
+    }
+}
+
 void render() {
     switch(g_state) {
         case MAIN_SCREEN:
@@ -492,6 +508,9 @@ void render() {
             break;
         case HELP_SCREEN:
             render_help_screen();
+            break;
+        case FILE_SAVE:
+            render_file_save_dialog();
             break;
         default:
             break;
@@ -561,4 +580,10 @@ void clear_all_help_screen_components(void) {
     g_render_help_screen_components.render_background = 0;
     g_render_help_screen_components.render_page_markers = 0;
     g_render_help_screen_components.render_text = 0;
+}
+
+void clear_all_save_file_components(void) {
+    g_render_save_file_components.render_saved_text = 0;
+    g_render_save_file_components.render_save_failed_text = 0;
+    g_render_save_file_components.render_save_text_underlay = 0;
 }

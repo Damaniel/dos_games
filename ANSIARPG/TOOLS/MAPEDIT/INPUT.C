@@ -34,6 +34,9 @@ void process_main_screen_input(unsigned char ascii_code,
         case KEY_BACKSLASH:
             set_state(PALETTE_EDIT);
             break;
+        case KEY_S:
+            set_state(FILE_SAVE);
+            break;
         case KEY_RIGHT:
             // move the cursor right
             // If SHIFT is held down, move a screen at a time
@@ -518,6 +521,9 @@ void process_input(void) {
                 break;
             case HELP_SCREEN:
                 process_help_screen_input(ascii_code, scan_code, shift_status);
+                break;
+            case FILE_SAVE:
+                set_state(MAIN_SCREEN);
                 break;
             default:
                 break;

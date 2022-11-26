@@ -42,6 +42,9 @@ typedef struct {
     char help_text_attr;
     char help_background_attr;
     char help_highlight_attr;
+    char failed_background_attr;
+    char failed_highlight_attr;
+    char failed_text_attr;
 } UIConfig;
 
 // PaletteMenuItem - a list of options in the palette edit menu.
@@ -110,7 +113,8 @@ typedef enum {
     MAIN_SCREEN,
     EXIT_EDIT,
     PALETTE_EDIT,
-    HELP_SCREEN
+    HELP_SCREEN,
+    FILE_SAVE
 } State;
 
 typedef struct {
