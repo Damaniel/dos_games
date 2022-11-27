@@ -354,7 +354,7 @@ void process_palette_edit_input(unsigned char ascii_code,
                 case PI_DAMAGE:
                     switch (g_palette_menu_config.damage_type) {
                         case DT_NONE:
-                            g_palette_menu_config.damage_type = DT_OHKO;
+                            g_palette_menu_config.damage_type = DT_LOW;
                             break;
                         case DT_LOW:
                             g_palette_menu_config.damage_type = DT_MEDIUM;
