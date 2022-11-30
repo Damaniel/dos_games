@@ -33,6 +33,7 @@
 #define KEY_BACKSLASH           0x2B
 #define KEY_ENTER               0x1C
 #define KEY_BACKSPACE           0x0E
+#define KEY_EQUALS              0x0D
 #define KEY_A                   0x1E
 #define KEY_B                   0x30
 #define KEY_C                   0x2E
@@ -80,5 +81,13 @@ void process_palette_edit_input(unsigned char ascii_code,
 void process_help_screen_input(unsigned char ascii_code, 
                                unsigned char scan_code, 
                                unsigned char shift_status);
+void process_place_player_input(unsigned char ascii_code, 
+                               unsigned char scan_code, 
+                               unsigned char shift_status);
 
+
+void move_left(unsigned char shift_status);
+void move_right(unsigned char shift_status);
+void move_up(unsigned char shift_status);
+void move_down(unsigned char shift_status);
 #endif

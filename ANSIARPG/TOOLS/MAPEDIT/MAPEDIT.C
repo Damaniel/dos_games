@@ -44,7 +44,12 @@ void set_state(State s) {
     // Perform any state-specific actions required
     switch(g_state) {
         case MAIN_SCREEN:
-            set_all_render_components();        
+            // if we're not toggling the place player option, draw everything.
+            // (Otherwise, we'll just draw the updated cursor based on other
+            // code.)
+            if (g_prev_state != PLACE_PLAYER) {
+                set_all_render_components();
+            }
             break;
         case PALETTE_EDIT:
             set_all_palette_edit_components();
@@ -61,6 +66,10 @@ void set_state(State s) {
             } else {
                 g_render_save_file_components.render_save_failed_text = 1;
             }
+            break;
+        case PLACE_EXIT:
+            break;
+        case PLACE_PLAYER:
             break;
     }
 }

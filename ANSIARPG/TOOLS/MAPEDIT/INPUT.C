@@ -20,6 +20,148 @@
  */
 #include "mapedit.h"
 
+void move_left(unsigned char shift_status) {
+    // move the cursor left
+    // If SHIFT is held down, move a screen at a time
+    if (shift_status & 0x01 || shift_status & 0x02) {
+        if (g_app_config.map_x < MAP_AREA_WIDTH) {
+            g_app_config.map_x = 0;
+        } else {
+            g_app_config.map_x -= MAP_AREA_WIDTH;
+        }
+        g_render_components.render_map_area = 1;                                
+    } else {
+        // otherwise move a square at a time
+        g_app_config.old_cursor_x = g_app_config.cursor_x;
+        g_app_config.old_cursor_y = g_app_config.cursor_y;
+        g_app_config.cursor_x = g_app_config.cursor_x - 1;            
+        if (g_app_config.cursor_x < MIN_SCREEN_CURSOR_X) {
+            // if all the way over, don't move the cursor, but move the map...
+            g_app_config.cursor_x = MIN_SCREEN_CURSOR_X;
+            // ... but only if there's room.     
+            // If the map *has* moved, redraw it.                                   
+            if(g_app_config.map_x > MIN_SCREEN_MAP_X) {
+                g_app_config.map_x = g_app_config.map_x - 1;
+                g_render_components.render_map_area = 1;
+            } else {
+                g_render_components.render_map_area = 0;
+            }
+        }
+    }
+    if (g_state == PLACE_PLAYER) {
+        g_render_components.render_place_player_cursor = 1;
+    } else {
+        g_render_components.render_cursor = 1;
+    }
+    g_render_components.render_cursor_position = 1;
+}
+
+void move_right(unsigned char shift_status) {
+    // move the cursor right
+    // If SHIFT is held down, move a screen at a time
+    if (shift_status & 0x01 || shift_status & 0x02) {
+        g_app_config.map_x += MAP_AREA_WIDTH;
+        if(g_app_config.map_x > MAX_SCREEN_MAP_X) {
+            g_app_config.map_x = MAX_SCREEN_MAP_X;
+        }
+        g_render_components.render_map_area = 1;                            
+    } else {
+        // Otherwise, move one space at a time, scrolling as needed
+        g_app_config.old_cursor_x = g_app_config.cursor_x;
+        g_app_config.old_cursor_y = g_app_config.cursor_y;
+        g_app_config.cursor_x = g_app_config.cursor_x + 1;
+        if (g_app_config.cursor_x > MAX_SCREEN_CURSOR_X) {
+            // if all the way over, don't move the cursor, but move the map
+            g_app_config.cursor_x = MAX_SCREEN_CURSOR_X;
+            g_app_config.map_x = g_app_config.map_x + 1;
+            // If past the end of the map, don't move the map either.
+            // If the map *has* moved, redraw it.
+            if(g_app_config.map_x > MAX_SCREEN_MAP_X) {
+                g_app_config.map_x = MAX_SCREEN_MAP_X;
+                g_render_components.render_map_area = 0;
+            } else {
+                g_render_components.render_map_area = 1;
+            }
+        }
+    }
+    if (g_state == PLACE_PLAYER) {
+        g_render_components.render_place_player_cursor = 1;
+    } else {
+        g_render_components.render_cursor = 1;
+    }
+    g_render_components.render_cursor_position = 1;
+}
+
+// Moves the cursor up.  Depending on whether SHIFT is held down, move either
+// one cell or one page.
+void move_up(unsigned char shift_status) {
+    // move the cursor up
+    // If SHIFT is held down, move a screen at a time
+    if (shift_status & 0x01 || shift_status & 0x02) {
+        if (g_app_config.map_y < MAP_AREA_HEIGHT) {
+            g_app_config.map_y = 0;
+        } else {
+            g_app_config.map_y -= MAP_AREA_HEIGHT;
+        }
+        g_render_components.render_map_area = 1;                                
+    } else {            
+        g_app_config.old_cursor_x = g_app_config.cursor_x;
+        g_app_config.old_cursor_y = g_app_config.cursor_y;
+        g_app_config.cursor_y = g_app_config.cursor_y - 1;
+        if (g_app_config.cursor_y < MIN_SCREEN_CURSOR_Y) {
+            // if all the way over, don't move the cursor, but move the map...
+            g_app_config.cursor_y = MIN_SCREEN_CURSOR_Y;
+            // ... but only if there's room.                    
+            if(g_app_config.map_y > MIN_SCREEN_MAP_Y) {
+                g_app_config.map_y = g_app_config.map_y - 1;
+                g_render_components.render_map_area = 1;
+            } else {
+                g_render_components.render_background = 0;
+            }
+        }
+    }
+    if (g_state == PLACE_PLAYER) {
+        g_render_components.render_place_player_cursor = 1;
+    } else {
+        g_render_components.render_cursor = 1;
+    }
+    g_render_components.render_cursor_position = 1;
+}
+
+void move_down(unsigned char shift_status) {
+    // move the cursor down
+    // If SHIFT is held down, move a screen at a time
+    if (shift_status & 0x01 || shift_status & 0x02) {
+        g_app_config.map_y += MAP_AREA_HEIGHT;
+        if(g_app_config.map_y > MAX_SCREEN_MAP_Y) {
+            g_app_config.map_y = MAX_SCREEN_MAP_Y;
+        }
+        g_render_components.render_map_area = 1;                            
+    } else {            
+        g_app_config.old_cursor_x = g_app_config.cursor_x;
+        g_app_config.old_cursor_y = g_app_config.cursor_y;
+        g_app_config.cursor_y = g_app_config.cursor_y + 1;
+        if (g_app_config.cursor_y > MAX_SCREEN_CURSOR_Y) {
+            // if all the way over, don't move the cursor, but move the map
+            g_app_config.cursor_y = MAX_SCREEN_CURSOR_Y;
+            g_app_config.map_y = g_app_config.map_y + 1;
+            // If past the end of the map, don't move the map either.
+            if(g_app_config.map_y > MAX_SCREEN_MAP_Y) {
+                g_app_config.map_y = MAX_SCREEN_MAP_Y;
+                g_render_components.render_map_area = 0;
+            } else {
+                g_render_components.render_map_area = 1;
+            }
+        }
+    }
+    if (g_state == PLACE_PLAYER) {
+        g_render_components.render_place_player_cursor = 1;
+    } else {
+        g_render_components.render_cursor = 1;
+    }
+    g_render_components.render_cursor_position = 1;
+}
+
 void process_main_screen_input(unsigned char ascii_code, 
                                unsigned char scan_code, 
                                unsigned char shift_status) {
@@ -38,124 +180,16 @@ void process_main_screen_input(unsigned char ascii_code,
             set_state(FILE_SAVE);
             break;
         case KEY_RIGHT:
-            // move the cursor right
-            // If SHIFT is held down, move a screen at a time
-            if (shift_status & 0x01 || shift_status & 0x02) {
-                g_app_config.map_x += MAP_AREA_WIDTH;
-                if(g_app_config.map_x > MAX_SCREEN_MAP_X) {
-                    g_app_config.map_x = MAX_SCREEN_MAP_X;
-                }
-                g_render_components.render_map_area = 1;                            
-            } else {
-                // Otherwise, move one space at a time, scrolling as needed
-                g_app_config.old_cursor_x = g_app_config.cursor_x;
-                g_app_config.old_cursor_y = g_app_config.cursor_y;
-                g_app_config.cursor_x = g_app_config.cursor_x + 1;
-                if (g_app_config.cursor_x > MAX_SCREEN_CURSOR_X) {
-                    // if all the way over, don't move the cursor, but move the map
-                    g_app_config.cursor_x = MAX_SCREEN_CURSOR_X;
-                    g_app_config.map_x = g_app_config.map_x + 1;
-                    // If past the end of the map, don't move the map either.
-                    // If the map *has* moved, redraw it.
-                    if(g_app_config.map_x > MAX_SCREEN_MAP_X) {
-                        g_app_config.map_x = MAX_SCREEN_MAP_X;
-                        g_render_components.render_map_area = 0;
-                    } else {
-                        g_render_components.render_map_area = 1;
-                    }
-                }
-            }
-            g_render_components.render_cursor = 1;
-            g_render_components.render_cursor_position = 1;
+            move_right(shift_status);
             break;
         case KEY_LEFT:
-            // move the cursor left
-            // If SHIFT is held down, move a screen at a time
-            if (shift_status & 0x01 || shift_status & 0x02) {
-                if (g_app_config.map_x < MAP_AREA_WIDTH) {
-                    g_app_config.map_x = 0;
-                } else {
-                    g_app_config.map_x -= MAP_AREA_WIDTH;
-                }
-                g_render_components.render_map_area = 1;                                
-            } else {
-                // otherwise move a square at a time
-                g_app_config.old_cursor_x = g_app_config.cursor_x;
-                g_app_config.old_cursor_y = g_app_config.cursor_y;
-                g_app_config.cursor_x = g_app_config.cursor_x - 1;            
-                if (g_app_config.cursor_x < MIN_SCREEN_CURSOR_X) {
-                    // if all the way over, don't move the cursor, but move the map...
-                    g_app_config.cursor_x = MIN_SCREEN_CURSOR_X;
-                    // ... but only if there's room.     
-                    // If the map *has* moved, redraw it.                                   
-                    if(g_app_config.map_x > MIN_SCREEN_MAP_X) {
-                        g_app_config.map_x = g_app_config.map_x - 1;
-                        g_render_components.render_map_area = 1;
-                    } else {
-                        g_render_components.render_map_area = 0;
-                    }
-                }
-            }
-            g_render_components.render_cursor = 1;
-            g_render_components.render_cursor_position = 1;
+            move_left(shift_status);
             break;
         case KEY_UP:
-            // move the cursor up
-            // If SHIFT is held down, move a screen at a time
-            if (shift_status & 0x01 || shift_status & 0x02) {
-                if (g_app_config.map_y < MAP_AREA_HEIGHT) {
-                    g_app_config.map_y = 0;
-                } else {
-                    g_app_config.map_y -= MAP_AREA_HEIGHT;
-                }
-                g_render_components.render_map_area = 1;                                
-            } else {            
-                g_app_config.old_cursor_x = g_app_config.cursor_x;
-                g_app_config.old_cursor_y = g_app_config.cursor_y;
-                g_app_config.cursor_y = g_app_config.cursor_y - 1;
-                if (g_app_config.cursor_y < MIN_SCREEN_CURSOR_Y) {
-                    // if all the way over, don't move the cursor, but move the map...
-                    g_app_config.cursor_y = MIN_SCREEN_CURSOR_Y;
-                    // ... but only if there's room.                    
-                    if(g_app_config.map_y > MIN_SCREEN_MAP_Y) {
-                        g_app_config.map_y = g_app_config.map_y - 1;
-                        g_render_components.render_map_area = 1;
-                    } else {
-                        g_render_components.render_background = 0;
-                    }
-                }
-            }
-            g_render_components.render_cursor = 1;
-            g_render_components.render_cursor_position = 1;
+            move_up(shift_status);
             break;     
         case KEY_DOWN:
-            // move the cursor down
-            // If SHIFT is held down, move a screen at a time
-            if (shift_status & 0x01 || shift_status & 0x02) {
-                g_app_config.map_y += MAP_AREA_HEIGHT;
-                if(g_app_config.map_y > MAX_SCREEN_MAP_Y) {
-                    g_app_config.map_y = MAX_SCREEN_MAP_Y;
-                }
-                g_render_components.render_map_area = 1;                            
-            } else {            
-                g_app_config.old_cursor_x = g_app_config.cursor_x;
-                g_app_config.old_cursor_y = g_app_config.cursor_y;
-                g_app_config.cursor_y = g_app_config.cursor_y + 1;
-                if (g_app_config.cursor_y > MAX_SCREEN_CURSOR_Y) {
-                    // if all the way over, don't move the cursor, but move the map
-                    g_app_config.cursor_y = MAX_SCREEN_CURSOR_Y;
-                    g_app_config.map_y = g_app_config.map_y + 1;
-                    // If past the end of the map, don't move the map either.
-                    if(g_app_config.map_y > MAX_SCREEN_MAP_Y) {
-                        g_app_config.map_y = MAX_SCREEN_MAP_Y;
-                        g_render_components.render_map_area = 0;
-                    } else {
-                        g_render_components.render_map_area = 1;
-                    }
-                }
-            }
-            g_render_components.render_cursor = 1;
-            g_render_components.render_cursor_position = 1;
+            move_down(shift_status);
             break;
         // Note that entry 0 can't be selected - it's always blank.
         case KEY_LBRACKET:
@@ -185,6 +219,11 @@ void process_main_screen_input(unsigned char ascii_code,
                 set_map_at(x, y, 0);
             }
             g_render_components.render_cursor = 1;
+            break;
+        case KEY_EQUALS:
+            g_render_components.render_place_player_cursor = 1;
+            g_render_components.render_cursor = 0;
+            set_state(PLACE_PLAYER);
             break;
         default:
             break;
@@ -501,6 +540,38 @@ void process_help_screen_input(unsigned char ascii_code,
     }
 }
 
+void process_place_player_input(unsigned char ascii_code, 
+                               unsigned char scan_code, 
+                               unsigned char shift_status) {
+    switch(scan_code) {
+        case KEY_ESC:
+            g_app_config.quit = 1;
+            break;        
+        case KEY_UP:
+            move_up(shift_status);
+            break;
+        case KEY_DOWN:
+            move_down(shift_status);
+            break;
+        case KEY_LEFT:
+            move_left(shift_status);
+            break;
+        case KEY_RIGHT:
+            move_right(shift_status);
+            break;
+        case KEY_SPACE:
+            g_map_header.pc_start_x = g_app_config.map_x;
+            g_map_header.pc_start_y = g_app_config.map_y;
+            g_render_components.render_pc_start = 1;
+            break;
+        case KEY_EQUALS:
+            g_render_components.render_place_player_cursor = 0;
+            g_render_components.render_cursor = 1;
+            set_state(MAIN_SCREEN);
+            break;
+    }
+}
+
 void process_input(void) {
     unsigned short key, shift_status;
     unsigned char ascii_code, scan_code;
@@ -524,6 +595,11 @@ void process_input(void) {
                 break;
             case FILE_SAVE:
                 set_state(MAIN_SCREEN);
+                break;
+            case PLACE_EXIT:
+                break;
+            case PLACE_PLAYER:
+                process_place_player_input(ascii_code, scan_code, shift_status);
                 break;
             default:
                 break;

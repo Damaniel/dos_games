@@ -185,7 +185,7 @@ void render_main_screen(void) {
         string_at(1, 24, buf, g_ui_config.background_attr);
         g_render_components.render_cursor_position = 0;       
     }
-    if (g_render_components.render_cursor) {
+    if (g_render_components.render_cursor || g_render_components.render_place_player_cursor) {
         // Replace the old cursor location with the map location that goes
         // under it
         map_x = g_app_config.map_x + g_app_config.old_cursor_x - MAP_AREA_X;
@@ -205,9 +205,19 @@ void render_main_screen(void) {
         } else {
             cur_attr = make_attr(14, 0);
         }        
-        char_at(g_app_config.cursor_x, g_app_config.cursor_y, 219, cur_attr);
-        g_render_components.render_cursor = 0;        
+        if (g_render_components.render_cursor) {
+            char_at(g_app_config.cursor_x, g_app_config.cursor_y, 219, cur_attr);
+            g_render_components.render_cursor = 0;  
+        } else if (g_render_components.render_place_player_cursor) {
+            char_at(g_app_config.cursor_x, g_app_config.cursor_y, '@', cur_attr);
+            g_render_components.render_place_player_cursor = 0;
+        }
     }    
+
+    if(g_render_components.render_pc_start) {
+       // Logic to place start symbol goes here.  Determine if the player start
+       // is on the current screen.  If so, find where it goes and draw it.   
+    }
 }
 
 void render_palette_edit_screen(void) {
@@ -433,7 +443,7 @@ void render_help_screen(void) {
                 string_at(4, 12, "  \\ - Enter tile edit mode", g_ui_config.help_text_attr);
                 string_at(4, 13, "  PageUp / PageDown - Select an exit from the list", g_ui_config.help_text_attr);
                 string_at(4, 14, "  ` - Enter exit editing mode", g_ui_config.help_text_attr);
-                string_at(4, 15, "  = - Place the top left corner of the exit", g_ui_config.help_text_attr);
+                string_at(4, 15, "  = - Place the player's start position", g_ui_config.help_text_attr);
                 string_at(4, 16, "  H - View help screen", g_ui_config.help_text_attr);
                 string_at(4, 17, "  ESC - Exit editor", g_ui_config.help_text_attr);
                 string_at(4, 18, "  S - Save the current map", g_ui_config.help_text_attr);
@@ -501,6 +511,7 @@ void render_file_save_dialog(void) {
 void render() {
     switch(g_state) {
         case MAIN_SCREEN:
+        case PLACE_PLAYER:
             render_main_screen();
             break;
         case PALETTE_EDIT:
@@ -529,6 +540,10 @@ void set_all_render_components(void) {
     g_render_components.render_map_area = 1;
     g_render_components.render_cursor_position = 1;
     g_render_components.render_cursor = 1;
+    // The player cursor only gets enabled in certain circumstances, not by
+    // default
+    g_render_components.render_place_player_cursor = 0;
+    g_render_components.render_pc_start = 1;
 }
 
 // Helper function - disable the rendering of all components
@@ -543,6 +558,8 @@ void clear_render_components(void) {
     g_render_components.render_map_area = 0;
     g_render_components.render_cursor_position = 0;
     g_render_components.render_cursor = 0;
+    g_render_components.render_place_player_cursor = 0;
+    g_render_components.render_pc_start = 0;
 }
 
 void set_all_palette_edit_components(void) {

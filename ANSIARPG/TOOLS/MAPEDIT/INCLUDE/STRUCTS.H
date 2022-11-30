@@ -114,7 +114,9 @@ typedef enum {
     EXIT_EDIT,
     PALETTE_EDIT,
     HELP_SCREEN,
-    FILE_SAVE
+    FILE_SAVE,
+    PLACE_EXIT,
+    PLACE_PLAYER
 } State;
 
 typedef struct {

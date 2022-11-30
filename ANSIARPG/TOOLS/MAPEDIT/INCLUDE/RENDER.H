@@ -32,6 +32,8 @@ typedef struct {
     char render_map_area;
     char render_cursor_position;
     char render_cursor;
+    char render_place_player_cursor;
+    char render_pc_start;
 } RenderComponents;
 
 typedef struct {
