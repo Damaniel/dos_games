@@ -14,7 +14,6 @@ def populate_res_file_struct():
             if ext == Globals.RES_EXT:
                 parse_res_file(str(res.path))
 
-
 def parse_res_file(name):
     """Extracts information about the resource described in a file.
     
@@ -77,9 +76,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.TexPreviewPixmap.fill(QtGui.QColor(0, 0, 0))
         self.TexPreview.setPixmap(self.TexPreviewPixmap)
 
+        self.populate_resource_list()
         self.initialize_map_area()
         self.render_map_area()
-        self.populate_resource_list()
 
         # Initialize other values
         self.CurLevel.setText(str(self.current_elevation))
@@ -105,27 +104,42 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
     def eventFilter(self, object, event):
         if object == self.EditorArea:
             if event.type() == QtCore.QEvent.MouseButtonRelease:
-                print("Mouse released!")
-                print("Release is at " + str(event.position().x()) + ", " + str(event.position().y()))
                 tile_x = int(event.position().x() / Globals.TILE_WIDTH)
                 tile_y = int(event.position().y() / Globals.TILE_HEIGHT)
-                print("Release tile is " + str(tile_x) + ", " + str(tile_y))
-                self.place_tile(tile_x, tile_y)
-
+                if event.button() == QtCore.Qt.LeftButton:
+                    self.place_tile(tile_x, tile_y, Globals.CURRENT_TILE)
+                elif event.button() == QtCore.Qt.RightButton:
+                    # 'Place' a tile.  Using index -2 will actually clear the tile
+                    self.place_tile(tile_x, tile_y, -2)
         return False
 
-    def place_tile(self, tile_x, tile_y):
-        # Only place a tile if one is active
-        if Globals.CURRENT_TILE is None:
+    def place_tile(self, tile_x, tile_y, idx):
+        # Only place a tile if one is active.  In this case, a tile index of -1 
+        # is the 'default' value of 'no tile'
+        #
+        # Note that -2 is used as a value to represent 'delete this tile'.
+        if idx == -1:
             return
 
         # Add the tile index to the appropriate part of the map data
-        Globals.MAP_DATA[self.current_elevation][tile_x][tile_y] = Globals.CURRENT_TILE[1]
+        # 
+        # in the case of 'delete this tile' (index -2), reset the map entry
+        # to 'no tile' (i.e. -1)
+        if idx == -2:
+            Globals.MAP_DATA[self.current_elevation][tile_x][tile_y] = -1
+        else:
+            Globals.MAP_DATA[self.current_elevation][tile_x][tile_y] = idx
 
         # Draw the current tile to the map area
         pixmap = self.EditorArea.pixmap()
         painter = QtGui.QPainter(pixmap)
-        painter.drawImage(QtCore.QPoint(tile_x * Globals.TILE_WIDTH, tile_y * Globals.TILE_HEIGHT), Globals.CURRENT_TILE[0])
+        # If -2 ('delete this tile'), draw a filled rectangle in the place
+        # where the tile would go.  Otherwise, draw the appropriate tile.
+        if idx == -2:
+            painter.fillRect(tile_x * Globals.TILE_WIDTH + 1, tile_y * Globals.TILE_HEIGHT + 1, 
+                             Globals.TILE_WIDTH -1, Globals.TILE_HEIGHT - 1, QtGui.QColor(255, 255, 255)) 
+        else:
+            painter.drawImage(QtCore.QPoint(tile_x * Globals.TILE_WIDTH, tile_y * Globals.TILE_HEIGHT), Globals.TILE_DATA[idx][1])
         painter.end()
         self.EditorArea.setPixmap(pixmap)
         self.EditorArea.update()
@@ -136,6 +150,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         if self.current_elevation >= Globals.TILEMAP_LAYERS:
             self.current_elevation = Globals.TILEMAP_LAYERS - 1
         self.CurLevel.setText(str(self.current_elevation))
+        self.render_map_area()
 
     def decrement_floor(self):
         """Subtracts one from the currently active floor."""
@@ -143,15 +158,31 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         if self.current_elevation < 0:
             self.current_elevation = 0
         self.CurLevel.setText(str(self.current_elevation))
+        self.render_map_area()
     
     def render_map_area(self):
         """Draw the map area."""
         self.render_grid()
-        self.render_tiles()
+        self.render_tiles(self.current_elevation)
         self.EditorArea.update()
 
-    def render_tiles(self):
+    def render_tiles(self, elevation):
         """Draws all tiles in the map area."""
+        # Get the pixmap
+        # Clear the map area
+        # Draw the grid
+        # Load the images into a list of [index, QImage]
+        # For each tile location (x, y, elevation)
+        #  Draw the tile where <index> is the value at Globals.MAP_DATA[elevation][x][y]
+        pixmap = self.EditorArea.pixmap()
+        painter = QtGui.QPainter(pixmap)
+        for i in range(Globals.TILEMAP_WIDTH):
+            for j in range(Globals.TILEMAP_HEIGHT):
+                if Globals.MAP_DATA[self.current_elevation][i][j] >= 0:
+                    painter.drawImage(QtCore.QPoint(i * Globals.TILE_WIDTH, j * Globals.TILE_HEIGHT), Globals.TILE_DATA[Globals.MAP_DATA[self.current_elevation][i][j]][1])
+        painter.end()
+        self.EditorArea.setPixmap(pixmap)
+        self.EditorArea.update()
         pass
 
     def render_grid(self):
@@ -179,17 +210,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
     def populate_resource_list(self):
         """Adds all resources to the palette entry list."""
+        idx = 0
         populate_res_file_struct()
         for key in Globals.RES_FILES.keys():
             self.PaletteEntryList.addItem(key)
-
+            Globals.TILE_DATA.append([idx, QtGui.QImage(Globals.RES_PATH + "/" + Globals.RES_FILES[key]["texture"])])
+            Globals.ISO_DATA.append([idx, QtGui.QImage(Globals.RES_PATH + "/" + Globals.RES_FILES[key]["iso_tile"])])
+            idx = idx + 1
+            
     def update_palette_preview(self, row):
         """Updates the name, description and images to match the current palette entry.
         
         Keyword arguments:
         row -- the row of the palette entry list to preview
         """
-
         # Get the name of the currently active entry
         i = self.PaletteEntryList.item(row).text()
         res_item = Globals.RES_FILES[i]
@@ -197,9 +231,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.PalItemDescription.setText(res_item["description"])
 
         # Load the image files and render them to the palette preview label pixmap
-        tex_file = QtGui.QImage(Globals.RES_PATH + "/" + res_item["texture"])
-        Globals.CURRENT_TILE = [tex_file, row]
-        iso_tile_file = QtGui.QImage(Globals.RES_PATH + "/" + res_item["iso_tile"])
+        tex_file = Globals.TILE_DATA[row][1] # QtGui.QImage(Globals.RES_PATH + "/" + res_item["texture"])
+        Globals.CURRENT_TILE = Globals.TILE_DATA[row][0]
+        iso_tile_file = Globals.ISO_DATA[row][1] # QtGui.QImage(Globals.RES_PATH + "/" + res_item["iso_tile"])
         pixmap = self.TexPreview.pixmap()
         pixmap.fill(QtGui.QColor(0, 0, 0))
         painter = QtGui.QPainter(pixmap)
