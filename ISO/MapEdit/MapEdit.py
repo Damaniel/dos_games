@@ -2,26 +2,25 @@
 import sys, os, pathlib, re 
 from PySide6 import QtCore, QtWidgets, QtGui
 from MainUI import Ui_DruIsoMapEdit
-
-RES_PATH = 'res'
-RES_EXT = 'res'
-
-# A dict of items.  Each item is a dict containing a name, description, texture file and isometric tile spritesheet
-RES_FILES = {}
+import Globals
 
 def populate_res_file_struct():
-    # Scan the res directory
-    # Call the parser on each res file
-    RES_FILES.clear()
-    res_list = os.scandir(RES_PATH)
+    """Fills the RES_FILES structure with available resources."""
+    Globals.RES_FILES.clear()
+    res_list = os.scandir(Globals.RES_PATH)
     for res in res_list:
         if res.is_file():
             (name, ext) = str(res.name).rsplit('.', 1)
-            if ext == RES_EXT:
+            if ext == Globals.RES_EXT:
                 parse_res_file(str(res.path))
 
 
 def parse_res_file(name):
+    """Extracts information about the resource described in a file.
+    
+       Keyword arguments:
+       name -- the name of the resource file
+    """
     id_re = re.compile(r"^\s*name:\s+(.+)$")
     desc_re = re.compile(r"^\s*description:\s+(.+)$")
     tex_re = re.compile(r"^\s*texture:\s+(.+)$")
@@ -60,45 +59,75 @@ def parse_res_file(name):
     if res_name is None or res_desc is None or res_tex is None or res_iso is None:
         print("warning: couldn't parse " + name)
     else:
-        RES_FILES[res_name] = {'name': res_name, 'description': res_desc, 'texture': res_tex, 
+        Globals.RES_FILES[res_name] = {'name': res_name, 'description': res_desc, 'texture': res_tex, 
                                'tex_size': res_tex_size, 'iso_tile': res_iso , 'iso_size': res_iso_size }
 
-    # Extract the ID, description, texture and isometric tile sheet
-    # Append that data to the RES_FILES structure
-
 class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
-    tile_width = 64
-    tile_height = 64
-    tilemap_width = 32
-    tilemap_height = 32
-    tilemap_layers = 16
+    """The MainWindow for the map editor application."""
+    current_elevation = 0
 
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
 
         # Set up pixmaps
-        self.EditorAreaPixmap = QtGui.QPixmap(self.tile_width * self.tilemap_width, self.tile_height * self.tilemap_height)
+        self.EditorAreaPixmap = QtGui.QPixmap(Globals.TILE_WIDTH * Globals.TILEMAP_WIDTH, Globals.TILE_HEIGHT * Globals.TILEMAP_HEIGHT)
         self.EditorArea.setPixmap(self.EditorAreaPixmap)
         self.TexPreviewPixmap = QtGui.QPixmap(241, 275)
         self.TexPreviewPixmap.fill(QtGui.QColor(0, 0, 0))
         self.TexPreview.setPixmap(self.TexPreviewPixmap)
 
-        self.render_grid()
+        self.render_map_area()
         self.populate_resource_list()
+
+        # Initialize other values
+        self.CurLevel.setText(str(self.current_elevation))
 
         # Set up signals
         self.PaletteEntryList.currentRowChanged.connect(self.update_palette_preview)
+        self.UpButton.clicked.connect(self.increment_floor)
+        self.DownButton.clicked.connect(self.decrement_floor)
 
-    def render(self):
+        # Set up filters
+        self.EditorArea.installEventFilter(self)
+
+    def eventFilter(self, object, event):
+        if object == self.EditorArea:
+            if event.type() == QtCore.QEvent.MouseButtonRelease:
+                print("Mouse released!")
+                print("Release is at " + str(event.position().x()) + ", " + str(event.position().y()))
+                tile_x = int(event.position().x() / Globals.TILE_WIDTH)
+                tile_y = int(event.position().y() / Globals.TILE_HEIGHT)
+                print("Release tile is " + str(tile_x) + ", " + str(tile_y))
+
+        return False
+
+    def increment_floor(self):
+        """Adds one to the currently active floor."""
+        self.current_elevation = self.current_elevation + 1
+        if self.current_elevation >= Globals.TILEMAP_LAYERS:
+            self.current_elevation = Globals.TILEMAP_LAYERS - 1
+        self.CurLevel.setText(str(self.current_elevation))
+
+    def decrement_floor(self):
+        """Subtracts one from the currently active floor."""
+        self.current_elevation = self.current_elevation - 1
+        if self.current_elevation < 0:
+            self.current_elevation = 0
+        self.CurLevel.setText(str(self.current_elevation))
+    
+    def render_map_area(self):
+        """Draw the map area."""
         self.render_grid()
         self.render_tiles()
         self.EditorArea.update()
 
     def render_tiles(self):
+        """Draws all tiles in the map area."""
         pass
 
     def render_grid(self):
+        """Draws a grid in the map area."""
         pixmap = self.EditorArea.pixmap()
 
         gray = QtGui.QColor(128, 128, 128)
@@ -106,35 +135,41 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         painter = QtGui.QPainter(pixmap)
         painter.setPen(gray)
         
-        for x in range(0, self.tilemap_width):
-            painter.drawLine(x * self.tile_width, 0, x * self.tile_width, self.tile_height * self.tilemap_height - 1 )
+        for x in range(0, Globals.TILEMAP_WIDTH):
+            painter.drawLine(x * Globals.TILE_WIDTH, 0, x * Globals.TILE_WIDTH, Globals.TILE_HEIGHT * Globals.TILEMAP_HEIGHT - 1 )
         
         # Draw the horizontal lines
-        for y in range(0, self.tilemap_height):
-            painter.drawLine(0, y * self.tile_height, self.tile_width * self.tilemap_width - 1, y * self.tile_height)
+        for y in range(0, Globals.TILEMAP_HEIGHT):
+            painter.drawLine(0, y * Globals.TILE_HEIGHT, Globals.TILE_WIDTH * Globals.TILEMAP_WIDTH - 1, y * Globals.TILE_HEIGHT)
         
         # Draw the bottom and right lines
-        painter.drawLine(self.tile_width * self.tilemap_width - 1, 0, self.tile_width * self.tilemap_width -1, self.tile_height * self.tilemap_height - 1)
-        painter.drawLine(0, self.tile_height * self.tilemap_height - 1, self.tile_width * self.tilemap_width - 1, self.tile_height * self.tilemap_height - 1)
+        painter.drawLine(Globals.TILE_WIDTH * Globals.TILEMAP_WIDTH - 1, 0, Globals.TILE_WIDTH * Globals.TILEMAP_WIDTH -1, Globals.TILE_HEIGHT * Globals.TILEMAP_HEIGHT - 1)
+        painter.drawLine(0, Globals.TILE_HEIGHT * Globals.TILEMAP_HEIGHT - 1, Globals.TILE_WIDTH * Globals.TILEMAP_WIDTH - 1, Globals.TILE_HEIGHT * Globals.TILEMAP_HEIGHT - 1)
         painter.end()
 
         self.EditorArea.setPixmap(pixmap)   
 
     def populate_resource_list(self):
+        """Adds all resources to the palette entry list."""
         populate_res_file_struct()
-        for key in RES_FILES.keys():
+        for key in Globals.RES_FILES.keys():
             self.PaletteEntryList.addItem(key)
 
     def update_palette_preview(self, row):
+        """Updates the name, description and images to match the current palette entry.
+        
+        Keyword arguments:
+        row -- the row of the palette entry list to preview
+        """
         # Get the name of the currently active entry
         i = self.PaletteEntryList.item(row).text()
-        res_item = RES_FILES[i]
+        res_item = Globals.RES_FILES[i]
         self.PalItemName.setText(res_item["name"])
         self.PalItemDescription.setText(res_item["description"])
 
         # Load the image files and render them to the palette preview label pixmap
-        tex_file = QtGui.QImage(RES_PATH + "/" + res_item["texture"])
-        iso_tile_file = QtGui.QImage(RES_PATH + "/" + res_item["iso_tile"])
+        tex_file = QtGui.QImage(Globals.RES_PATH + "/" + res_item["texture"])
+        iso_tile_file = QtGui.QImage(Globals.RES_PATH + "/" + res_item["iso_tile"])
         pixmap = self.TexPreview.pixmap()
         pixmap.fill(QtGui.QColor(0, 0, 0))
         painter = QtGui.QPainter(pixmap)

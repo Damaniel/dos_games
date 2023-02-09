@@ -201,7 +201,7 @@
           <widget class="QPushButton" name="UpButton">
            <property name="geometry">
             <rect>
-             <x>20</x>
+             <x>180</x>
              <y>630</y>
              <width>101</width>
              <height>24</height>
@@ -214,7 +214,7 @@
           <widget class="QPushButton" name="DownButton">
            <property name="geometry">
             <rect>
-             <x>180</x>
+             <x>20</x>
              <y>630</y>
              <width>101</width>
              <height>24</height>

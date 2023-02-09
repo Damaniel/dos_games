@@ -22,8 +22,6 @@ from PySide6.QtWidgets import (QApplication, QFrame, QGroupBox, QHBoxLayout,
     QScrollArea, QSizePolicy, QStatusBar, QTabWidget,
     QVBoxLayout, QWidget)
 
-import Globals
-
 class Ui_DruIsoMapEdit(object):
     def setupUi(self, DruIsoMapEdit):
         if not DruIsoMapEdit.objectName():
