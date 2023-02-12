@@ -99,6 +99,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
         # Set up filters
         self.EditorArea.installEventFilter(self)
+        self.MainTabs.installEventFilter(self)
 
         # Set up actions
         self.actionNew.triggered.connect(self.process_new)
@@ -128,6 +129,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         # Clear the map structure and draw an empty map
         self.initialize_map_file()
         self.initialize_map_area()
+        self.initialize_preview_area()
         self.render_map_area()
 
     def initialize_map_file(self):
@@ -135,6 +137,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         Globals.TILES_USED.clear()
         Globals.NUM_TILES_USED = 0
         Globals.IS_MODIFIED = False
+
+    def initialize_preview_area(self):
+        Globals.g_preview_x = 2
+        Globals.g_preview_y = 2
+        Globals.g_preview_z = 2
+        self.update_palette_preview()
 
     def process_close(self):
         """ Actions associated with the Close menu option """
@@ -229,6 +237,33 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
                 elif event.button() == QtCore.Qt.RightButton:
                     # 'Place' a tile.  Using index -2 will actually clear the tile
                     self.place_tile(tile_x, tile_y, -2)
+                
+        if object == self.MainTabs and self.MainTabs.currentIndex() == 1:
+            if event.type() == QtCore.QEvent.KeyPress:
+                update = False
+                if event.isAutoRepeat() == False:
+                    key = event.key()
+                    if key == QtCore.Qt.Key.Key_A:
+                        Globals.g_preview_x = Globals.g_preview_x + 1
+                        update = True
+                    if key == QtCore.Qt.Key.Key_D:
+                        Globals.g_preview_x = Globals.g_preview_x - 1
+                        update = True
+                    if key == QtCore.Qt.Key.Key_W:
+                        Globals.g_preview_y = Globals.g_preview_y - 1
+                        update = True
+                    if key == QtCore.Qt.Key.Key_S:
+                        Globals.g_preview_y = Globals.g_preview_y + 1
+                        update = True
+                    if key == QtCore.Qt.Key.Key_X:
+                        Globals.g_preview_z = Globals.g_preview_z + 1
+                        update = True
+                    if key == QtCore.Qt.Key.Key_Z:
+                        Globals.g_preview_z = Globals.g_preview_z - 1
+                        update = True 
+                if update == True:
+                    self.update_tab(1)
+
         return False
 
     def place_tile(self, tile_x, tile_y, idx):
@@ -435,11 +470,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
     def update_tab(self, index):
         if index == 1:   # The preview tab
             self.render_preview(Globals.g_preview_x, Globals.g_preview_y, Globals.g_preview_z, 0)
+            self.XPosEdit.setText(str(Globals.g_preview_x))
+            self.YPosEdit.setText(str(Globals.g_preview_y))
+            self.ElevationEdit.setText(str(Globals.g_preview_z))
 
     def render_preview(self, x_pos, y_pos, z_pos, rotation):
         """ draws a 5x5x5 isometric preview of the current map, centered at
             (x_pos, y_pos, z_pos), in one of 4 possible rotations. """
         pixmap = self.PreviewArea.pixmap()
+        pixmap.fill(QtGui.QColor(0, 0, 0))
         painter = QtGui.QPainter(pixmap)
         tile_radius = 2
         tile_center_x = 220
@@ -455,7 +494,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
                     if tx >=0 and tx < Globals.TILEMAP_WIDTH and ty >= 0 and ty < Globals.TILEMAP_HEIGHT and tz >=0 and tz < Globals.TILEMAP_LAYERS:
                         if Globals.MAP_DATA[tz][tx][ty] >= 0: 
-                            print(str(tx) + " " + str(ty) + " " + str(tz) + ", " + str(Globals.MAP_DATA[tz][tx][ty]))
                             tile = Globals.ISO_DATA[Globals.MAP_DATA[tz][tx][ty]][1]
                             rx = tile_center_x + ((y-x) * (Globals.ISO_TILE_WIDTH / 2))
                             ry = tile_center_y + ((y+x) * (Globals.ISO_TILE_HEIGHT /2)) - (z * Globals.ISO_TILE_HEIGHT)
