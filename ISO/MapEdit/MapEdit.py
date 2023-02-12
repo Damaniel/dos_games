@@ -117,6 +117,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
     def process_new(self):
         self.set_title(None)
+        Globals.CURRENT_MAP_FILE = None
+        self.current_elevation = 0
+        self.CurLevel.setText(str(self.current_elevation))
         # Clear the map structure and draw an empty map
         self.initialize_map_file()
         self.initialize_map_area()
@@ -170,6 +173,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
             self.load_map_file(file_name[0])
             self.render_map_area()
             self.set_title(file_name[0])
+            Globals.CURRENT_MAP_FILE = file_name[0]
 
     def process_save(self):
         if Globals.CURRENT_MAP_FILE is None:
@@ -405,8 +409,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
             Globals.NUM_TILES_USED = int.from_bytes(f.read(1), byteorder=sys.byteorder)
             for i in range(Globals.NUM_TILES_USED):
-                dos_file = f.read(12)
-                Globals.DOS_FILES.append([i, str(dos_file)])
+                dos_name = f.read(12)
+                for t in Globals.DOS_FILES:
+                    if t[1] == dos_name.decode():
+                        Globals.TILES_USED.append(t[0])
             for z in range(Globals.TILEMAP_LAYERS):
                 for x in range(Globals.TILEMAP_WIDTH):
                     for y in range(Globals.TILEMAP_HEIGHT):
