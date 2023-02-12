@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-import sys, os, pathlib, re 
+import sys, os, pathlib, re, struct, string
 from PySide6 import QtCore, QtWidgets, QtGui
 from MainUI import Ui_DruIsoMapEdit
 import Globals
@@ -22,6 +22,7 @@ def parse_res_file(name):
     """
     id_re = re.compile(r"^\s*name:\s+(.+)$")
     desc_re = re.compile(r"^\s*description:\s+(.+)$")
+    dosname_re = re.compile(r"\s*dos_name:\s+(.+)$")
     tex_re = re.compile(r"^\s*texture:\s+(.+)$")
     tex_size_re = re.compile(r"^\s*tex_size:\s+(.+)$")
     iso_re = re.compile(r"^\s*iso_tile:\s+(.+)$")
@@ -29,6 +30,7 @@ def parse_res_file(name):
     f = open(name, 'r')
     res_name = None
     res_desc = None
+    res_dosname = None
     res_tex = None
     res_tex_size = None
     res_iso = None
@@ -40,6 +42,9 @@ def parse_res_file(name):
         m = desc_re.match(line)
         if m is not None:
             res_desc = m.group(1)
+        m = dosname_re.match(line)
+        if m is not None:
+            res_dosname = m.group(1)
         m = tex_re.match(line)
         if m is not None:
             res_tex = m.group(1)
@@ -55,10 +60,10 @@ def parse_res_file(name):
 
     f.close()
 
-    if res_name is None or res_desc is None or res_tex is None or res_iso is None:
+    if None in [res_name, res_desc, res_dosname, res_tex, res_iso]:
         print("warning: couldn't parse " + name)
     else:
-        Globals.RES_FILES[res_name] = {'name': res_name, 'description': res_desc, 'texture': res_tex, 
+        Globals.RES_FILES[res_name] = {'name': res_name, 'description': res_desc, 'dosname': res_dosname, 'texture': res_tex, 
                                'tex_size': res_tex_size, 'iso_tile': res_iso , 'iso_size': res_iso_size }
 
 class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
@@ -68,6 +73,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
+        self.set_title(None)
 
         # Set up pixmaps
         self.EditorAreaPixmap = QtGui.QPixmap(Globals.TILE_WIDTH * Globals.TILEMAP_WIDTH, Globals.TILE_HEIGHT * Globals.TILEMAP_HEIGHT)
@@ -91,7 +97,94 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         # Set up filters
         self.EditorArea.installEventFilter(self)
 
+        # Set up actions
+        self.actionNew.triggered.connect(self.process_new)
+        self.actionSave.triggered.connect(self.process_save)
+        self.actionSave_As.triggered.connect(self.process_save_as)
+        self.actionOpen.triggered.connect(self.process_open)
+        self.actionClose.triggered.connect(self.process_close)
+        self.actionExit.triggered.connect(self.process_exit)
+
+        # Set up miscellaneous stuff
+        self.EditorArea.setMouseTracking(True)
+
+    def set_title(self, title):
+        if title is None:
+            t = '<New file>'
+        else:
+            t = title
+        self.setWindowTitle("DruIsoMapEdit - " + t)
+
+    def process_new(self):
+        self.set_title(None)
+        # Clear the map structure and draw an empty map
+        self.initialize_map_file()
+        self.initialize_map_area()
+        self.render_map_area()
+
+    def initialize_map_file(self):
+        Globals.TILES_USED.clear()
+        Globals.NUM_TILES_USED = 0
+        Globals.IS_MODIFIED = False
+
+    def process_close(self):
+        if Globals.IS_MODIFIED == True:
+            # Pop a 'do you want to save your progress' dialog, and pop a save dialog if needed
+            result = self.show_confirm_save()
+            # If cancel was selected, do nothing
+            if result == QtWidgets.QMessageBox.Cancel:
+                return
+            # If save was selected, either save or pop up the save as dialog as needed
+            if result == QtWidgets.QMessageBox.Save:
+                self.process_save()
+        # In either of the cases that aren't 'cancel', reset everything
+        self.process_new()
+
+    def process_exit(self):
+        if Globals.IS_MODIFIED == True:
+            # Pop a 'do you want to save your progress' dialog and a save dialog if needed
+            result = self.show_confirm_save()
+            # If cancel was selected, do nothing
+            if result == QtWidgets.QMessageBox.Cancel:
+                return
+            # If save was selected, either save or pop up the save as dialog as needed
+            if result == QtWidgets.QMessageBox.Save:
+                self.process_save() 
+        # In either of the cases that aren't 'cancel', close the app          
+        self.close()
+
+    def show_confirm_save(self):
+        msg_box = QtWidgets.QMessageBox()
+        msg_box.setText("The map file has been modified.")
+        msg_box.setInformativeText("Do you want to save your changes?")
+        msg_box.setStandardButtons(QtWidgets.QMessageBox.Save |  QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel)
+        msg_box.setDefaultButton(QtWidgets.QMessageBox.Save)
+        return msg_box.exec()
+
+    def process_open(self):
+        self.initialize_map_file()
+        self.initialize_map_area()
+        file_name = QtWidgets.QFileDialog(self).getOpenFileName(filter="Map files (*.map)")
+        if file_name is not None:
+            self.current_elevation = 0
+            self.load_map_file(file_name[0])
+            self.render_map_area()
+            self.set_title(file_name[0])
+
+    def process_save(self):
+        if Globals.CURRENT_MAP_FILE is None:
+            self.process_save_as()
+        else:
+            self.save_map_file(Globals.CURRENT_MAP_FILE)
+
+    def process_save_as(self):
+        file_name = QtWidgets.QFileDialog(self).getSaveFileName(filter="Map files (*.map)")
+        if file_name is not None and file_name[0] != '':
+            self.save_map_file(file_name[0])
+
     def initialize_map_area(self):
+        # Delete any existing map data that's floating around
+        Globals.MAP_DATA.clear()
         for i in range(Globals.TILEMAP_LAYERS):
             cols = []
             for j in range (Globals.TILE_WIDTH):
@@ -103,7 +196,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
     def eventFilter(self, object, event):
         if object == self.EditorArea:
-            if event.type() == QtCore.QEvent.MouseButtonRelease:
+            if event.type() == QtCore.QEvent.MouseMove:
+                tile_x = int(event.position().x() / Globals.TILE_WIDTH)
+                tile_y = int(event.position().y() / Globals.TILE_HEIGHT)
+                self.CurXPos.setText(str(tile_x))
+                self.CurYPos.setText(str(tile_y))
+            if event.type() == QtCore.QEvent.MouseButtonPress:
                 tile_x = int(event.position().x() / Globals.TILE_WIDTH)
                 tile_y = int(event.position().y() / Globals.TILE_HEIGHT)
                 if event.button() == QtCore.Qt.LeftButton:
@@ -143,6 +241,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         painter.end()
         self.EditorArea.setPixmap(pixmap)
         self.EditorArea.update()
+
+        if idx >= 0:
+            if idx not in Globals.TILES_USED:
+                Globals.TILES_USED.append(idx)
+                Globals.NUM_TILES_USED = Globals.NUM_TILES_USED + 1
+
+        # If a tile was drawn or erased, the map has now been modified
+        Globals.IS_MODIFIED = True
 
     def increment_floor(self):
         """Adds one to the currently active floor."""
@@ -216,6 +322,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
             self.PaletteEntryList.addItem(key)
             Globals.TILE_DATA.append([idx, QtGui.QImage(Globals.RES_PATH + "/" + Globals.RES_FILES[key]["texture"])])
             Globals.ISO_DATA.append([idx, QtGui.QImage(Globals.RES_PATH + "/" + Globals.RES_FILES[key]["iso_tile"])])
+            Globals.DOS_FILES.append([idx, Globals.RES_FILES[key]["dosname"]])
             idx = idx + 1
             
     def update_palette_preview(self, row):
@@ -244,6 +351,66 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         painter.end()
         self.TexPreview.setPixmap(pixmap)
         self.TexPreview.update()
+
+    # Saving and loading make the following assumptions:
+    #  - All maps are derived from the same set of base resources (though the
+    #    resources actually used in a map can vary).  That is, all maps are
+    #    created using the exact set of resource files in the map editor folder.
+    #    When maps are loaded, they'll also assume that the resources are 
+    #    all the same as they were when the file was saved, so if resources
+    #    are added/deleted, they'll need to be updated and the map resaved.
+    #  - All DOS filenames use the full 8.3 character name, for a total of 
+    #    12 bytes per entry.  This value is ignored when loading.  
+
+    def save_map_file(self, file_name):
+        # Write the following data:
+        #   Header (2 bytes)
+        #   Map width (1 byte)
+        #   Map height (1 byte)
+        #   Number of map layers (1 byte)
+        #   Number of tile entries (1 byte)
+        #   <for each tile entry>
+        #     <dos_filename> (12 bytes - all filenames are fully 8.3)
+        #   [width * height * layers] tile entries (1 byte each)
+        with open(file_name, "wb") as f:
+            f.write(b'DI')
+            f.write(struct.pack("BBBB", Globals.TILEMAP_WIDTH, Globals.TILEMAP_HEIGHT, Globals.TILEMAP_LAYERS, Globals.NUM_TILES_USED))
+            for i in range(Globals.NUM_TILES_USED):
+                # Map the tile index from the TILES_USED struct to the DOS filename of the tile
+                # Write the filename to the file as a bytestring
+                f.write(Globals.DOS_FILES[Globals.TILES_USED[i]][1].encode(encoding="ascii"))
+                pass
+            for z in range(Globals.TILEMAP_LAYERS):
+                for x in range(Globals.TILEMAP_WIDTH):
+                    for y in range(Globals.TILEMAP_HEIGHT):
+                        f.write(struct.pack("b", Globals.MAP_DATA[z][x][y]))
+        # The file is saved, reset the modified flag
+        Globals.IS_MODIFIED = False
+        self.set_title(file_name)
+
+    def load_map_file(self, file_name):
+        # Read the following data
+        #   Header
+        #   Map width (not used)
+        #   Map height (not used)
+        #   Number of map layers (not used)
+        #   Number of tile entries
+        #   <num tile entries of dos flienames>
+        #  [width * height * layers] tile entries
+        with open(file_name, "rb") as f:
+            magic = f.read(2)
+            if magic != b'DI':
+                return
+            _ = f.read(3)
+
+            Globals.NUM_TILES_USED = int.from_bytes(f.read(1), byteorder=sys.byteorder)
+            for i in range(Globals.NUM_TILES_USED):
+                dos_file = f.read(12)
+                Globals.DOS_FILES.append([i, str(dos_file)])
+            for z in range(Globals.TILEMAP_LAYERS):
+                for x in range(Globals.TILEMAP_WIDTH):
+                    for y in range(Globals.TILEMAP_HEIGHT):
+                        Globals.MAP_DATA[z][x][y] = int.from_bytes(f.read(1), byteorder=sys.byteorder, signed=True)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

@@ -1,0 +1,10 @@
+*.lib
+*.exe
+*.o
+*.bak
+*.json
+*.pro
+*.map
+*.autosave
+.vscode/
+**/__pycache__/
