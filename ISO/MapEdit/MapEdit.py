@@ -213,14 +213,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
     def eventFilter(self, object, event):
         """ A Qt event filter to pass input events to relevant widgets """
+        # Note that the X axis is flipped from normal x, y coordinates
+        # (the 0, 0 point is at the upper *right* corner of the map)
         if object == self.EditorArea:
             if event.type() == QtCore.QEvent.MouseMove:
-                tile_x = int(event.position().x() / Globals.TILE_WIDTH)
+                tile_x = (Globals.TILEMAP_WIDTH - 1) - (int(event.position().x() / Globals.TILE_WIDTH))
                 tile_y = int(event.position().y() / Globals.TILE_HEIGHT)
                 self.CurXPos.setText(str(tile_x))
                 self.CurYPos.setText(str(tile_y))
             if event.type() == QtCore.QEvent.MouseButtonPress:
-                tile_x = int(event.position().x() / Globals.TILE_WIDTH)
+                tile_x = (Globals.TILEMAP_WIDTH - 1) - (int(event.position().x() / Globals.TILE_WIDTH))
                 tile_y = int(event.position().y() / Globals.TILE_HEIGHT)
                 if event.button() == QtCore.Qt.LeftButton:
                     self.place_tile(tile_x, tile_y, Globals.CURRENT_TILE)
@@ -253,10 +255,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         # If -2 ('delete this tile'), draw a filled rectangle in the place
         # where the tile would go.  Otherwise, draw the appropriate tile.
         if idx == -2:
-            painter.fillRect(tile_x * Globals.TILE_WIDTH + 1, tile_y * Globals.TILE_HEIGHT + 1, 
+            painter.fillRect((Globals.TILEMAP_WIDTH - tile_x - 1) * Globals.TILE_WIDTH + 1, tile_y * Globals.TILE_HEIGHT + 1, 
                              Globals.TILE_WIDTH -1, Globals.TILE_HEIGHT - 1, QtGui.QColor(255, 255, 255)) 
         else:
-            painter.drawImage(QtCore.QPoint(tile_x * Globals.TILE_WIDTH, tile_y * Globals.TILE_HEIGHT), Globals.TILE_DATA[idx][1])
+            painter.drawImage(QtCore.QPoint((Globals.TILEMAP_WIDTH - tile_x - 1) * Globals.TILE_WIDTH, tile_y * Globals.TILE_HEIGHT), Globals.TILE_DATA[idx][1])
         painter.end()
         self.EditorArea.setPixmap(pixmap)
         self.EditorArea.update()
@@ -298,7 +300,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         for i in range(Globals.TILEMAP_WIDTH):
             for j in range(Globals.TILEMAP_HEIGHT):
                 if Globals.MAP_DATA[self.current_elevation][i][j] >= 0:
-                    painter.drawImage(QtCore.QPoint(i * Globals.TILE_WIDTH, j * Globals.TILE_HEIGHT), Globals.TILE_DATA[Globals.MAP_DATA[self.current_elevation][i][j]][1])
+                    painter.drawImage(QtCore.QPoint((Globals.TILEMAP_WIDTH - i - 1) * Globals.TILE_WIDTH, j * Globals.TILE_HEIGHT), Globals.TILE_DATA[Globals.MAP_DATA[self.current_elevation][i][j]][1])
         painter.end()
         self.EditorArea.setPixmap(pixmap)
         self.EditorArea.update()
@@ -306,6 +308,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
     def render_grid(self):
         """Draws a grid in the map area."""
+        """Note - since these are just the grid lines, we don't flip the x axis here, like we do everywhere else """
         pixmap = self.EditorArea.pixmap()
 
         gray = QtGui.QColor(128, 128, 128)
@@ -439,8 +442,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         pixmap = self.PreviewArea.pixmap()
         painter = QtGui.QPainter(pixmap)
         tile_radius = 2
-        tile_center_x = 200
-        tile_center_y = 100
+        tile_center_x = 220
+        tile_center_y = 130
 
         painter.scale(2.0, 2.0)
         for z in range(-tile_radius, tile_radius + 1):
@@ -449,8 +452,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
                     tx = x + x_pos
                     ty = y + y_pos
                     tz = z + z_pos
+
                     if tx >=0 and tx < Globals.TILEMAP_WIDTH and ty >= 0 and ty < Globals.TILEMAP_HEIGHT and tz >=0 and tz < Globals.TILEMAP_LAYERS:
                         if Globals.MAP_DATA[tz][tx][ty] >= 0: 
+                            print(str(tx) + " " + str(ty) + " " + str(tz) + ", " + str(Globals.MAP_DATA[tz][tx][ty]))
                             tile = Globals.ISO_DATA[Globals.MAP_DATA[tz][tx][ty]][1]
                             rx = tile_center_x + ((y-x) * (Globals.ISO_TILE_WIDTH / 2))
                             ry = tile_center_y + ((y+x) * (Globals.ISO_TILE_HEIGHT /2)) - (z * Globals.ISO_TILE_HEIGHT)
