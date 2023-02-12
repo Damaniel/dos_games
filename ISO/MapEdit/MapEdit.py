@@ -81,7 +81,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.TexPreviewPixmap = QtGui.QPixmap(241, 275)
         self.TexPreviewPixmap.fill(QtGui.QColor(0, 0, 0))
         self.TexPreview.setPixmap(self.TexPreviewPixmap)
-
+        self.PreviewAreaPixmap = QtGui.QPixmap(self.PreviewFrame.width(), self.PreviewFrame.height())
+        self.PreviewAreaPixmap.fill(QtGui.QColor(0, 0,  0))
+        self.PreviewArea.setPixmap(self.PreviewAreaPixmap)
         self.populate_resource_list()
         self.initialize_map_area()
         self.render_map_area()
@@ -93,6 +95,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.PaletteEntryList.currentRowChanged.connect(self.update_palette_preview)
         self.UpButton.clicked.connect(self.increment_floor)
         self.DownButton.clicked.connect(self.decrement_floor)
+        self.MainTabs.tabBarClicked.connect(self.update_tab)
 
         # Set up filters
         self.EditorArea.installEventFilter(self)
@@ -109,6 +112,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.EditorArea.setMouseTracking(True)
 
     def set_title(self, title):
+        """Sets the main window title (adding a file name if a file is open)"""
         if title is None:
             t = '<New file>'
         else:
@@ -116,6 +120,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.setWindowTitle("DruIsoMapEdit - " + t)
 
     def process_new(self):
+        """ Do all of the initialization involved with making a new map"""
         self.set_title(None)
         Globals.CURRENT_MAP_FILE = None
         self.current_elevation = 0
@@ -126,11 +131,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.render_map_area()
 
     def initialize_map_file(self):
+        """Clear out the map-specific information once a file is closed """
         Globals.TILES_USED.clear()
         Globals.NUM_TILES_USED = 0
         Globals.IS_MODIFIED = False
 
     def process_close(self):
+        """ Actions associated with the Close menu option """
         if Globals.IS_MODIFIED == True:
             # Pop a 'do you want to save your progress' dialog, and pop a save dialog if needed
             result = self.show_confirm_save()
@@ -144,6 +151,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.process_new()
 
     def process_exit(self):
+        """ Actions associated with the Exit menu option """
         if Globals.IS_MODIFIED == True:
             # Pop a 'do you want to save your progress' dialog and a save dialog if needed
             result = self.show_confirm_save()
@@ -157,6 +165,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.close()
 
     def show_confirm_save(self):
+        """ Displays a 'Unsaved file - want to save?' dialog """
         msg_box = QtWidgets.QMessageBox()
         msg_box.setText("The map file has been modified.")
         msg_box.setInformativeText("Do you want to save your changes?")
@@ -165,6 +174,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         return msg_box.exec()
 
     def process_open(self):
+        """ Actions related to the Open menu option """
         self.initialize_map_file()
         self.initialize_map_area()
         file_name = QtWidgets.QFileDialog(self).getOpenFileName(filter="Map files (*.map)")
@@ -176,17 +186,20 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
             Globals.CURRENT_MAP_FILE = file_name[0]
 
     def process_save(self):
+        """ Actions related to the Save menu option """
         if Globals.CURRENT_MAP_FILE is None:
             self.process_save_as()
         else:
             self.save_map_file(Globals.CURRENT_MAP_FILE)
 
     def process_save_as(self):
+        """ Actions related to the Save As menu option """
         file_name = QtWidgets.QFileDialog(self).getSaveFileName(filter="Map files (*.map)")
         if file_name is not None and file_name[0] != '':
             self.save_map_file(file_name[0])
 
     def initialize_map_area(self):
+        """ Creates and clears the map data structure"""
         # Delete any existing map data that's floating around
         Globals.MAP_DATA.clear()
         for i in range(Globals.TILEMAP_LAYERS):
@@ -199,6 +212,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
             Globals.MAP_DATA.append(cols)
 
     def eventFilter(self, object, event):
+        """ A Qt event filter to pass input events to relevant widgets """
         if object == self.EditorArea:
             if event.type() == QtCore.QEvent.MouseMove:
                 tile_x = int(event.position().x() / Globals.TILE_WIDTH)
@@ -216,6 +230,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         return False
 
     def place_tile(self, tile_x, tile_y, idx):
+        """ Puts a tile in the specified location of the map area """
         # Only place a tile if one is active.  In this case, a tile index of -1 
         # is the 'default' value of 'no tile'
         #
@@ -278,12 +293,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
     def render_tiles(self, elevation):
         """Draws all tiles in the map area."""
-        # Get the pixmap
-        # Clear the map area
-        # Draw the grid
-        # Load the images into a list of [index, QImage]
-        # For each tile location (x, y, elevation)
-        #  Draw the tile where <index> is the value at Globals.MAP_DATA[elevation][x][y]
         pixmap = self.EditorArea.pixmap()
         painter = QtGui.QPainter(pixmap)
         for i in range(Globals.TILEMAP_WIDTH):
@@ -367,6 +376,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
     #    12 bytes per entry.  This value is ignored when loading.  
 
     def save_map_file(self, file_name):
+        """ Saves the specified map file """
         # Write the following data:
         #   Header (2 bytes)
         #   Map width (1 byte)
@@ -393,6 +403,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.set_title(file_name)
 
     def load_map_file(self, file_name):
+        """ Loads the specified map file """
         # Read the following data
         #   Header
         #   Map width (not used)
@@ -417,6 +428,62 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
                 for x in range(Globals.TILEMAP_WIDTH):
                     for y in range(Globals.TILEMAP_HEIGHT):
                         Globals.MAP_DATA[z][x][y] = int.from_bytes(f.read(1), byteorder=sys.byteorder, signed=True)
+
+    def update_tab(self, index):
+        if index == 1:   # The preview tab
+            self.render_preview(Globals.g_preview_x, Globals.g_preview_y, Globals.g_preview_z, 0)
+
+    def render_preview(self, x_pos, y_pos, z_pos, rotation):
+        """ draws a 5x5x5 isometric preview of the current map, centered at
+            (x_pos, y_pos, z_pos), in one of 4 possible rotations. """
+        pixmap = self.PreviewArea.pixmap()
+        painter = QtGui.QPainter(pixmap)
+        tile_radius = 2
+        tile_center_x = 200
+        tile_center_y = 100
+
+        painter.scale(2.0, 2.0)
+        for z in range(-tile_radius, tile_radius + 1):
+            for x in range(-tile_radius, tile_radius + 1):
+                for y in range(-tile_radius, tile_radius + 1):
+                    tx = x + x_pos
+                    ty = y + y_pos
+                    tz = z + z_pos
+                    if tx >=0 and tx < Globals.TILEMAP_WIDTH and ty >= 0 and ty < Globals.TILEMAP_HEIGHT and tz >=0 and tz < Globals.TILEMAP_LAYERS:
+                        if Globals.MAP_DATA[tz][tx][ty] >= 0: 
+                            tile = Globals.ISO_DATA[Globals.MAP_DATA[tz][tx][ty]][1]
+                            rx = tile_center_x + ((y-x) * (Globals.ISO_TILE_WIDTH / 2))
+                            ry = tile_center_y + ((y+x) * (Globals.ISO_TILE_HEIGHT /2)) - (z * Globals.ISO_TILE_HEIGHT)
+                            painter.drawImage(QtCore.QPoint(rx, ry), tile, QtCore.QRect(48, 0, 48, 48))
+        painter.scale(0.5, 0.5)
+        painter.end()
+        self.PreviewArea.setPixmap(pixmap)
+
+# // Draw a region of the map, centered at tile (x, y, z)
+# void render_map_region(int cx, int cy, int cz) {
+#     int x, y, z;
+#     BITMAP *tile;
+#     int distance;
+
+#     for(z=-TILE_RADIUS; z <= TILE_RADIUS; z++) {
+#         for(x= -TILE_RADIUS; x <= TILE_RADIUS; x++){
+#             for(y= -TILE_RADIUS; y <= TILE_RADIUS;  y++) {
+#                 if (abs(x) == 2 || abs(y) == 2 || abs(z) == 2) {
+#                     tile = g_tile[0];
+#                 }
+#                 else if (abs(x) == 1 || abs(y) == 1 || abs(z) == 1) {
+#                     tile = g_tile[1];
+#                 }
+#                 else {
+#                     tile = g_tile[2];
+#                 }
+#                 if(map[cz+z][cx+x][cy+y] != 0) {
+#                     draw_sprite(g_buffer, tile, CENTER_TILE_X + ((y-x) * (TILE_WIDTH / 2)), CENTER_TILE_Y + ((y+x) * (TILE_HEIGHT /2)) - (z * TILE_HEIGHT));
+#                 }
+#             }
+#         }
+#     }
+# }
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

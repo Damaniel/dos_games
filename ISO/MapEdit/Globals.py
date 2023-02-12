@@ -12,6 +12,15 @@ TILE_HEIGHT = 64
 TILEMAP_WIDTH = 32
 TILEMAP_HEIGHT = 32
 
+# The size of the isometric tiles
+ISO_TILE_WIDTH = 48
+ISO_TILE_HEIGHT = 24
+
+# The offsets of the 3 tile brightnesses in the iso tile strip
+NORMAL_TILE = 0
+DARK_TILE = 1
+DARKER_TILE = 2
+
 # The number of levels of tiles that make up the Z axis of the map
 TILEMAP_LAYERS = 16
 
@@ -40,3 +49,7 @@ CURRENT_MAP_FILE = None
 
 # Has the current map been modified since the last save?
 IS_MODIFIED = False
+
+g_preview_x = 2
+g_preview_y = 2
+g_preview_z = 2
