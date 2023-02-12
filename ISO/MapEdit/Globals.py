@@ -50,6 +50,13 @@ CURRENT_MAP_FILE = None
 # Has the current map been modified since the last save?
 IS_MODIFIED = False
 
+ROTATION_0_DEGREES = 0
+ROTATION_90_DEGREES = 1
+ROTATION_180_DEGREES = 2
+ROTATION_270_DEGREES = 3
+
 g_preview_x = 2
 g_preview_y = 2
 g_preview_z = 2
+
+g_rotation = ROTATION_0_DEGREES

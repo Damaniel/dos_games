@@ -142,7 +142,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         Globals.g_preview_x = 2
         Globals.g_preview_y = 2
         Globals.g_preview_z = 2
-        self.update_palette_preview()
+        self.update_palette_preview(0)
 
     def process_close(self):
         """ Actions associated with the Close menu option """
@@ -261,6 +261,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
                     if key == QtCore.Qt.Key.Key_Z:
                         Globals.g_preview_z = Globals.g_preview_z - 1
                         update = True 
+                    if key == QtCore.Qt.Key.Key_Q:
+                        Globals.g_rotation = Globals.g_rotation + 1
+                        if Globals.g_rotation > Globals.ROTATION_270_DEGREES:
+                            Globals.g_rotation = Globals.ROTATION_0_DEGREES
+                        update = True
+                    if key == QtCore.Qt.Key.Key_E:
+                        Globals.g_rotation = Globals.g_rotation - 1
+                        if Globals.g_rotation < Globals.ROTATION_0_DEGREES:
+                            Globals.g_rotation = Globals.ROTATION_270_DEGREES
+                        update = True
+
                 if update == True:
                     self.update_tab(1)
 
@@ -485,16 +496,24 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         tile_center_y = 130
 
         painter.scale(2.0, 2.0)
-        for z in range(-tile_radius, tile_radius + 1):
-            for x in range(-tile_radius, tile_radius + 1):
-                for y in range(-tile_radius, tile_radius + 1):
+            
+        for z in range(-tile_radius, tile_radius+1):
+            for x in range(-tile_radius, tile_radius+1):
+                for y in range(-tile_radius, tile_radius+1):
                     tx = x + x_pos
                     ty = y + y_pos
                     tz = z + z_pos
-
                     if tx >=0 and tx < Globals.TILEMAP_WIDTH and ty >= 0 and ty < Globals.TILEMAP_HEIGHT and tz >=0 and tz < Globals.TILEMAP_LAYERS:
-                        if Globals.MAP_DATA[tz][tx][ty] >= 0: 
-                            tile = Globals.ISO_DATA[Globals.MAP_DATA[tz][tx][ty]][1]
+                        if Globals.g_rotation == Globals.ROTATION_0_DEGREES:
+                            map_offset = Globals.MAP_DATA[tz][tx][ty]
+                        if Globals.g_rotation == Globals.ROTATION_90_DEGREES:
+                            map_offset = Globals.MAP_DATA[tz][ty][2*tile_radius - tx]
+                        if Globals.g_rotation == Globals.ROTATION_180_DEGREES:
+                            map_offset = Globals.MAP_DATA[tz][2*tile_radius-tx][2*tile_radius-ty]
+                        if Globals.g_rotation == Globals.ROTATION_270_DEGREES:
+                            map_offset = Globals.MAP_DATA[tz][2*tile_radius-ty][tx]
+                        if map_offset >= 0: 
+                            tile = Globals.ISO_DATA[map_offset][1]
                             rx = tile_center_x + ((y-x) * (Globals.ISO_TILE_WIDTH / 2))
                             ry = tile_center_y + ((y+x) * (Globals.ISO_TILE_HEIGHT /2)) - (z * Globals.ISO_TILE_HEIGHT)
                             painter.drawImage(QtCore.QPoint(rx, ry), tile, QtCore.QRect(48, 0, 48, 48))
@@ -502,31 +521,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         painter.end()
         self.PreviewArea.setPixmap(pixmap)
 
-# // Draw a region of the map, centered at tile (x, y, z)
-# void render_map_region(int cx, int cy, int cz) {
-#     int x, y, z;
-#     BITMAP *tile;
-#     int distance;
-
-#     for(z=-TILE_RADIUS; z <= TILE_RADIUS; z++) {
-#         for(x= -TILE_RADIUS; x <= TILE_RADIUS; x++){
-#             for(y= -TILE_RADIUS; y <= TILE_RADIUS;  y++) {
-#                 if (abs(x) == 2 || abs(y) == 2 || abs(z) == 2) {
-#                     tile = g_tile[0];
-#                 }
-#                 else if (abs(x) == 1 || abs(y) == 1 || abs(z) == 1) {
-#                     tile = g_tile[1];
-#                 }
-#                 else {
-#                     tile = g_tile[2];
-#                 }
-#                 if(map[cz+z][cx+x][cy+y] != 0) {
-#                     draw_sprite(g_buffer, tile, CENTER_TILE_X + ((y-x) * (TILE_WIDTH / 2)), CENTER_TILE_Y + ((y+x) * (TILE_HEIGHT /2)) - (z * TILE_HEIGHT));
-#                 }
-#             }
-#         }
-#     }
-# }
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
