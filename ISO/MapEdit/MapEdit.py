@@ -497,7 +497,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         painter = QtGui.QPainter(pixmap)
         tile_radius = 2
         tile_center_x = 220
-        tile_center_y = 130
+        tile_center_y = 180
 
         painter.scale(2.0, 2.0)
         for z in range(0, tile_radius * 2 + 1):
@@ -512,7 +512,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
                         tile = Globals.ISO_DATA[map_offset][1]
                         rx = tile_center_x + Globals.g_offset_matrix[i][0] * (Globals.ISO_TILE_WIDTH / 2)
                         ry = tile_center_y + Globals.g_offset_matrix[i][1] * (Globals.ISO_TILE_HEIGHT / 2) - (z * Globals.ISO_TILE_HEIGHT)
-                        painter.drawImage(QtCore.QPoint(rx, ry), tile, QtCore.QRect(48, 0, 48, 48))
+                        painter.drawImage(QtCore.QPoint(rx, ry), tile, QtCore.QRect(Globals.g_lighting_matrix[z][p[0]+2][p[1]+2] * 48, 0, 48, 48))
         painter.scale(0.5, 0.5)
         painter.end()
         self.PreviewArea.setPixmap(pixmap)
