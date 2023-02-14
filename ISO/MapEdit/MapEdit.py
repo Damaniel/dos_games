@@ -4,6 +4,7 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from MainUI import Ui_DruIsoMapEdit
 import Globals
 
+
 def populate_res_file_struct():
     """Fills the RES_FILES structure with available resources."""
     Globals.RES_FILES.clear()
@@ -102,7 +103,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.MainTabs.installEventFilter(self)
 
         # Set up actions
-        self.actionNew.triggered.connect(self.process_new)
+        self.actionNew.triggered.connect(self.process_close)
         self.actionSave.triggered.connect(self.process_save)
         self.actionSave_As.triggered.connect(self.process_save_as)
         self.actionOpen.triggered.connect(self.process_open)
@@ -111,6 +112,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
         # Set up miscellaneous stuff
         self.EditorArea.setMouseTracking(True)
+        self.update_palette_preview(0)
 
     def set_title(self, title):
         """Sets the main window title (adding a file name if a file is open)"""
@@ -131,6 +133,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         self.initialize_map_area()
         self.initialize_preview_area()
         self.render_map_area()
+        self.render_preview(Globals.g_preview_x, Globals.g_preview_y, Globals.g_preview_z, Globals.g_rotation)
 
     def initialize_map_file(self):
         """Clear out the map-specific information once a file is closed """
@@ -142,6 +145,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         Globals.g_preview_x = 2
         Globals.g_preview_y = 2
         Globals.g_preview_z = 2
+        Globals.g_rotation = Globals.ROTATION_0_DEGREES
         self.update_palette_preview(0)
 
     def process_close(self):
@@ -394,6 +398,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         row -- the row of the palette entry list to preview
         """
         # Get the name of the currently active entry
+        self.PaletteEntryList.setCurrentRow(row)
         i = self.PaletteEntryList.item(row).text()
         res_item = Globals.RES_FILES[i]
         self.PalItemName.setText(res_item["name"])
@@ -480,14 +485,13 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
 
     def update_tab(self, index):
         if index == 1:   # The preview tab
-            self.render_preview(Globals.g_preview_x, Globals.g_preview_y, Globals.g_preview_z, 0)
+            self.render_preview(Globals.g_preview_x, Globals.g_preview_y, Globals.g_preview_z, Globals.g_rotation)
             self.XPosEdit.setText(str(Globals.g_preview_x))
             self.YPosEdit.setText(str(Globals.g_preview_y))
             self.ElevationEdit.setText(str(Globals.g_preview_z))
 
     def render_preview(self, x_pos, y_pos, z_pos, rotation):
-        """ draws a 5x5x5 isometric preview of the current map, centered at
-            (x_pos, y_pos, z_pos), in one of 4 possible rotations. """
+        """ draws a 5x5x5 isometric preview of the current map, centered at (x_pos, y_pos) """
         pixmap = self.PreviewArea.pixmap()
         pixmap.fill(QtGui.QColor(0, 0, 0))
         painter = QtGui.QPainter(pixmap)
@@ -496,31 +500,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_DruIsoMapEdit):
         tile_center_y = 130
 
         painter.scale(2.0, 2.0)
-            
-        for z in range(-tile_radius, tile_radius+1):
-            for x in range(-tile_radius, tile_radius+1):
-                for y in range(-tile_radius, tile_radius+1):
-                    tx = x + x_pos
-                    ty = y + y_pos
-                    tz = z + z_pos
-                    if tx >=0 and tx < Globals.TILEMAP_WIDTH and ty >= 0 and ty < Globals.TILEMAP_HEIGHT and tz >=0 and tz < Globals.TILEMAP_LAYERS:
-                        if Globals.g_rotation == Globals.ROTATION_0_DEGREES:
-                            map_offset = Globals.MAP_DATA[tz][tx][ty]
-                        if Globals.g_rotation == Globals.ROTATION_90_DEGREES:
-                            map_offset = Globals.MAP_DATA[tz][ty][2*tile_radius - tx]
-                        if Globals.g_rotation == Globals.ROTATION_180_DEGREES:
-                            map_offset = Globals.MAP_DATA[tz][2*tile_radius-tx][2*tile_radius-ty]
-                        if Globals.g_rotation == Globals.ROTATION_270_DEGREES:
-                            map_offset = Globals.MAP_DATA[tz][2*tile_radius-ty][tx]
-                        if map_offset >= 0: 
-                            tile = Globals.ISO_DATA[map_offset][1]
-                            rx = tile_center_x + ((y-x) * (Globals.ISO_TILE_WIDTH / 2))
-                            ry = tile_center_y + ((y+x) * (Globals.ISO_TILE_HEIGHT /2)) - (z * Globals.ISO_TILE_HEIGHT)
-                            painter.drawImage(QtCore.QPoint(rx, ry), tile, QtCore.QRect(48, 0, 48, 48))
+        for z in range(0, tile_radius * 2 + 1):
+            for i in range(len(Globals.g_rotation_matrix[rotation])):
+                p = Globals.g_rotation_matrix[rotation][i]
+                tx = p[0] + x_pos
+                ty = p[1] + y_pos
+                tz = z - tile_radius + z_pos
+                if tx >=0 and tx < Globals.TILEMAP_WIDTH and ty >= 0 and ty < Globals.TILEMAP_HEIGHT and tz >=0 and tz < Globals.TILEMAP_LAYERS:
+                    map_offset = Globals.MAP_DATA[tz][tx][ty]
+                    if map_offset >= 0: 
+                        tile = Globals.ISO_DATA[map_offset][1]
+                        rx = tile_center_x + Globals.g_offset_matrix[i][0] * (Globals.ISO_TILE_WIDTH / 2)
+                        ry = tile_center_y + Globals.g_offset_matrix[i][1] * (Globals.ISO_TILE_HEIGHT / 2) - (z * Globals.ISO_TILE_HEIGHT)
+                        painter.drawImage(QtCore.QPoint(rx, ry), tile, QtCore.QRect(48, 0, 48, 48))
         painter.scale(0.5, 0.5)
         painter.end()
         self.PreviewArea.setPixmap(pixmap)
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
