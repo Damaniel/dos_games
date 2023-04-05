@@ -1,0 +1,7 @@
+*.lib
+*.exe
+*.o
+*.bak
+*.pro
+*.map
+.vscode/
