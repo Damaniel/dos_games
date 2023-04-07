@@ -350,11 +350,37 @@
      <string>Page Y</string>
     </property>
    </widget>
-   <widget class="QLabel" name="MapXLabel">
+   <widget class="QLabel" name="PageTileXLabel">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>90</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Page Tile X</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="PageTileYLabel">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>90</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Page Tile Y</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="MapXLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
       <width>49</width>
       <height>16</height>
      </rect>
@@ -367,7 +393,7 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>90</y>
+      <y>30</y>
       <width>49</width>
       <height>16</height>
      </rect>
@@ -376,33 +402,7 @@
      <string>Map Y</string>
     </property>
    </widget>
-   <widget class="QLabel" name="ScreenXLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>49</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Screen X</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="ScreenYLabel">
-    <property name="geometry">
-     <rect>
-      <x>180</x>
-      <y>30</y>
-      <width>49</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Screen Y</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="ScreenX">
+   <widget class="QLineEdit" name="MapX">
     <property name="geometry">
      <rect>
       <x>80</x>
@@ -428,7 +428,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLineEdit" name="MapX">
+   <widget class="QLineEdit" name="PageTileX">
     <property name="geometry">
      <rect>
       <x>80</x>
@@ -441,7 +441,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLineEdit" name="ScreenY">
+   <widget class="QLineEdit" name="MapY">
     <property name="geometry">
      <rect>
       <x>250</x>
@@ -467,7 +467,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLineEdit" name="MapY">
+   <widget class="QLineEdit" name="PageTileY">
     <property name="geometry">
      <rect>
       <x>250</x>
