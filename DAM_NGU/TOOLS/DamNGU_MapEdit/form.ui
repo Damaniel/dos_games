@@ -102,6 +102,9 @@
     <property name="text">
      <string>Display both layers</string>
     </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLabel" name="MapWidthLabel">
     <property name="geometry">

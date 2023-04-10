@@ -59,6 +59,7 @@ class Ui_Widget(object):
         self.DisplayLayersCheckbox = QCheckBox(self.SettingsBox)
         self.DisplayLayersCheckbox.setObjectName(u"DisplayLayersCheckbox")
         self.DisplayLayersCheckbox.setGeometry(QRect(20, 30, 231, 20))
+        self.DisplayLayersCheckbox.setChecked(True)
         self.MapWidthLabel = QLabel(self.SettingsBox)
         self.MapWidthLabel.setObjectName(u"MapWidthLabel")
         self.MapWidthLabel.setGeometry(QRect(20, 60, 81, 16))
