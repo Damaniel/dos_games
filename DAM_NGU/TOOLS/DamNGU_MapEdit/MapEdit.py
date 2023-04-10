@@ -1,13 +1,13 @@
 # This Python file uses the following encoding: utf-8
-import sys
+import sys, struct, os
 
 from PySide6.QtWidgets import QApplication, QWidget
 from PySide6 import QtGui, QtCore
 
 DefaultPageWidth = 14
 DefaultPageHeight = 10
-DefaultMapWidth = DefaultPageWidth * 10
-DefaultMapHeight = DefaultPageHeight * 10
+DefaultMapWidth = DefaultPageWidth * 2
+DefaultMapHeight = DefaultPageHeight * 2
 DefaultTileSize = 32
 
 DefaultTilemapWidth = 16
@@ -64,6 +64,9 @@ class Widget(QWidget):
         self.ui.MapHeight.editingFinished.connect(self.map_height_update)
         self.ui.PageWidth.editingFinished.connect(self.page_width_update)
         self.ui.PageHeight.editingFinished.connect(self.page_height_update)
+
+        # Enable the save, load, new buttons
+        self.ui.SaveButton.clicked.connect(self.save_map)
 
         # Set mouse tracking on the map screen
         self.ui.MapArea.setMouseTracking(True)
@@ -140,10 +143,10 @@ class Widget(QWidget):
     def initialize_map_data(self):
         BackgroundLayerTiles.clear()
         DecorationLayerTiles.clear()
-        for i in range(self.map_width):
+        for i in range(self.map_height):
             back_row = []
             dec_row = []
-            for j in range(self.map_height):
+            for j in range(self.map_width):
                 back_row.append(-1)
                 dec_row.append(-1)
             BackgroundLayerTiles.append(back_row)
@@ -151,9 +154,9 @@ class Widget(QWidget):
 
     def set_tile(self, x, y, index):
         if self.ui.BackgroundRadio.isChecked():
-            BackgroundLayerTiles[x][y] = index
+            BackgroundLayerTiles[y][x] = index
         if self.ui.DecorationRadio.isChecked():
-            DecorationLayerTiles[x][y] = index
+            DecorationLayerTiles[y][x] = index
 
     def render_tile(self, x, y):
         pixmap = self.ui.MapArea.pixmap()
@@ -166,16 +169,16 @@ class Widget(QWidget):
     def render_all_tiles(self):
         pixmap = self.ui.MapArea.pixmap()
         painter = QtGui.QPainter(pixmap)
-        for x in range(self.map_width):
-            for y in range(self.map_height):
+        for y in range(self.map_height):
+            for x in range(self.map_width):
                 self.render_tile_on_pixmap(x, y, painter)
         painter.end()
         self.ui.MapArea.setPixmap(pixmap)
         self.ui.MapArea.update()
 
     def render_tile_on_pixmap(self, x, y, painter):
-        p_base = BackgroundLayerTiles[x][y]
-        p_dec = DecorationLayerTiles[x][y]
+        p_base = BackgroundLayerTiles[y][x]
+        p_dec = DecorationLayerTiles[y][x]
 
         # Clear the tile space entirely
         # Erase the tile square
@@ -291,6 +294,49 @@ class Widget(QWidget):
 
         painter.end()
         self.ui.Palette.setPixmap(pixmap)
+
+    # Game map format
+    # - 8 byte header, DMAP + 4 empty
+    # - page width x page height x 3 bytes
+    #   - base layer
+    #   - top layer
+    #   - flags
+    def save_map(self):
+        # Save the entire map structure to a single file (for editing purposes)
+
+        # Create a set of map page files based on the specified page counts
+        # Note that any tiles that aren't inside an area that's a multiple of
+        # a full page won't be saved.  As such, map sizes should be integer
+        # multiples of page sizes.  At some point, I'll enforce it in code...
+        if (self.map_width % self.page_width !=0 ):
+            print("Warning - map width isn't a integer multiple of page width; tiles will be lost")
+        if (self.map_height % self.page_height !=0 ):
+            print("Warning - map height isn't a integer multiple of page height; tiles will be lost")
+        
+        page_width = int(self.map_width / self.page_width)
+        page_height = int(self.map_height / self.page_height)
+
+        for y in range (page_height):
+            for x in range (page_width):
+                print(f"Saving page {x},{y}...")
+                self.save_map_page(x, y)
+
+    def save_map_page(self, px, py):
+        filename = f'output/{px:04d}{py:04d}.map'
+        with open(filename, "wb") as f:
+            f.write(b'DMAP')
+            f.write(struct.pack('BBBB', self.page_width, self.page_height, 0, 0))
+            mx = px * self.page_width
+            my = py * self.page_height
+            for i in range(self.page_height):
+                for j in range(self.page_width):
+                    bt = BackgroundLayerTiles[my+i][mx+j]
+                    dt = DecorationLayerTiles[my+i][mx+j]
+                    if bt < 0:
+                        bt = 0
+                    if dt < 0:
+                        dt = 0
+                    f.write(struct.pack('BBB', bt, dt, 0))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

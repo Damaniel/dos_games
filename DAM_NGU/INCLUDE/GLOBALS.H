@@ -2,7 +2,7 @@
 #define __GLOBALS_H__
 
 #define MAP_SCREEN_WIDTH        14
-#define MAP_SCREEN_HEIGHT       12
+#define MAP_SCREEN_HEIGHT       10
 
 // Graphics positions
 #define MAP_TILE_AREA_X          4
