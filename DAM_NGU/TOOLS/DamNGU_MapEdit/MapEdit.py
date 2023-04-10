@@ -102,7 +102,7 @@ class Widget(QWidget):
         self.layer_ui_update()
 
     def initialize_map_area_pixmap(self):
-        self.map_pixmap = QtGui.QPixmap(self.map_width * DefaultTileSize, self.map_height * DefaultTileSize)
+        self.map_pixmap = QtGui.QPixmap(self.map_width * DefaultTileSize + 1, self.map_height * DefaultTileSize + 1)
         self.ui.MapArea.setPixmap(self.map_pixmap)
 
     def layer_ui_update(self):
@@ -243,9 +243,9 @@ class Widget(QWidget):
 
         # Draw the lower and right corner lines if they don't end on a page boundary
         if (self.map_width % self.page_width != 0):
-            pass
+            painter.drawLine(self.map_width * DefaultTileSize, 0, self.map_width * DefaultTileSize, self.map_height * DefaultTileSize)
         if (self.map_height % self.page_height != 0):
-            pass
+            painter.drawLine(0, self.map_height * DefaultTileSize, self.map_width * DefaultTileSize, self.map_height * DefaultTileSize)
 
         # Switch to black
         painter.setPen(black)
@@ -258,9 +258,9 @@ class Widget(QWidget):
 
         # Draw the lower and right corner lines if they do end on a page boundary
         if (self.map_width % self.page_width == 0):
-            pass
+            painter.drawLine(self.map_width * DefaultTileSize, 0, self.map_width * DefaultTileSize, self.map_height * DefaultTileSize)
         if (self.map_height % self.page_height == 0):
-            pass
+            painter.drawLine(0, self.map_height * DefaultTileSize, self.map_width * DefaultTileSize, self.map_height * DefaultTileSize)
 
         painter.end()
         self.ui.MapArea.setPixmap(pixmap)
