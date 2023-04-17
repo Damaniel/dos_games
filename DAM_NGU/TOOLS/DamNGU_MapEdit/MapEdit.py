@@ -1,13 +1,13 @@
 # This Python file uses the following encoding: utf-8
 import sys, struct, os
 
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QFileDialog
 from PySide6 import QtGui, QtCore
 
 DefaultPageWidth = 14
 DefaultPageHeight = 10
-DefaultMapWidth = DefaultPageWidth * 2
-DefaultMapHeight = DefaultPageHeight * 2
+DefaultMapWidth = DefaultPageWidth * 3
+DefaultMapHeight = DefaultPageHeight * 3
 DefaultTileSize = 32
 
 DefaultTilemapWidth = 16
@@ -19,12 +19,17 @@ DecorationLayerTiles = []
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py, or
 #     pyside2-uic form.ui -o ui_form.py
-from ui_form import Ui_Widget
+from ui_form import Ui_MainWindow
 
-class Widget(QWidget):
+# Bugs to fix
+#
+# If the map size is smaller than the display area, the map area should shrink to match.
+#  Current workaround: just make the map bigger than the drawable area
+
+class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_Widget()
+        self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle("DamNGU Map Editor")
 
@@ -67,6 +72,7 @@ class Widget(QWidget):
 
         # Enable the save, load, new buttons
         self.ui.SaveButton.clicked.connect(self.save_map)
+        self.ui.LoadButton.clicked.connect(self.load_map)
 
         # Set mouse tracking on the map screen
         self.ui.MapArea.setMouseTracking(True)
@@ -295,6 +301,35 @@ class Widget(QWidget):
         painter.end()
         self.ui.Palette.setPixmap(pixmap)
 
+    def load_map(self):
+        filename = QFileDialog(self).getOpenFileName(filter="Map files (*.dnm)")[0]
+        if filename is not None and filename[0] != '':
+            print(f"Loading {filename}")
+        else:
+            return
+
+        with open(filename, "rb") as f:
+            data = f.read(4)
+            if data != b"DNMP":
+                print("Invalid data!")
+            data = f.read(16)
+            (self.map_width, self.map_height, self.page_width, self.page_height) = struct.unpack('IIII', data)
+            print(f'{self.map_width}, {self.map_height}, {self.page_width}, {self.page_height}')
+
+            self.initialize_map_data()
+            for i in range(self.map_height):
+                for j in range(self.map_width):
+                    data = f.read(12)
+                    (bt, dt, flags) = struct.unpack('III', data)
+                    if bt == 0:
+                        bt = -1
+                    if dt == 0:
+                        dt = -1
+                    BackgroundLayerTiles[i][j] = bt
+                    DecorationLayerTiles[i][j] = dt
+            self.render_ui()
+
+
     # Game map format
     # - 8 byte header, DMAP + 4 empty
     # - page width x page height x 3 bytes
@@ -303,6 +338,25 @@ class Widget(QWidget):
     #   - flags
     def save_map(self):
         # Save the entire map structure to a single file (for editing purposes)
+        filename = QFileDialog(self).getSaveFileName(filter="Map files (*.dnm)")[0]
+        if filename is not None and filename[0] != '':
+            print(f"Saving as {filename}")
+        else:
+            return
+        
+        print(filename)
+        with open(filename, "wb") as f:
+            f.write(b'DNMP')
+            f.write(struct.pack('IIII', self.map_width, self.map_height, self.page_width, self.page_height))
+            for i in range(self.map_height):
+                for j in range(self.map_width):
+                    bt = BackgroundLayerTiles[i][j]
+                    dt = DecorationLayerTiles[i][j]
+                    if bt < 0:
+                        bt = 0
+                    if dt < 0:
+                        dt = 0
+                    f.write(struct.pack('III', bt, dt, 0))
 
         # Create a set of map page files based on the specified page counts
         # Note that any tiles that aren't inside an area that's a multiple of
@@ -340,6 +394,6 @@ class Widget(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    widget = Widget()
+    widget = MainWindow()
     widget.show()
     sys.exit(app.exec())

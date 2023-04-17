@@ -1,2 +1,4 @@
 .ropeproject/
 __pycache__/
+output/*.map
+*.dnm
