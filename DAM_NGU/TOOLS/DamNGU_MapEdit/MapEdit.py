@@ -28,8 +28,6 @@ from ui_form import Ui_MainWindow
 #  Current workaround: just make the map bigger than the drawable area
 
 # Things to do
-# - Add a global 'file updated' state so we can prompt to save on new/close/exit
-# - Hook each menu (New/Close) up to the respective function
 # - Add more tiles to the tilemap
 # - draw grid lines over drawn tiles
 
@@ -138,6 +136,17 @@ class MainWindow(QMainWindow):
         self.load_map()
 
     def new_file_init(self):
+        self.page_width = DefaultPageWidth
+        self.page_height = DefaultPageHeight
+        self.map_width = DefaultMapWidth
+        self.map_height = DefaultMapHeight
+        self.page_x = 0
+        self.page_y = 0
+        self.map_x = 0
+        self.map_y = 0
+        self.page_tile_x = 0
+        self.page_tile_y = 0
+        self.initialize_map_area_pixmap()
         self.initialize_map_data()
         self.file_modified = False
         self.active_file_name = ''
@@ -155,7 +164,7 @@ class MainWindow(QMainWindow):
 
     def process_new(self):
         self.process_close()
-        
+
     def process_save(self):
         if self.active_file_name == '':
             self.process_save_as()
@@ -286,6 +295,15 @@ class MainWindow(QMainWindow):
         # Erase the tile square
         painter.fillRect(x * DefaultTileSize, y * DefaultTileSize, DefaultTileSize, DefaultTileSize, QtGui.QColor(255, 255, 255))
             
+        # if background or both, draw background
+        # if foreground or both, draw foreground
+        if p_base != -1:
+            if self.ui.BackgroundRadio.isChecked() or self.ui.DisplayLayersCheckbox.isChecked():
+                painter.drawImage(x * DefaultTileSize, y * DefaultTileSize, self.palette_image, (p_base % DefaultTilemapWidth) * DefaultTileSize, int(p_base / DefaultTilemapWidth) * DefaultTileSize, DefaultTileSize, DefaultTileSize)
+        if p_dec != -1:
+            if self.ui.DecorationRadio.isChecked() or self.ui.DisplayLayersCheckbox.isChecked():
+                painter.drawImage(x * DefaultTileSize, y * DefaultTileSize, self.palette_image, (p_dec % DefaultTilemapWidth) * DefaultTileSize, int(p_dec / DefaultTilemapWidth) * DefaultTileSize, DefaultTileSize, DefaultTileSize)
+
         # Redraw the lines on the top and left sides of the square.  Note that either line could be on a page boundary, so
         # pick the pen color appropriately for each side
         # Top line
@@ -303,15 +321,8 @@ class MainWindow(QMainWindow):
             painter.setPen(gray)
         painter.drawLine(x * DefaultTileSize, y * DefaultTileSize, x * DefaultTileSize, (y + 1) * DefaultTileSize)
 
-        # if background or both, draw background
-        # if foreground or both, draw foreground
-        if p_base != -1:
-            if self.ui.BackgroundRadio.isChecked() or self.ui.DisplayLayersCheckbox.isChecked():
-                painter.drawImage(x * DefaultTileSize, y * DefaultTileSize, self.palette_image, (p_base % DefaultTilemapWidth) * DefaultTileSize, int(p_base / DefaultTilemapWidth) * DefaultTileSize, DefaultTileSize, DefaultTileSize)
-        if p_dec != -1:
-            if self.ui.DecorationRadio.isChecked() or self.ui.DisplayLayersCheckbox.isChecked():
-                painter.drawImage(x * DefaultTileSize, y * DefaultTileSize, self.palette_image, (p_dec % DefaultTilemapWidth) * DefaultTileSize, int(p_dec / DefaultTilemapWidth) * DefaultTileSize, DefaultTileSize, DefaultTileSize)
-            
+
+
     def update_location_info(self, mx, my, px, py, ptx, pty):
         self.ui.MapX.setText(str(mx))
         self.ui.MapY.setText(str(my))

@@ -25,7 +25,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1450, 900)
+        MainWindow.resize(1450, 897)
         self.actionNew = QAction(MainWindow)
         self.actionNew.setObjectName(u"actionNew")
         self.actionOpen = QAction(MainWindow)
@@ -44,7 +44,7 @@ class Ui_MainWindow(object):
         self.Editor.setObjectName(u"Editor")
         self.MapScrollArea = QScrollArea(self.Editor)
         self.MapScrollArea.setObjectName(u"MapScrollArea")
-        self.MapScrollArea.setGeometry(QRect(0, 0, 841, 871))
+        self.MapScrollArea.setGeometry(QRect(0, 0, 841, 851))
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -54,7 +54,7 @@ class Ui_MainWindow(object):
         self.MapScrollArea.setWidgetResizable(True)
         self.MapScrollAreaContents = QWidget()
         self.MapScrollAreaContents.setObjectName(u"MapScrollAreaContents")
-        self.MapScrollAreaContents.setGeometry(QRect(0, 0, 839, 869))
+        self.MapScrollAreaContents.setGeometry(QRect(0, 0, 839, 849))
         self.verticalLayout = QVBoxLayout(self.MapScrollAreaContents)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.MapArea = QLabel(self.MapScrollAreaContents)
