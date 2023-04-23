@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import sys, struct, os
 
-from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QFileDialog
+from PySide6.QtWidgets import QApplication, QWidget, QMainWindow, QFileDialog, QMessageBox
 from PySide6 import QtGui, QtCore
 
 DefaultPageWidth = 14
@@ -28,14 +28,10 @@ from ui_form import Ui_MainWindow
 #  Current workaround: just make the map bigger than the drawable area
 
 # Things to do
-#
-# - Add a Save/Load button (as needed) to the main menu
-# - Add an Export button to save the individual pages; make Save only save the big map
-# - Hook each up to the respective save/load function
-# - Add support for flags (passability, etc)
-#   - Determine how to present it in the UI
-#   - Implement
+# - Add a global 'file updated' state so we can prompt to save on new/close/exit
+# - Hook each menu (New/Close) up to the respective function
 # - Add more tiles to the tilemap
+# - draw grid lines over drawn tiles
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -55,6 +51,9 @@ class MainWindow(QMainWindow):
         self.page_tile_x = 0
         self.page_tile_y = 0
 
+        self.active_file_name = ''
+        self.file_modified = False
+
         self.display_both_layers = False
         # 0 is the bottom layer, 1 is the top layer
         self.display_active_layer = 0
@@ -67,8 +66,18 @@ class MainWindow(QMainWindow):
         self.palette_pixmap = QtGui.QPixmap(512, 512)
         self.ui.Palette.setPixmap(self.palette_pixmap)
 
+        # Add event filters for the drawable areas
         self.ui.MapArea.installEventFilter(self)
         self.ui.Palette.installEventFilter(self)
+
+        # Hook up the menus
+        self.ui.actionNew.triggered.connect(self.process_new)
+        self.ui.actionOpen.triggered.connect(self.process_open)
+        self.ui.actionSave.triggered.connect(self.process_save)
+        self.ui.actionSaveAs.triggered.connect(self.process_save_as)
+        self.ui.actionExport.triggered.connect(self.process_export)
+        self.ui.actionClose.triggered.connect(self.process_close)
+        self.ui.actionExit.triggered.connect(self.process_exit)
 
         # Any time a change is made to selected layer or layer visibility, redraw all the tiles
         self.ui.DecorationRadio.clicked.connect(self.layer_ui_update)
@@ -80,10 +89,6 @@ class MainWindow(QMainWindow):
         self.ui.MapHeight.editingFinished.connect(self.map_height_update)
         self.ui.PageWidth.editingFinished.connect(self.page_width_update)
         self.ui.PageHeight.editingFinished.connect(self.page_height_update)
-
-        # Enable the save, load, new buttons
-        #self.ui.SaveButton.clicked.connect(self.save_map)
-        #self.ui.LoadButton.clicked.connect(self.load_map)
 
         # Set mouse tracking on the map screen
         self.ui.MapArea.setMouseTracking(True)
@@ -128,6 +133,65 @@ class MainWindow(QMainWindow):
     def layer_ui_update(self):
         # Just re-render all the tiles in the map with appropriate layer visibility
         self.render_all_tiles()
+
+    def process_open(self):
+        self.load_map()
+
+    def new_file_init(self):
+        self.initialize_map_data()
+        self.file_modified = False
+        self.active_file_name = ''
+        self.render_ui()
+
+    def process_close(self):
+        if self.file_modified == True:
+            result = self.show_confirm_save()
+            if result == QMessageBox.Save:
+                self.process_save()
+            if result != QMessageBox.Cancel:
+                self.new_file_init()
+        else:
+            self.new_file_init()
+
+    def process_new(self):
+        self.process_close()
+        
+    def process_save(self):
+        if self.active_file_name == '':
+            self.process_save_as()
+        else:
+            self.save_map(self.active_file_name)
+
+    def process_save_as(self):
+        filename = QFileDialog(self).getSaveFileName(filter="Map files (*.dnm)")[0]
+        if filename is not None and filename != '':
+            print(f"Saving as {filename}")
+            self.active_file_name = filename
+            self.save_map(self.active_file_name)
+        else:
+            return
+        
+    def process_export(self):
+        self.export_map_pages()
+
+    def process_exit(self):
+        if self.file_modified == True:
+            result = self.show_confirm_save()
+            if result == QMessageBox.Save:
+                self.process_save()
+            if result != QMessageBox.Cancel:
+                self.close()
+        else:
+            self.close()
+
+    def show_confirm_save(self):
+        """ Displays a 'Unsaved file - want to save?' dialog """
+        msg_box = QMessageBox()
+        msg_box.setText("The map file has been modified.")
+        msg_box.setInformativeText("Do you want to save your changes?")
+        msg_box.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+        msg_box.setDefaultButton(QMessageBox.Save)
+        return msg_box.exec()
 
     def eventFilter(self, object, event):
         if event.type() == QtCore.QEvent.MouseButtonPress:
@@ -194,6 +258,7 @@ class MainWindow(QMainWindow):
                 self.setPassableFlag(x, y, False)
             else:
                 self.setPassableFlag(x, y, True)
+        self.file_modified = True
 
     def render_tile(self, x, y):
         pixmap = self.ui.MapArea.pixmap()
@@ -362,8 +427,9 @@ class MainWindow(QMainWindow):
                         dt = -1
                     BackgroundLayerTiles[i][j] = bt
                     DecorationLayerTiles[i][j] = dt
+                    TileFlags[i][j] = flags
             self.render_ui()
-
+            self.active_file_name = filename
 
     # Game map format
     # - 8 byte header, DMAP + 4 empty
@@ -371,14 +437,7 @@ class MainWindow(QMainWindow):
     #   - base layer
     #   - top layer
     #   - flags
-    def save_map(self):
-        # Save the entire map structure to a single file (for editing purposes)
-        filename = QFileDialog(self).getSaveFileName(filter="Map files (*.dnm)")[0]
-        if filename is not None and filename[0] != '':
-            print(f"Saving as {filename}")
-        else:
-            return
-        
+    def save_map(self, filename):        
         print(filename)
         with open(filename, "wb") as f:
             f.write(b'DNMP')
@@ -387,12 +446,14 @@ class MainWindow(QMainWindow):
                 for j in range(self.map_width):
                     bt = BackgroundLayerTiles[i][j]
                     dt = DecorationLayerTiles[i][j]
+                    tf = TileFlags[i][j]
                     if bt < 0:
                         bt = 0
                     if dt < 0:
                         dt = 0
-                    f.write(struct.pack('III', bt, dt, 0))
+                    f.write(struct.pack('III', bt, dt, tf))
 
+    def export_map_pages(self):
         # Create a set of map page files based on the specified page counts
         # Note that any tiles that aren't inside an area that's a multiple of
         # a full page won't be saved.  As such, map sizes should be integer
@@ -411,7 +472,7 @@ class MainWindow(QMainWindow):
                 self.save_map_page(x, y)
 
     def save_map_page(self, px, py):
-        filename = f'output/{px:04d}{py:04d}.map'
+        filename = f'export/{px:04d}{py:04d}.map'
         with open(filename, "wb") as f:
             f.write(b'DMAP')
             f.write(struct.pack('BBBB', self.page_width, self.page_height, 0, 0))
@@ -421,11 +482,12 @@ class MainWindow(QMainWindow):
                 for j in range(self.page_width):
                     bt = BackgroundLayerTiles[my+i][mx+j]
                     dt = DecorationLayerTiles[my+i][mx+j]
+                    tf = TileFlags[my+i][mx+j]
                     if bt < 0:
                         bt = 0
                     if dt < 0:
                         dt = 0
-                    f.write(struct.pack('BBB', bt, dt, 0))
+                    f.write(struct.pack('BBB', bt, dt, tf))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
