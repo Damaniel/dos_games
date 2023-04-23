@@ -14,6 +14,7 @@ DefaultTilemapWidth = 16
 
 BackgroundLayerTiles = []
 DecorationLayerTiles = []
+TileFlags = []
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -25,6 +26,16 @@ from ui_form import Ui_MainWindow
 #
 # If the map size is smaller than the display area, the map area should shrink to match.
 #  Current workaround: just make the map bigger than the drawable area
+
+# Things to do
+#
+# - Add a Save/Load button (as needed) to the main menu
+# - Add an Export button to save the individual pages; make Save only save the big map
+# - Hook each up to the respective save/load function
+# - Add support for flags (passability, etc)
+#   - Determine how to present it in the UI
+#   - Implement
+# - Add more tiles to the tilemap
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -71,8 +82,8 @@ class MainWindow(QMainWindow):
         self.ui.PageHeight.editingFinished.connect(self.page_height_update)
 
         # Enable the save, load, new buttons
-        self.ui.SaveButton.clicked.connect(self.save_map)
-        self.ui.LoadButton.clicked.connect(self.load_map)
+        #self.ui.SaveButton.clicked.connect(self.save_map)
+        #self.ui.LoadButton.clicked.connect(self.load_map)
 
         # Set mouse tracking on the map screen
         self.ui.MapArea.setMouseTracking(True)
@@ -146,23 +157,43 @@ class MainWindow(QMainWindow):
 
         return False
 
+    def isPassable(self, x, y):
+        return not (TileFlags[y][x] & 0x1)
+
+    def setPassableFlag(self, x, y, isPassable):
+        print(f"Flag value before is {TileFlags[y][x]}")
+        if isPassable == False:
+            TileFlags[y][x] = TileFlags[y][x] | 0x1
+        else:
+            TileFlags[y][x] = TileFlags[y][x] & 0xFFFE
+        print(f"Flag value after is {TileFlags[y][x]}")
+
     def initialize_map_data(self):
         BackgroundLayerTiles.clear()
         DecorationLayerTiles.clear()
+        TileFlags.clear()
         for i in range(self.map_height):
             back_row = []
             dec_row = []
+            flags_row = []
             for j in range(self.map_width):
                 back_row.append(-1)
                 dec_row.append(-1)
+                flags_row.append(0)
             BackgroundLayerTiles.append(back_row)
             DecorationLayerTiles.append(dec_row)
+            TileFlags.append(flags_row)
 
     def set_tile(self, x, y, index):
         if self.ui.BackgroundRadio.isChecked():
             BackgroundLayerTiles[y][x] = index
         if self.ui.DecorationRadio.isChecked():
             DecorationLayerTiles[y][x] = index
+        if self.ui.FlagsRadio.isChecked():
+            if self.ui.ImpassableCheck.isChecked():
+                self.setPassableFlag(x, y, False)
+            else:
+                self.setPassableFlag(x, y, True)
 
     def render_tile(self, x, y):
         pixmap = self.ui.MapArea.pixmap()
@@ -223,6 +254,10 @@ class MainWindow(QMainWindow):
         self.ui.PageY.setText(str(py))
         self.ui.PageTileX.setText(str(ptx))
         self.ui.PageTileY.setText(str(pty))
+        if self.isPassable(mx, my):
+            self.ui.ImpassableStatusCheck.setChecked(False)
+        else:
+            self.ui.ImpassableStatusCheck.setChecked(True)
 
     def update_map_size_info(self):
         self.ui.MapWidth.setText(str(self.map_width))
